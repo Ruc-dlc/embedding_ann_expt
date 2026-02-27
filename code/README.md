@@ -1,8 +1,8 @@
 # DACL-DR: 距离感知对比学习稠密检索
 
-> Distance-Aware Contrastive Learning for Dense Retrieval
+> Distance-Aware Contrastive Learning for HNSW-Friendly Dense Retrieval
 
-本项目为论文《距离感知对比学习与ANN协同优化的稠密检索方法》的完整代码实现。
+本项目为论文《面向HNSW友好的稠密检索距离感知对比学习方法研究》的完整代码实现。
 
 ## 项目概述
 
@@ -34,20 +34,6 @@ L_total = L_InfoNCE + w × L_dis
 - Miniconda 或 Anaconda
 - Python 3.10+
 
-### 安装步骤
-
-```bash
-# 1. 克隆项目
-git clone <repo_url>
-cd DACL-DR/code
-
-# 2. 创建conda环境
-conda env create -f environment.yml
-
-# 3. 激活环境
-conda activate dacl-dr
-```
-
 ## 数据准备
 
 本项目使用 DPR 格式的 NQ（Natural Questions）和 TriviaQA 数据集。
@@ -57,36 +43,14 @@ conda activate dacl-dr
 ```
 data_set/
 ├── NQ/
-│   ├── nq-train.json      # NQ训练集（DPR格式）
+│   ├── nq-train.json      # NQ训练集
 │   ├── nq-dev.json        # NQ验证集
 │   └── nq-test.csv        # NQ测试集
 ├── TriviaQA/
-│   ├── trivia-train.json  # TriviaQA训练集（DPR格式）
+│   ├── trivia-train.json  # TriviaQA训练集
 │   ├── trivia-dev.json    # TriviaQA验证集
 │   └── trivia-test.csv    # TriviaQA测试集
 └── psgs_w100.tsv          # Wikipedia段落语料库（约21M段落）
-```
-
-### 数据获取
-
-DPR格式数据可从 [DPR官方仓库](https://github.com/facebookresearch/DPR) 下载：
-
-```bash
-# 下载NQ数据
-python -m dpr.data.download_data --resource data.retriever.nq
-
-# 下载TriviaQA数据
-python -m dpr.data.download_data --resource data.retriever.trivia
-
-# 下载Wikipedia语料库
-python -m dpr.data.download_data --resource data.wikipedia_split.psgs_w100
-```
-
-### 数据验证
-
-```bash
-python scripts/preprocess_dpr.py --data_dir data_set/NQ --dataset_name NQ
-python scripts/preprocess_dpr.py --data_dir data_set/TriviaQA --dataset_name TriviaQA
 ```
 
 ## 运行实验
@@ -309,11 +273,9 @@ code/
 
 ## 引用
 
-如果使用了本项目代码，请引用论文：
-
 ```bibtex
-@thesis{dacl_dr_2025,
-  title={距离感知对比学习与ANN协同优化的稠密检索方法},
+@thesis{dacl_dr_2026,
+  title={面向HNSW友好的稠密检索距离感知对比学习方法研究},
   author={dailongchao},
   year={2026}
 }
