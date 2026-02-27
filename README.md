@@ -16,7 +16,10 @@ references.md（内含论文名称、来源网址、简介）
 
 3.实验源码
 完整代码位于./code目录下，内含项目源码README.md，内包含实验步骤、清单、环境配置、项目代码结构等其他项目描述信息
-实验总体上开展由数据集的预处理部分、模型的训练部分（dataloader加载、联合损失函数与三阶段难负例挖掘pipeline、开发集评估保存最佳权重）、Faiss向量数据库构建、模型训练后的策略评估（指标包括Recall@k、MRR@k、NDCG@k、Recall vs efsearch、Recall vs Visited Nodes、efsearch vs Latency、positve similarity .etc）等
+实验总体上开展由数据集的预处理部分、模型的训练部分（dataloader加载、联合损失函数与三阶段难负例挖掘pipeline、开发集评估保存最佳权重）、Faiss向量数据库构建、模型训练后的策略评估（指标包括Recall@k、MRR@k、NDCG@k、Recall vs efsearch、Recall vs Visited Nodes、efsearch vs Latency、positve similarity .etc）等其他支持实验modules
+
+4.Lastest Update time 2026/02/28/04:33
+
 
 
 
