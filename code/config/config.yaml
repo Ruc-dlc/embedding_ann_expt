@@ -1,0 +1,75 @@
+# 主配置文件
+# 论文项目：距离感知对比学习稠密检索 (DACL-DR)
+
+# 模型配置
+model:
+  encoder_name: "bert-base-uncased"
+  embedding_dim: 768
+  pooling_type: "cls"  # cls, mean, max
+  normalize: true
+  shared_encoder: true  # 共享backbone
+
+# 训练配置
+training:
+  batch_size: 128
+  learning_rate: 2e-5
+  encoder_learning_rate: 1e-5  # BERT backbone使用更小学习率
+  warmup_steps: 1000
+  max_grad_norm: 1.0
+  gradient_accumulation_steps: 1
+  fp16: true
+  seed: 42
+
+# 三阶段训练配置
+three_stage_training:
+  enabled: true
+  stage1_epochs: 4    # 纯InfoNCE热身
+  stage2_epochs: 8    # 引入距离约束
+  stage3_epochs: 12   # 联合优化+动态难负例
+
+# 损失函数配置
+loss:
+  temperature: 0.05
+  distance_weight: 0.6  # w in L_total = L_InfoNCE + w * L_dis
+
+# 难负例挖掘配置
+hard_negative:
+  num_negatives: 7
+  bm25_candidates: 100
+  refresh_interval: 1000  # 动态挖掘刷新间隔（步数）
+
+# 索引配置
+index:
+  type: "hnsw"
+  hnsw:
+    M: 32
+    ef_construction: 200
+    ef_search: 128
+
+# 评估配置
+evaluation:
+  metrics:
+    - "recall@1"
+    - "recall@5"
+    - "recall@10"
+    - "recall@20"
+    - "recall@100"
+    - "mrr@10"
+    - "ndcg@10"
+# 数据路径
+data:
+  nq_train: "data_set/NQ/nq-train.json"
+  nq_dev: "data_set/NQ/nq-dev.json"
+  nq_test: "data_set/NQ/nq-test.csv"
+  trivia_train: "data_set/TriviaQA/trivia-train.json"
+  trivia_dev: "data_set/TriviaQA/trivia-dev.json"
+  trivia_test: "data_set/TriviaQA/trivia-test.csv"
+  corpus: "data_set/psgs_w100.tsv"
+  cache_dir: "cache/"
+
+# 输出配置
+output:
+  checkpoint_dir: "checkpoints/"
+  log_dir: "logs/"
+  results_dir: "results/"
+  figures_dir: "figures/"

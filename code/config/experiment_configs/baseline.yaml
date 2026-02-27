@@ -1,0 +1,41 @@
+# Baseline实验配置
+# 纯InfoNCE对比学习基准模型（不使用距离约束）
+# 论文章节：第5章 5.1节 - 基准模型
+
+experiment_name: "baseline_contrastive"
+description: "标准对比学习基准模型，不使用距离约束损失"
+
+# 继承主配置
+inherit: "../config.yaml"
+
+# 覆盖配置
+model:
+  encoder_name: "bert-base-uncased"
+
+training:
+  batch_size: 128
+  learning_rate: 2e-5
+  max_epochs: 10
+
+# 不使用三阶段训练
+three_stage_training:
+  enabled: false
+
+loss:
+  type: "infonce_only"
+  temperature: 0.05
+  distance_weight: 0.0  # 不使用距离约束
+
+hard_negative:
+  type: "bm25_static"  # 仅使用DPR预存的难负例
+  num_negatives: 7
+
+index:
+  type: "hnsw"
+  hnsw:
+    M: 32
+    ef_construction: 200
+
+output:
+  checkpoint_dir: "checkpoints/baseline/"
+  experiment_tag: "baseline_v1"

@@ -1,0 +1,47 @@
+# DACL-DR 运行环境配置
+# 使用方法: conda env create -f environment.yml
+# 激活环境: conda activate dacl-dr
+
+name: dacl-dr
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.10
+  - pytorch=2.1
+  - torchvision
+  - torchaudio
+  - cpuonly  # CPU版本PyTorch，如需GPU请替换为对应cuda版本
+
+  # 数据处理
+  - numpy>=1.24
+  - scipy>=1.10
+  - pandas>=2.0
+
+  # NLP
+  - pip
+
+  - pip:
+    # Hugging Face
+    - transformers>=4.35
+    - tokenizers>=0.15
+
+    # 向量检索（仅CPU版本）
+    - faiss-cpu>=1.7.4
+
+    # 评估与分析
+    - scikit-learn>=1.3
+    - rank-bm25>=0.2.2
+
+    # 可视化
+    - matplotlib>=3.7
+    - seaborn>=0.12
+
+    # 配置与工具
+    - pyyaml>=6.0
+    - tqdm>=4.65
+
+    # 可选：高级可视化
+    # - umap-learn>=0.5

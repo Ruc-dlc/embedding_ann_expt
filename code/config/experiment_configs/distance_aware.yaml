@@ -1,0 +1,56 @@
+# 距离感知方法配置
+# 距离感知对比学习，使用L_dis余弦距离约束
+# 论文章节：第4章 - 核心方法
+
+experiment_name: "distance_aware_contrastive"
+description: "距离感知对比学习，L_total = L_InfoNCE + w * L_dis"
+
+# 继承主配置
+inherit: "../config.yaml"
+
+# 覆盖配置
+model:
+  encoder_name: "bert-base-uncased"
+  normalize: true
+
+training:
+  batch_size: 128
+  learning_rate: 2e-5
+  max_epochs: 24  # stage1(4) + stage2(8) + stage3(12)
+
+loss:
+  type: "combined"
+  temperature: 0.05
+  distance_weight: 0.6  # w = 0.6（论文最优值）
+
+hard_negative:
+  type: "dynamic"  # 阶段3使用动态难负例挖掘
+  num_negatives: 7
+  refresh_interval: 1000
+
+# 三阶段训练配置
+three_stage_training:
+  enabled: true
+  stage1:
+    name: "warmup"
+    epochs: 4
+    distance_weight: 0.0  # 纯InfoNCE热身
+  stage2:
+    name: "distance_introduction"
+    epochs: 8
+    distance_weight_schedule: "linear"  # 从0.0线性增长到0.6
+  stage3:
+    name: "joint_optimization"
+    epochs: 12
+    distance_weight: 0.6
+    hard_negative_refresh: true  # 动态刷新难负例
+
+index:
+  type: "hnsw"
+  hnsw:
+    M: 32
+    ef_construction: 200
+
+output:
+  checkpoint_dir: "checkpoints/distance_aware/"
+  experiment_tag: "distance_aware_v1"

@@ -1,0 +1,61 @@
+# 消融实验配置
+# 论文章节：第5章 5.3节 - 消融研究
+
+experiment_name: "ablation_study"
+description: "距离感知对比学习消融实验"
+
+# 继承主配置
+inherit: "../config.yaml"
+
+# 消融实验变体
+ablation_variants:
+
+  # 消融1：距离权重w的影响
+  distance_weight_ablation:
+    - name: "w_0.0"
+      distance_weight: 0.0
+    - name: "w_0.2"
+      distance_weight: 0.2
+    - name: "w_0.4"
+      distance_weight: 0.4
+    - name: "w_0.6"
+      distance_weight: 0.6
+    - name: "w_0.8"
+      distance_weight: 0.8
+    - name: "w_1.0"
+      distance_weight: 1.0
+
+  # 消融2：温度参数τ的影响
+  temperature_ablation:
+    - name: "tau_0.01"
+      temperature: 0.01
+    - name: "tau_0.05"
+      temperature: 0.05
+    - name: "tau_0.1"
+      temperature: 0.1
+    - name: "tau_0.2"
+      temperature: 0.2
+
+  # 消融3：难负例数量的影响
+  hard_negative_ablation:
+    - name: "neg_3"
+      num_negatives: 3
+    - name: "neg_7"
+      num_negatives: 7
+    - name: "neg_15"
+      num_negatives: 15
+    - name: "neg_31"
+      num_negatives: 31
+
+  # 消融4：训练阶段策略
+  training_stage_ablation:
+    - name: "single_stage"
+      three_stage_training: false
+    - name: "two_stage"
+      stages: 2
+    - name: "three_stage"
+      stages: 3
+
+output:
+  checkpoint_dir: "checkpoints/ablation/"
+  results_dir: "results/ablation/"
