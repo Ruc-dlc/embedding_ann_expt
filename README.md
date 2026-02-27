@@ -11,6 +11,8 @@ TriviaQA           78,785 60,413   8,837  11,313   7GB
 corpus                                             10GB
 total capacity                                     24GB
 
+Notes：由于数据集过大，无法上传至github
+
 2.参考文献
 references.md（内含论文名称、来源网址、简介）
 
