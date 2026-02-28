@@ -33,6 +33,18 @@ L_total = L_InfoNCE + w × L_dis
 
 - Miniconda 或 Anaconda
 - Python 3.10+
+- NVIDIA GPU（推荐 A6000 48GB 或同级别）
+- CUDA Driver ≥ 12.1
+
+### 一键安装
+
+```bash
+# 创建环境并安装所有依赖（GPU版 PyTorch + faiss-gpu）
+conda env create -f environment.yml
+
+# 激活环境
+conda activate dacl-dr
+```
 
 ## 数据准备
 
@@ -59,10 +71,10 @@ data_set/
 
 ```bash
 python scripts/run_bm25_eval.py \
-    --corpus_path data_set/psgs_w100.tsv \
-    --test_file data_set/NQ/nq-test.csv \
-    --output_path results/bm25_nq.json \
-    --k1 0.82 --b 0.68
+    --corpus_file data_set/psgs_w100.tsv \
+    --test_file data_set/NQ/nq-dev.json \
+    --output_path results/bm25/ \
+    --dataset_name NQ
 ```
 
 ### 2. Baseline训练（纯InfoNCE，单阶段）
@@ -98,9 +110,13 @@ python scripts/train_distance_aware.py \
 
 ```bash
 python scripts/train_ablation.py \
-    --data_dir data_set \
-    --output_dir checkpoints/ablation \
-    --w_values 0.0 0.2 0.4 0.6 0.8 1.0
+    --weights 0.0 0.2 0.4 0.6 0.8 1.0 \
+    --data_dir data_set/ \
+    --output_base checkpoints/ \
+    --model_name ./local_model_backbone \
+    --batch_size 32 \
+    --gradient_accumulation_steps 4 \
+    --fp16
 ```
 
 ### 5. 消融实验（ABCD 四组模型）
@@ -116,10 +132,19 @@ python scripts/train_ablation.py \
 
 ```bash
 python scripts/run_ablation.py \
-    --data_dir data_set \
-    --model_dirs checkpoints/model_A checkpoints/model_B checkpoints/model_C checkpoints/model_D \
-    --corpus_path data_set/psgs_w100.tsv \
-    --output_path results/ablation/
+    --model_dirs \
+        A=checkpoints/baseline/final_model \
+        B=checkpoints/model_B/final_model \
+        C=checkpoints/ablation_w0.0/final_model \
+        D=checkpoints/ablation_w0.6/final_model \
+    --index_dirs \
+        A=indices/baseline \
+        B=indices/model_B \
+        C=indices/ablation_w0.0 \
+        D=indices/ablation_w0.6 \
+    --test_file data_set/NQ/nq-dev.json \
+    --output_path results/ablation/ \
+    --dataset_name NQ
 ```
 
 ### 6. 索引构建
@@ -141,10 +166,12 @@ python scripts/build_index.py \
 ```bash
 python scripts/run_evaluation.py \
     --encoder_path checkpoints/distance_aware/final_model \
-    --index_path index/distance_aware \
-    --test_file data_set/NQ/nq-test.csv \
-    --output_path results/eval_nq.json \
-    --k_values 1 5 10 20 50 100
+    --index_path indices/distance_aware/ \
+    --test_file data_set/NQ/nq-dev.json \
+    --output_path results/ablation_w0.6/ \
+    --k_values 1 5 10 20 50 100 \
+    --hnsw_ef_search 100 \
+    --experiment_name w0.6_nq
 ```
 
 ### 8. 表示空间分析
@@ -162,10 +189,11 @@ python scripts/run_representation_eval.py \
 ```bash
 python scripts/run_ef_sweep.py \
     --encoder_path checkpoints/distance_aware/final_model \
-    --index_path index/distance_aware \
-    --test_file data_set/NQ/nq-test.csv \
+    --index_path indices/distance_aware/ \
+    --test_file data_set/NQ/nq-dev.json \
     --output_path results/ef_sweep/ \
-    --ef_values 16 32 64 128 256 512
+    --ef_values 16 32 64 128 256 512 \
+    --experiment_name w0.6_nq
 ```
 
 ### 10. 生成论文图表
@@ -271,7 +299,7 @@ code/
 - **backbone模型**: BERT-base-uncased (768维)
 - **深度学习框架**: PyTorch 2.1+
 - **NLP工具**: HuggingFace Transformers
-- **向量检索**: FAISS (HNSW索引)
+- **向量检索**: FAISS-GPU (HNSW索引 + Flat索引)
 - **数据格式**: DPR格式 (JSON)
 
 ## 引用

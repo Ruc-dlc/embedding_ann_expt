@@ -60,6 +60,8 @@ def parse_args() -> argparse.Namespace:
                         help="文档最大token长度")
     parser.add_argument("--experiment_name", type=str, default="repr_eval",
                         help="实验名称")
+    parser.add_argument("--save_embeddings", action="store_true",
+                        help="是否保存嵌入向量（用于t-SNE可视化，文件较大）")
 
     return parser.parse_args()
 
@@ -241,6 +243,15 @@ def main():
     # 保存
     output_dir = Path(args.output_path)
     output_dir.mkdir(parents=True, exist_ok=True)
+
+    # 如果启用 --save_embeddings，将嵌入向量也存入结果（供t-SNE可视化使用）
+    if getattr(args, 'save_embeddings', False):
+        # 交错排列: [q1, d1+, q2, d2+, ...]，labels: 0=query, 1=positive
+        combined = np.concatenate([query_emb, pos_emb], axis=0)
+        labels = [0] * len(query_emb) + [1] * len(pos_emb)
+        results["embeddings"] = combined.tolist()
+        results["labels"] = labels
+        logger.info(f"嵌入向量已包含在结果中 ({combined.shape[0]} × {combined.shape[1]})")
 
     output_file = output_dir / f"{args.experiment_name}_representation.json"
     with open(output_file, 'w', encoding='utf-8') as f:

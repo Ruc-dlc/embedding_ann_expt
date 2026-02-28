@@ -85,6 +85,112 @@ def load_results(results_dir: str) -> dict:
     return results
 
 
+def aggregate_results(raw: dict) -> dict:
+    """
+    将分散的实验结果JSON聚合为图表函数期望的结构。
+
+    评估脚本各自输出独立JSON到不同子目录，load_results()将路径转为平面key。
+    本函数将这些平面结果重组为各图表函数期望的嵌套结构。
+
+    Key 映射关系:
+      ablation_w{w}/w{w}_nq_results.json       → w_retrieval
+      ablation_w{w}/w{w}_nq_repr_representation → representation_distribution
+      ef_sweep/w{w}_nq_ef_sweep.json            → ef_sensitivity
+      tsne/w{w}_tsne_representation.json        → embeddings_baseline / embeddings_dacl
+      ablation/ablation_NQ_results.json         → ablation_representation / ablation_ef_sensitivity / ablation_efficiency
+    """
+    aggregated = dict(raw)
+
+    W_VALUES = ['0.0', '0.2', '0.4', '0.6', '0.8', '1.0']
+
+    # ===== 图1: w_retrieval (Recall/MRR/NDCG vs w) =====
+    w_retrieval = {}
+    for w in W_VALUES:
+        key = f"ablation_w{w}_w{w}_nq_results"
+        if key in raw:
+            sem = raw[key].get("semantic", {})
+            w_retrieval[w] = {
+                "recall@10": sem.get("Recall@10", 0),
+                "mrr@10": sem.get("MRR@10", 0),
+                "ndcg@10": sem.get("NDCG@10", 0),
+                "recall@100": sem.get("Recall@100", 0),
+            }
+    if w_retrieval:
+        aggregated["w_retrieval"] = w_retrieval
+
+    # ===== 图2-4: representation_distribution =====
+    repr_dist = {}
+    for w in W_VALUES:
+        key = f"ablation_w{w}_w{w}_nq_repr_representation"
+        if key in raw:
+            repr_dist[w] = raw[key]
+    if repr_dist:
+        aggregated["representation_distribution"] = repr_dist
+
+    # ===== 图5: t-SNE embeddings =====
+    tsne_map = {
+        "tsne_w0.0_tsne_representation": "embeddings_baseline",
+        "tsne_w0.6_tsne_representation": "embeddings_dacl",
+    }
+    for src_key, dst_key in tsne_map.items():
+        if src_key in raw and "embeddings" in raw[src_key]:
+            aggregated[dst_key] = raw[src_key]
+
+    # ===== 图6-8: ef_sensitivity =====
+    ef_sens = {}
+    for w in W_VALUES:
+        key = f"ef_sweep_w{w}_nq_ef_sweep"
+        if key in raw:
+            sweep = raw[key].get("results", {})
+            renamed = {}
+            for ef_val, m in sweep.items():
+                renamed[ef_val] = {
+                    "recall@100": m.get("recall@100", 0),
+                    "latency_ms": m.get("avg_latency_ms", 0),
+                    "visited_nodes": m.get("avg_visited_nodes", 0),
+                }
+            ef_sens[f"w={w}"] = renamed
+    if ef_sens:
+        aggregated["ef_sensitivity"] = ef_sens
+
+    # ===== 图9-12: ablation results =====
+    abl_key = "ablation_ablation_NQ_results"
+    if abl_key in raw:
+        abl = raw[abl_key]
+        models = ['A', 'B', 'C', 'D']
+
+        # 图9-10: ablation_representation
+        abl_repr = {}
+        for mid in models:
+            if mid in abl and "representation" in abl[mid]:
+                abl_repr[mid] = abl[mid]["representation"]
+        if abl_repr:
+            aggregated["ablation_representation"] = abl_repr
+
+        # 图11: ablation_ef_sensitivity
+        abl_ef = {}
+        for mid in models:
+            if mid in abl and "ef_sweep" in abl[mid]:
+                abl_ef[mid] = abl[mid]["ef_sweep"]
+        if abl_ef:
+            aggregated["ablation_ef_sensitivity"] = abl_ef
+
+        # 图12: ablation_efficiency (重命名字段以匹配图表函数)
+        abl_eff = {}
+        for mid in models:
+            if mid in abl and "efficiency" in abl[mid]:
+                eff = abl[mid]["efficiency"]
+                abl_eff[mid] = {
+                    "visited_nodes": eff.get("avg_visited_nodes", 0),
+                    "avg_latency_ms": eff.get("avg_latency_ms", 0),
+                    "qps": eff.get("qps", 0),
+                }
+        if abl_eff:
+            aggregated["ablation_efficiency"] = abl_eff
+
+    return aggregated
+
+
 # ============================================================
 # 图1: Recall/MRR/NDCG vs w（§5.2 fig:w_retrieval_curves）
 # ============================================================
@@ -649,9 +755,11 @@ def main():
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # 加载结果
-    results = load_results(args.results_dir)
-    logger.info(f"已加载结果文件: {list(results.keys())}")
+    # 加载结果并聚合
+    raw_results = load_results(args.results_dir)
+    logger.info(f"已加载原始结果文件: {len(raw_results)} 个")
+    results = aggregate_results(raw_results)
+    logger.info(f"聚合后可用数据键: {[k for k in results if not k.startswith('ablation_w') and not k.startswith('ef_sweep_') and not k.startswith('bm25_') and not k.startswith('tsne_')]}")
 
     # 确定要生成的图表
     if args.figures:
