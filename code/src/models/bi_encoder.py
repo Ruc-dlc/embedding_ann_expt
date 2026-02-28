@@ -31,7 +31,7 @@ class BiEncoder(nn.Module):
     - 可配置的池化策略（cls / mean / max / attention）
 
     参数:
-        model_name: 预训练模型名称（如 "bert-base-uncased"）
+        model_name: 预训练模型名称或本地路径（model_name:base_bert_uncased path:./local_model_backbone）
         embedding_dim: 输出向量维度（None表示使用backbone原始维度）
         pooling_type: 池化类型 ("cls", "mean", "max", "attention")
         shared_encoder: Query和Document是否共享编码器backbone
@@ -40,7 +40,7 @@ class BiEncoder(nn.Module):
 
     def __init__(
         self,
-        model_name: str = "bert-base-uncased",
+        model_name: str = "./local_model_backbone",
         embedding_dim: Optional[int] = None,
         pooling_type: str = "cls",
         shared_encoder: bool = True,

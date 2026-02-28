@@ -9,7 +9,6 @@
 from typing import Dict, Any, Optional, Union
 from .faiss_wrapper import FaissIndex
 from .hnsw_index import HNSWIndex
-from .ivf_index import IVFIndex
 from .flat_index import FlatIndex
 
 class IndexFactory:
@@ -21,16 +20,12 @@ class IndexFactory:
     支持的索引类型：
     - flat: 精确索引
     - hnsw: HNSW图索引
-    - ivf: IVF倒排索引
-    - ivf_pq: IVF+PQ量化索引
     """
     
     # 注册的索引类型
     _index_types = {
         'flat': FlatIndex,
         'hnsw': HNSWIndex,
-        'ivf': IVFIndex,
-        'ivf_pq': IVFIndex,
     }
     
     @classmethod
@@ -65,10 +60,6 @@ class IndexFactory:
             )
             
         index_class = cls._index_types[index_type]
-        
-        # 特殊处理IVF+PQ
-        if index_type == 'ivf_pq':
-            kwargs['use_pq'] = True
             
         return index_class(dimension=dimension, metric=metric, **kwargs)
     
@@ -123,7 +114,7 @@ def create_index(
     IndexFactory.create 的便捷包装。
     
     Args:
-        index_type: 索引类型 ("flat", "hnsw", "ivf", "ivf_pq")
+        index_type: 索引类型 ("flat", "hnsw")
         dimension: 向量维度
         metric: 距离度量 ("l2" 或 "ip")
         **kwargs: 索引特定参数

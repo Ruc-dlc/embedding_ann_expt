@@ -72,21 +72,26 @@ python scripts/train_baseline.py \
     --data_dir data_set \
     --output_dir checkpoints/baseline \
     --batch_size 128 \
-    --num_epochs 4 \
-    --temperature 0.05
+    --num_epochs 20 \
+    --temperature 0.05 \
+    --fp16
 ```
 
 ### 3. 距离感知训练（DACL-DR，三阶段）
 
 ```bash
+# Stage2/3含7个hard neg，物理batch需设为32，通过梯度累积4步达到有效batch=128
 python scripts/train_distance_aware.py \
     --data_dir data_set \
     --output_dir checkpoints/distance_aware \
     --distance_weight 0.6 \
+    --batch_size 32 \
+    --gradient_accumulation_steps 4 \
     --stage1_epochs 4 \
     --stage2_epochs 8 \
     --stage3_epochs 12 \
-    --temperature 0.05
+    --temperature 0.05 \
+    --fp16
 ```
 
 ### 4. 混合权重消融（w ∈ {0, 0.2, 0.4, 0.6, 0.8, 1.0}）
@@ -125,10 +130,10 @@ python scripts/run_ablation.py \
 python scripts/build_index.py \
     --encoder_path checkpoints/distance_aware/final_model \
     --corpus_path data_set/psgs_w100.tsv \
-    --output_path index/distance_aware \
+    --output_path indices/distance_aware \
     --index_type hnsw \
-    --hnsw_M 32 \
-    --ef_construction 200
+    --hnsw_m 32 \
+    --hnsw_ef_construction 200
 ```
 
 ### 7. 评估
@@ -208,8 +213,7 @@ code/
 │   │   └── faiss_wrapper.py         # FAISS封装
 │   ├── retrieval/                   # 检索
 │   │   ├── retriever.py             # 检索器
-│   │   ├── encoder_service.py       # 编码服务
-│   │   └── search_engine.py         # 搜索引擎
+│   │   └── encoder_service.py       # 编码服务
 │   └── utils/                       # 工具
 │       ├── io_utils.py              # IO工具
 │       ├── logger.py                # 日志
@@ -218,8 +222,7 @@ code/
 ├── analysis/                        # 分析模块
 │   ├── visualization.py             # 可视化工具（t-SNE、距离分布）
 │   ├── distribution_analysis.py     # 向量分布分析
-│   ├── hnsw_simulator.py            # HNSW搜索效率分析（Visited Nodes、Latency）
-│   └── pareto_frontier.py           # 帕累托前沿分析
+│   └── hnsw_simulator.py            # HNSW搜索效率分析（Visited Nodes、Latency）
 ├── evaluation/                      # 评估模块
 │   ├── comprehensive_eval.py        # 综合评估器
 │   ├── efficiency_eval.py           # ANN效率评估

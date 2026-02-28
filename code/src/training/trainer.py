@@ -159,15 +159,32 @@ class Trainer:
         """
         执行完整训练流程
 
+        最佳模型保存策略（业界标准做法）：
+        - 若提供了 eval_dataloader（dev集），则每个epoch末在dev集上评估，
+          基于 dev_loss 保存最佳模型权重，防止过拟合。
+        - 若未提供 eval_dataloader，则退化为基于 train_loss 保存。
+        - 最佳模型同时保存为 checkpoint（含optimizer状态，可恢复训练）
+          和 BiEncoder pretrained 格式（可直接加载用于推理）。
+
         返回:
             训练结果统计字典
         """
         logger.info(f"开始训练，共 {self.args.num_epochs} 个epoch")
         logger.info(f"设备: {self.device}")
+        if self.eval_dataloader is not None:
+            logger.info("已检测到验证集，将基于 dev_loss 保存最佳模型（防过拟合）")
+        else:
+            logger.warning(
+                "⚠️ 未提供验证集(eval_dataloader=None)，"
+                "将基于 train_loss 保存最佳模型。"
+                "强烈建议传入 dev 集以获得科学的模型选择。"
+            )
 
         self._call_callbacks("on_train_begin")
 
-        best_eval_loss = float('inf')
+        best_metric = float('inf')
+        best_epoch = 0
+        no_improve_count = 0
 
         for epoch in range(self.args.num_epochs):
             self.current_epoch = epoch
@@ -180,10 +197,9 @@ class Trainer:
             # 训练一个epoch
             train_metrics = self._train_epoch()
 
-            # 验证
+            # 每个epoch末在dev集上验证（若有）
             eval_metrics = {}
-            if self.eval_dataloader is not None and \
-               (epoch + 1) % max(1, self.args.eval_steps) == 0:
+            if self.eval_dataloader is not None:
                 eval_metrics = self.evaluate()
 
             self._call_callbacks(
@@ -191,25 +207,60 @@ class Trainer:
                 train_metrics=train_metrics, eval_metrics=eval_metrics
             )
 
-            # 保存检查点
-            eval_loss = eval_metrics.get('eval_loss', train_metrics.get('loss', 0))
-            if eval_loss < best_eval_loss:
-                best_eval_loss = eval_loss
-                best_path = Path(self.args.output_dir) / 'best_model'
-                self.save_checkpoint(str(best_path / 'checkpoint.pt'))
+            # 确定当前epoch的监控指标（优先使用dev_loss）
+            current_metric = eval_metrics.get('eval_loss', train_metrics.get('loss', 0))
+            metric_source = "dev_loss" if eval_metrics else "train_loss"
+
+            # 基于指标保存最佳模型
+            if current_metric < best_metric:
+                best_metric = current_metric
+                best_epoch = epoch
+                no_improve_count = 0
+
+                best_dir = Path(self.args.output_dir) / 'best_model'
+                # 保存checkpoint（含optimizer状态，可恢复训练）
+                self.save_checkpoint(str(best_dir / 'checkpoint.pt'))
+                # 同时保存BiEncoder pretrained格式（可直接用于推理/索引构建）
+                if hasattr(self.model, 'save_pretrained'):
+                    self.model.save_pretrained(str(best_dir))
+                logger.info(
+                    f"  ✓ 新的最佳模型已保存 (epoch={epoch}, "
+                    f"{metric_source}={current_metric:.4f})"
+                )
+            else:
+                no_improve_count += 1
 
             logger.info(
                 f"Epoch {epoch}/{self.args.num_epochs}: "
                 f"阶段{self.current_stage}, "
                 f"train_loss={train_metrics.get('loss', 0):.4f}, "
-                f"eval_loss={eval_metrics.get('eval_loss', 'N/A')}"
+                f"eval_loss={eval_metrics.get('eval_loss', 'N/A')}, "
+                f"best={best_metric:.4f}@epoch{best_epoch}"
             )
+
+            # 检查早停（来自 EarlyStoppingCallback 或其他回调）
+            should_stop = any(
+                getattr(cb, 'should_stop', False) for cb in self.callbacks
+            )
+            if should_stop:
+                logger.info(
+                    f"早停触发！在 epoch {epoch} 停止训练，"
+                    f"最佳模型来自 epoch {best_epoch}"
+                )
+                break
 
         self._call_callbacks("on_train_end")
 
+        logger.info(
+            f"训练完成。最佳模型: epoch={best_epoch}, "
+            f"{metric_source}={best_metric:.4f}, "
+            f"保存位置: {Path(self.args.output_dir) / 'best_model'}"
+        )
+
         return {
             "final_epoch": self.current_epoch,
-            "best_eval_loss": best_eval_loss,
+            "best_epoch": best_epoch,
+            "best_eval_loss": best_metric,
         }
 
     def _train_epoch(self) -> Dict[str, float]:

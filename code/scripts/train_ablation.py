@@ -38,10 +38,12 @@ def parse_args() -> argparse.Namespace:
                         help="数据集根目录")
     parser.add_argument("--output_base", type=str, default="checkpoints",
                         help="输出根目录")
-    parser.add_argument("--model_name", type=str, default="bert-base-uncased",
+    parser.add_argument("--model_name", type=str, default="./local_model_backbone",
                         help="预训练模型名称")
-    parser.add_argument("--batch_size", type=int, default=128,
-                        help="训练批次大小")
+    parser.add_argument("--batch_size", type=int, default=32,
+                        help="物理训练批次大小（配合gradient_accumulation_steps=4达到有效batch=128）")
+    parser.add_argument("--gradient_accumulation_steps", type=int, default=4,
+                        help="梯度累积步数")
     parser.add_argument("--learning_rate", type=float, default=2e-5,
                         help="学习率")
     parser.add_argument("--temperature", type=float, default=0.05,
@@ -74,6 +76,7 @@ def build_command(args, weight: float) -> list:
         "--stage1_epochs", str(args.stage1_epochs),
         "--stage2_epochs", str(args.stage2_epochs),
         "--stage3_epochs", str(args.stage3_epochs),
+        "--gradient_accumulation_steps", str(args.gradient_accumulation_steps),
         "--seed", str(args.seed),
     ]
 

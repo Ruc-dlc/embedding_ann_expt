@@ -33,7 +33,7 @@ from src.data.dataset import NQDataset, TriviaQADataset, ConcatRetrievalDataset
 from src.data.dataloader import ThreeStageDataLoader
 from src.training.trainer import Trainer
 from src.training.training_args import TrainingArguments
-from src.training.callbacks import CheckpointCallback, LoggingCallback
+from src.training.callbacks import CheckpointCallback, LoggingCallback, EarlyStoppingCallback
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ def parse_args() -> argparse.Namespace:
                         help="数据集根目录")
     parser.add_argument("--output_dir", type=str, default="checkpoints/distance_aware",
                         help="模型输出目录")
-    parser.add_argument("--model_name", type=str, default="bert-base-uncased",
+    parser.add_argument("--model_name", type=str, default="./local_model_backbone",
                         help="预训练模型名称")
     parser.add_argument("--batch_size", type=int, default=128,
                         help="训练批次大小")
@@ -75,6 +75,8 @@ def parse_args() -> argparse.Namespace:
                         help="每条样本的难负例数量")
     parser.add_argument("--seed", type=int, default=42, help="随机种子")
     parser.add_argument("--fp16", action="store_true", help="使用FP16混合精度")
+    parser.add_argument("--gradient_accumulation_steps", type=int, default=4,
+                        help="梯度累积步数（Stage2/3有7 hard neg，默认4使物理batch=32有效batch=128）")
     parser.add_argument("--max_samples", type=int, default=None,
                         help="最大加载样本数（调试用）")
 
@@ -114,6 +116,32 @@ def build_dataset(data_dir: str, num_hard_negatives: int, max_samples=None):
     return ConcatRetrievalDataset(datasets)
 
 
+def build_dev_dataset(data_dir: str, num_hard_negatives: int):
+    """构建验证集（用于训练过程中的模型选择，防止过拟合）"""
+    data_dir = Path(data_dir)
+    datasets = []
+
+    nq_dev_path = data_dir / "NQ" / "nq-dev.json"
+    if nq_dev_path.exists():
+        nq_dev = NQDataset(str(nq_dev_path), num_hard_negatives=num_hard_negatives)
+        datasets.append(nq_dev)
+        logger.info(f"NQ验证集: {len(nq_dev)} 条")
+
+    trivia_dev_path = data_dir / "TriviaQA" / "trivia-dev.json"
+    if trivia_dev_path.exists():
+        trivia_dev = TriviaQADataset(str(trivia_dev_path), num_hard_negatives=num_hard_negatives)
+        datasets.append(trivia_dev)
+        logger.info(f"TriviaQA验证集: {len(trivia_dev)} 条")
+
+    if not datasets:
+        logger.warning("未找到验证集文件，将无法基于dev_loss保存最佳模型")
+        return None
+
+    if len(datasets) == 1:
+        return datasets[0]
+    return ConcatRetrievalDataset(datasets)
+
+
 def main():
     args = parse_args()
 
@@ -137,10 +165,14 @@ def main():
     logger.info(f"加载tokenizer: {args.model_name}")
     tokenizer = AutoTokenizer.from_pretrained(args.model_name)
 
-    # 构建数据集
-    logger.info("加载数据集...")
+    # 构建训练数据集
+    logger.info("加载训练数据集...")
     dataset = build_dataset(args.data_dir, args.num_hard_negatives, args.max_samples)
     logger.info(f"总训练样本数: {len(dataset)}")
+
+    # 构建验证数据集（用于保存最佳模型，防止过拟合）
+    logger.info("加载验证数据集...")
+    dev_dataset = build_dev_dataset(args.data_dir, args.num_hard_negatives)
 
     # 构建三阶段数据加载器
     train_dataloader = ThreeStageDataLoader(
@@ -153,6 +185,20 @@ def main():
         num_workers=4,
         pin_memory=True
     )
+
+    # 构建验证数据加载器
+    eval_dataloader = None
+    if dev_dataset is not None:
+        eval_dataloader = ThreeStageDataLoader(
+            dataset=dev_dataset,
+            tokenizer=tokenizer,
+            batch_size=args.batch_size * 2,
+            max_query_length=args.max_query_length,
+            max_doc_length=args.max_doc_length,
+            shuffle=False,
+            num_workers=4,
+            pin_memory=True
+        )
 
     # 构建模型
     logger.info(f"构建BiEncoder模型: {args.model_name}")
@@ -186,20 +232,23 @@ def main():
         stage1_epochs=args.stage1_epochs,
         stage2_epochs=args.stage2_epochs,
         stage3_epochs=args.stage3_epochs,
+        gradient_accumulation_steps=args.gradient_accumulation_steps,
         seed=args.seed,
     )
 
-    # 回调
+    # 回调（含早停机制）
     callbacks = [
         LoggingCallback(logging_steps=100),
         CheckpointCallback(save_dir=args.output_dir, save_steps=2000),
+        EarlyStoppingCallback(patience=5, monitor="eval_loss", mode="min"),
     ]
 
-    # 训练器
+    # 训练器（传入eval_dataloader，实现基于dev_loss的最佳模型保存）
     trainer = Trainer(
         model=model,
         args=training_args,
         train_dataloader=train_dataloader,
+        eval_dataloader=eval_dataloader,
         loss_fn=loss_fn,
         callbacks=callbacks
     )
@@ -208,10 +257,19 @@ def main():
     logger.info("开始三阶段训练...")
     results = trainer.train()
 
-    # 保存最终模型
-    save_dir = Path(args.output_dir) / "final_model"
-    model.save_pretrained(str(save_dir))
-    logger.info(f"距离感知模型训练完成！模型已保存至 {save_dir}")
+    # best_model 已由 Trainer 自动保存到 output_dir/best_model/
+    best_model_dir = Path(args.output_dir) / "best_model"
+    final_model_dir = Path(args.output_dir) / "final_model"
+    if best_model_dir.exists():
+        import shutil
+        if final_model_dir.exists():
+            shutil.rmtree(str(final_model_dir))
+        shutil.copytree(str(best_model_dir), str(final_model_dir))
+        logger.info(f"最佳模型已复制到 {final_model_dir}")
+    else:
+        model.save_pretrained(str(final_model_dir))
+
+    logger.info(f"距离感知模型训练完成！最佳模型: epoch={results.get('best_epoch', 'N/A')}")
     logger.info(f"训练结果: {results}")
 
 

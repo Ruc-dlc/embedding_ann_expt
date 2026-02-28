@@ -9,11 +9,9 @@
 from .distribution_analysis import DistributionAnalyzer
 from .hnsw_simulator import HNSWSimulator
 from .visualization import Visualizer
-from .pareto_frontier import ParetoAnalyzer
 
 __all__ = [
     'DistributionAnalyzer',
     'HNSWSimulator',
     'Visualizer',
-    'ParetoAnalyzer',
 ]

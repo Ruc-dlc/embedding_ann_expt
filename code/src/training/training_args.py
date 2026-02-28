@@ -106,17 +106,17 @@ class TrainingArguments:
     )
     
     stage1_epochs: int = field(
-        default=2,
+        default=4,
         metadata={"help": "第一阶段（预热）轮数"}
     )
     
     stage2_epochs: int = field(
-        default=4,
+        default=8,
         metadata={"help": "第二阶段（距离引入）轮数"}
     )
     
     stage3_epochs: int = field(
-        default=4,
+        default=12,
         metadata={"help": "第三阶段（联合优化）轮数"}
     )
     

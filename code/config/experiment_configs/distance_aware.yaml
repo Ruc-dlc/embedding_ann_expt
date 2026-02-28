@@ -10,7 +10,7 @@ inherit: "../config.yaml"
 
 # 覆盖配置
 model:
-  encoder_name: "bert-base-uncased"
+  encoder_name: "./local_model_backbone"
   normalize: true
 
 training:

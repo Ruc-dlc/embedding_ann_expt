@@ -8,14 +8,12 @@
 
 from .faiss_wrapper import FaissIndex
 from .hnsw_index import HNSWIndex
-from .ivf_index import IVFIndex
 from .flat_index import FlatIndex
 from .index_factory import IndexFactory, create_index
 
 __all__ = [
     'FaissIndex',
     'HNSWIndex',
-    'IVFIndex',
     'FlatIndex',
     'IndexFactory',
     'create_index',

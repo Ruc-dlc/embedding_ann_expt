@@ -8,10 +8,8 @@
 
 from .retriever import Retriever
 from .encoder_service import EncoderService
-from .search_engine import SearchEngine
 
 __all__ = [
     'Retriever',
     'EncoderService',
-    'SearchEngine',
 ]

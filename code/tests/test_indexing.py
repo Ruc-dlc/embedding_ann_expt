@@ -99,38 +99,6 @@ class TestHNSWIndex:
         assert index.ef_search == 128
 
 
-class TestIVFIndex:
-    """IVF索引测试"""
-    
-    def test_ivf_index_build(self):
-        """测试IVF索引构建"""
-        from src.indexing.ivf_index import IVFIndex
-        
-        dimension = 128
-        num_vectors = 10000
-        
-        index = IVFIndex(dimension=dimension, nlist=100)
-        vectors = np.random.randn(num_vectors, dimension).astype('float32')
-        
-        # IVF需要先训练
-        index.train(vectors)
-        index.build(vectors)
-        
-        assert index.get_num_vectors() == num_vectors
-        assert index.is_trained
-        
-    def test_ivf_nprobe_adjustment(self):
-        """测试nprobe参数调整"""
-        from src.indexing.ivf_index import IVFIndex
-        
-        index = IVFIndex(dimension=128, nprobe=10)
-        
-        assert index.nprobe == 10
-        
-        index.set_nprobe(20)
-        assert index.nprobe == 20
-
-
 class TestIndexFactory:
     """索引工厂测试"""
     
@@ -151,15 +119,6 @@ class TestIndexFactory:
         
         assert index is not None
         assert index.M == 32
-        
-    def test_create_ivf_index(self):
-        """测试创建IVF索引"""
-        from src.indexing.index_factory import create_index
-        
-        index = create_index("ivf", dimension=128, nlist=100)
-        
-        assert index is not None
-        assert index.nlist == 100
         
     def test_invalid_index_type(self):
         """测试无效索引类型"""

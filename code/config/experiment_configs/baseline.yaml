@@ -10,12 +10,12 @@ inherit: "../config.yaml"
 
 # 覆盖配置
 model:
-  encoder_name: "bert-base-uncased"
+  encoder_name: "./local_model_backbone"
 
 training:
   batch_size: 128
   learning_rate: 2e-5
-  max_epochs: 10
+  max_epochs: 20
 
 # 不使用三阶段训练
 three_stage_training:
@@ -27,7 +27,7 @@ loss:
   distance_weight: 0.0  # 不使用距离约束
 
 hard_negative:
-  type: "bm25_static"  # 仅使用DPR预存的难负例
+  type: "bm25_static"
   num_negatives: 7
 
 index:

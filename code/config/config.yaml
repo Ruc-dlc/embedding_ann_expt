@@ -3,7 +3,7 @@
 
 # 模型配置
 model:
-  encoder_name: "bert-base-uncased"
+  encoder_name: "./local_model_backbone"
   embedding_dim: 768
   pooling_type: "cls"  # cls, mean, max
   normalize: true
@@ -13,12 +13,18 @@ model:
 training:
   batch_size: 128
   learning_rate: 2e-5
-  encoder_learning_rate: 1e-5  # BERT backbone使用更小学习率
+  encoder_learning_rate: 2e-5  # 与DPR论文一致，统一使用2e-5
   warmup_steps: 1000
   max_grad_norm: 1.0
-  gradient_accumulation_steps: 1
+  gradient_accumulation_steps: 4  # Stage2/3有7 hard neg，物理batch=32×4=有效batch128
   fp16: true
   seed: 42
+  weight_decay: 0.01
+  early_stopping:
+    enabled: true
+    patience: 5       # 三阶段模型容忍5个epoch无改善；Baseline训练使用patience=3
+    monitor: eval_loss
+    mode: min
 
 # 三阶段训练配置
 three_stage_training:
