@@ -1,35 +1,39 @@
-# DACL-DR 运行环境配置
+# DACL-DR 运行环境配置（GPU版）
 # 使用方法: conda env create -f environment.yml
 # 激活环境: conda activate dacl-dr
+# 适配硬件: NVIDIA RTX A6000 48GB, CUDA Driver ≥ 12.1
 
 name: dacl-dr
 channels:
   - pytorch
+  - nvidia
   - conda-forge
   - defaults
 
 dependencies:
   - python=3.10
+
+  # PyTorch GPU版（CUDA 12.1，兼容CUDA 12.x驱动）
   - pytorch=2.1
   - torchvision
   - torchaudio
-  - cpuonly  # CPU版本PyTorch，如需GPU请替换为对应cuda版本
+  - pytorch-cuda=12.1
+
+  # 向量检索（GPU版，含CPU全部功能，HNSW+Flat均可用）
+  - faiss-gpu
 
   # 数据处理
   - numpy>=1.24
   - scipy>=1.10
   - pandas>=2.0
 
-  # NLP
+  # 工具
   - pip
 
   - pip:
     # Hugging Face
     - transformers>=4.35
     - tokenizers>=0.15
-
-    # 向量检索（仅CPU版本）
-    - faiss-cpu>=1.7.4
 
     # 评估与分析
     - scikit-learn>=1.3
@@ -42,6 +46,9 @@ dependencies:
     # 配置与工具
     - pyyaml>=6.0
     - tqdm>=4.65
+
+    # 测试
+    - pytest>=7.0
 
     # 可选：高级可视化
     # - umap-learn>=0.5
