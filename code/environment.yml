@@ -31,9 +31,8 @@ dependencies:
   - pip
 
   - pip:
-    # Hugging Face
-    - transformers>=4.35
-    - tokenizers>=0.15
+    - transformers>=4.35,<5.0
+    - tokenizers>=0.15,<0.22
 
     # 评估与分析
     - scikit-learn>=1.3
