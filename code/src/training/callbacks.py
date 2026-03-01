@@ -83,8 +83,8 @@ class CheckpointCallback(TrainingCallback):
         save_steps: int = 1000,
         save_total_limit: int = 3,
         save_best_only: bool = False,
-        monitor: str = "eval_loss",
-        mode: str = "min"
+        monitor: str = "eval_recall@5",
+        mode: str = "max"
     ):
         self.save_dir = Path(save_dir)
         self.save_dir.mkdir(parents=True, exist_ok=True)
@@ -279,8 +279,8 @@ class EarlyStoppingCallback(TrainingCallback):
     def __init__(
         self,
         patience: int = 3,
-        monitor: str = "eval_loss",
-        mode: str = "min",
+        monitor: str = "eval_recall@5",
+        mode: str = "max",
         min_delta: float = 0.0
     ):
         self.patience = patience

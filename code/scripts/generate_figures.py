@@ -3,7 +3,7 @@
 """
 生成论文图表脚本
 
-严格按照论文第五章的12张数据驱动图生成：
+严格按照论文第五章的11张数据驱动图生成：
 
 §5.2 混合权重实验:
   图1: Recall/MRR/NDCG vs w（fig:w_retrieval_curves）
@@ -16,14 +16,13 @@
 
 §5.4 ANN搜索效率:
   图6: Recall@100 vs ef_search（fig:recall_vs_ef）
-  图7: Latency vs ef_search（fig:latency_vs_ef）
-  图8: Recall@100 vs Visited Nodes（fig:recall_vs_visited）
+  图7: Recall@100 vs Visited Nodes（fig:recall_vs_visited）
 
 §5.5 消融实验:
-  图9: 消融 Pos Mean 柱状图（fig:ablation_pos_mean）
-  图10: 消融 Alignment-Uniformity 对比（fig:ablation_align_uni）
-  图11: 消融 Recall vs ef_search 曲线（fig:ablation_recall_ef）
-  图12: 消融 Visited Nodes 柱状图（fig:ablation_visited）
+  图8: 消融 Pos Mean 柱状图（fig:ablation_pos_mean）
+  图9: 消融 Alignment-Uniformity 对比（fig:ablation_align_uni）
+  图10: 消融 Recall vs ef_search 曲线（fig:ablation_recall_ef）
+  图11: 消融 Visited Nodes 柱状图（fig:ablation_visited）
 
 用法:
     python scripts/generate_figures.py --results_dir results/ --output_dir figures/
@@ -478,49 +477,9 @@ def generate_fig6_recall_vs_ef(results: dict, output_path: str, fmt: str = "pdf"
 
 
 # ============================================================
-# 图7: Latency vs ef_search（§5.4 fig:latency_vs_ef）
+# 图7: Recall@100 vs Visited Nodes（§5.4 fig:recall_vs_visited）
 # ============================================================
-def generate_fig7_latency_vs_ef(results: dict, output_path: str, fmt: str = "pdf"):
-    """
-    生成Latency随ef_search变化的曲线
-    """
-    import matplotlib.pyplot as plt
-
-    logger.info(f"[图7] 生成 Latency vs ef_search -> {output_path}")
-
-    if 'ef_sensitivity' not in results:
-        logger.warning("[图7] 未找到ef敏感度数据，跳过")
-        return
-
-    data = results['ef_sensitivity']
-    fig, ax = plt.subplots(figsize=(8, 6))
-
-    colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:brown']
-    markers = ['o', 's', 'D', '^', 'v', 'P']
-
-    for idx, (method_name, ef_data) in enumerate(data.items()):
-        ef_vals = sorted([int(k) for k in ef_data.keys()])
-        latencies = [ef_data[str(ef)]['latency_ms'] for ef in ef_vals]
-
-        ax.plot(ef_vals, latencies, f'{markers[idx % len(markers)]}-',
-                label=method_name, color=colors[idx % len(colors)],
-                linewidth=2, markersize=8)
-
-    ax.set_xlabel("ef_search", fontsize=12)
-    ax.set_ylabel("Latency (ms)", fontsize=12)
-    ax.set_title("Latency vs ef_search", fontsize=14)
-    ax.legend(fontsize=10)
-    ax.grid(True, alpha=0.3)
-
-    plt.tight_layout()
-    fig.savefig(output_path, format=fmt, dpi=300, bbox_inches='tight')
-    plt.close(fig)
-
-
-# ============================================================
-# 图8: Recall@100 vs Visited Nodes（§5.4 fig:recall_vs_visited）
-# ============================================================
-def generate_fig8_recall_vs_visited(results: dict, output_path: str, fmt: str = "pdf"):
+def generate_fig7_recall_vs_visited(results: dict, output_path: str, fmt: str = "pdf"):
     """
     生成Recall@100与Visited Nodes的关系曲线
 
@@ -528,10 +487,10 @@ def generate_fig8_recall_vs_visited(results: dict, output_path: str, fmt: str = 
     """
     import matplotlib.pyplot as plt
 
-    logger.info(f"[图8] 生成 Recall vs Visited Nodes -> {output_path}")
+    logger.info(f"[图7] 生成 Recall vs Visited Nodes -> {output_path}")
 
     if 'ef_sensitivity' not in results:
-        logger.warning("[图8] 未找到ef敏感度数据，跳过")
+        logger.warning("[图7] 未找到ef敏感度数据，跳过")
         return
 
     data = results['ef_sensitivity']
@@ -561,9 +520,9 @@ def generate_fig8_recall_vs_visited(results: dict, output_path: str, fmt: str = 
 
 
 # ============================================================
-# 图9: 消融 Pos Mean 柱状图（§5.5 fig:ablation_pos_mean）
+# 图8: 消融 Pos Mean 柱状图（§5.5 fig:ablation_pos_mean）
 # ============================================================
-def generate_fig9_ablation_pos_mean(results: dict, output_path: str, fmt: str = "pdf"):
+def generate_fig8_ablation_pos_mean(results: dict, output_path: str, fmt: str = "pdf"):
     """
     生成消融实验正样本平均相似度（Pos Mean）对比柱状图
 
@@ -571,10 +530,10 @@ def generate_fig9_ablation_pos_mean(results: dict, output_path: str, fmt: str = 
     """
     import matplotlib.pyplot as plt
 
-    logger.info(f"[图9] 生成消融 Pos Mean 柱状图 -> {output_path}")
+    logger.info(f"[图8] 生成消融 Pos Mean 柱状图 -> {output_path}")
 
     if 'ablation_representation' not in results:
-        logger.warning("[图9] 未找到消融表示数据，跳过")
+        logger.warning("[图8] 未找到消融表示数据，跳过")
         return
 
     data = results['ablation_representation']
@@ -598,9 +557,9 @@ def generate_fig9_ablation_pos_mean(results: dict, output_path: str, fmt: str = 
 
 
 # ============================================================
-# 图10: 消融 Alignment-Uniformity 对比（§5.5 fig:ablation_align_uni）
+# 图9: 消融 Alignment-Uniformity 对比（§5.5 fig:ablation_align_uni）
 # ============================================================
-def generate_fig10_ablation_align_uni(results: dict, output_path: str, fmt: str = "pdf"):
+def generate_fig9_ablation_align_uni(results: dict, output_path: str, fmt: str = "pdf"):
     """
     生成消融实验Alignment和Uniformity对比图
 
@@ -608,10 +567,10 @@ def generate_fig10_ablation_align_uni(results: dict, output_path: str, fmt: str 
     """
     import matplotlib.pyplot as plt
 
-    logger.info(f"[图10] 生成消融 A-U 对比 -> {output_path}")
+    logger.info(f"[图9] 生成消融 A-U 对比 -> {output_path}")
 
     if 'ablation_representation' not in results:
-        logger.warning("[图10] 未找到消融表示数据，跳过")
+        logger.warning("[图9] 未找到消融表示数据，跳过")
         return
 
     data = results['ablation_representation']
@@ -646,18 +605,18 @@ def generate_fig10_ablation_align_uni(results: dict, output_path: str, fmt: str 
 
 
 # ============================================================
-# 图11: 消融 Recall vs ef_search 曲线（§5.5 fig:ablation_recall_ef）
+# 图10: 消融 Recall vs ef_search 曲线（§5.5 fig:ablation_recall_ef）
 # ============================================================
-def generate_fig11_ablation_recall_ef(results: dict, output_path: str, fmt: str = "pdf"):
+def generate_fig10_ablation_recall_ef(results: dict, output_path: str, fmt: str = "pdf"):
     """
     生成消融实验四组模型在不同ef_search下的Recall@10曲线
     """
     import matplotlib.pyplot as plt
 
-    logger.info(f"[图11] 生成消融 Recall vs ef -> {output_path}")
+    logger.info(f"[图10] 生成消融 Recall vs ef -> {output_path}")
 
     if 'ablation_ef_sensitivity' not in results:
-        logger.warning("[图11] 未找到消融ef敏感度数据，跳过")
+        logger.warning("[图10] 未找到消融ef敏感度数据，跳过")
         return
 
     data = results['ablation_ef_sensitivity']
@@ -686,9 +645,9 @@ def generate_fig11_ablation_recall_ef(results: dict, output_path: str, fmt: str 
 
 
 # ============================================================
-# 图12: 消融 Visited Nodes 柱状图（§5.5 fig:ablation_visited）
+# 图11: 消融 Visited Nodes 柱状图（§5.5 fig:ablation_visited）
 # ============================================================
-def generate_fig12_ablation_visited(results: dict, output_path: str, fmt: str = "pdf"):
+def generate_fig11_ablation_visited(results: dict, output_path: str, fmt: str = "pdf"):
     """
     生成消融实验平均访问节点数对比柱状图
 
@@ -696,10 +655,10 @@ def generate_fig12_ablation_visited(results: dict, output_path: str, fmt: str = 
     """
     import matplotlib.pyplot as plt
 
-    logger.info(f"[图12] 生成消融 Visited Nodes 柱状图 -> {output_path}")
+    logger.info(f"[图11] 生成消融 Visited Nodes 柱状图 -> {output_path}")
 
     if 'ablation_efficiency' not in results:
-        logger.warning("[图12] 未找到消融效率数据，跳过")
+        logger.warning("[图11] 未找到消融效率数据，跳过")
         return
 
     data = results['ablation_efficiency']
@@ -734,12 +693,11 @@ FIGURE_GENERATORS = {
     '4': ('alignment_uniformity_scatter', generate_fig4_alignment_uniformity_scatter),
     '5': ('tsne_visualization', generate_fig5_tsne),
     '6': ('recall_vs_ef', generate_fig6_recall_vs_ef),
-    '7': ('latency_vs_ef', generate_fig7_latency_vs_ef),
-    '8': ('recall_vs_visited', generate_fig8_recall_vs_visited),
-    '9': ('ablation_pos_mean', generate_fig9_ablation_pos_mean),
-    '10': ('ablation_align_uni', generate_fig10_ablation_align_uni),
-    '11': ('ablation_recall_ef', generate_fig11_ablation_recall_ef),
-    '12': ('ablation_visited', generate_fig12_ablation_visited),
+    '7': ('recall_vs_visited', generate_fig7_recall_vs_visited),
+    '8': ('ablation_pos_mean', generate_fig8_ablation_pos_mean),
+    '9': ('ablation_align_uni', generate_fig9_ablation_align_uni),
+    '10': ('ablation_recall_ef', generate_fig10_ablation_recall_ef),
+    '11': ('ablation_visited', generate_fig11_ablation_visited),
 }
 
 
@@ -748,7 +706,7 @@ def main():
     args = parse_args()
 
     logger.info("=" * 50)
-    logger.info("论文图表生成（严格对应第五章12张图）")
+    logger.info("论文图表生成（严格对应第五章11张图）")
     logger.info("=" * 50)
 
     # 创建输出目录

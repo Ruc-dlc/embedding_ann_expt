@@ -124,7 +124,7 @@ def build_dev_dataset(data_dir: str, num_hard_negatives: int):
         logger.info(f"TriviaQA验证集: {len(trivia_dev)} 条")
 
     if not datasets:
-        logger.warning("未找到验证集文件，将无法基于dev_loss保存最佳模型")
+        logger.warning("未找到验证集文件，将无法基于Recall@5保存最佳模型")
         return None
 
     if len(datasets) == 1:
@@ -217,10 +217,10 @@ def main():
     callbacks = [
         LoggingCallback(logging_steps=100),
         CheckpointCallback(save_dir=args.output_dir, save_steps=2000),
-        EarlyStoppingCallback(patience=3, monitor="eval_loss", mode="min"),
+        EarlyStoppingCallback(patience=3, monitor="eval_recall@5", mode="max"),
     ]
 
-    # 训练器（传入eval_dataloader，实现基于dev_loss的最佳模型保存）
+    # 训练器（传入eval_dataloader，实现基于dev集Recall@5的最佳模型保存）
     trainer = Trainer(
         model=model,
         args=training_args,

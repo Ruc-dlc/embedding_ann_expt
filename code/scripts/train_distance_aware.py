@@ -4,9 +4,9 @@
 距离感知模型训练脚本
 
 训练距离感知对比学习模型，使用三阶段训练策略：
-- 阶段1（预热）: 纯InfoNCE，distance_weight=0
-- 阶段2（距离引入）: 引入距离约束，使用DPR预存难负例
-- 阶段3（联合优化）: 完整联合损失 + 动态难负例
+- 阶段1（In-Batch负例）: 使用指定的distance_weight
+- 阶段2（BM25难负例）: 使用DPR预存难负例
+- 阶段3（模型难负例）: 使用训练数据文档池挖掘的难负例
 
 支持通过 --distance_weight 指定不同w值进行消融实验。
 
@@ -28,7 +28,7 @@ import torch
 from transformers import AutoTokenizer
 
 from src.models.bi_encoder import BiEncoder
-from src.losses.combined_loss import ScheduledCombinedLoss
+from src.losses.combined_loss import CombinedLoss
 from src.data.dataset import NQDataset, TriviaQADataset, ConcatRetrievalDataset
 from src.data.dataloader import ThreeStageDataLoader
 from src.training.trainer import Trainer
@@ -58,15 +58,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--distance_weight", type=float, default=0.6,
                         help="距离损失权重w（消融实验可设 0/0.2/0.4/0.6/0.8/1.0）")
     parser.add_argument("--stage1_epochs", type=int, default=4,
-                        help="阶段1（预热）轮数")
+                        help="阶段1（In-Batch负例）轮数")
     parser.add_argument("--stage2_epochs", type=int, default=8,
-                        help="阶段2（距离引入）轮数")
+                        help="阶段2（BM25难负例）轮数")
     parser.add_argument("--stage3_epochs", type=int, default=12,
-                        help="阶段3（联合优化）轮数")
-    parser.add_argument("--warmup_steps", type=int, default=1000,
-                        help="损失权重预热步数")
-    parser.add_argument("--rampup_steps", type=int, default=5000,
-                        help="损失权重增长步数")
+                        help="阶段3（模型难负例）轮数")
     parser.add_argument("--max_query_length", type=int, default=64,
                         help="查询最大token长度")
     parser.add_argument("--max_doc_length", type=int, default=256,
@@ -134,7 +130,7 @@ def build_dev_dataset(data_dir: str, num_hard_negatives: int):
         logger.info(f"TriviaQA验证集: {len(trivia_dev)} 条")
 
     if not datasets:
-        logger.warning("未找到验证集文件，将无法基于dev_loss保存最佳模型")
+        logger.warning("未找到验证集文件，将无法基于Recall@5保存最佳模型")
         return None
 
     if len(datasets) == 1:
@@ -155,9 +151,9 @@ def main():
     logger.info("=" * 60)
     logger.info("训练距离感知对比学习模型（三阶段策略）")
     logger.info(f"  距离权重 w = {args.distance_weight}")
-    logger.info(f"  阶段1: {args.stage1_epochs} epochs（纯InfoNCE预热）")
-    logger.info(f"  阶段2: {args.stage2_epochs} epochs（引入距离约束）")
-    logger.info(f"  阶段3: {args.stage3_epochs} epochs（联合优化）")
+    logger.info(f"  阶段1: {args.stage1_epochs} epochs（In-Batch负例）")
+    logger.info(f"  阶段2: {args.stage2_epochs} epochs（BM25难负例）")
+    logger.info(f"  阶段3: {args.stage3_epochs} epochs（模型难负例）")
     logger.info(f"  总计: {total_epochs} epochs")
     logger.info("=" * 60)
 
@@ -209,13 +205,10 @@ def main():
         normalize=True
     )
 
-    # 构建带调度的联合损失函数
-    loss_fn = ScheduledCombinedLoss(
+    # 构建联合损失函数（w全程恒定，三阶段只改变负例来源）
+    loss_fn = CombinedLoss(
         temperature=args.temperature,
-        initial_distance_weight=0.0,
-        final_distance_weight=args.distance_weight,
-        warmup_steps=args.warmup_steps,
-        rampup_steps=args.rampup_steps,
+        distance_weight=args.distance_weight,  # w全程恒定，三阶段只改变负例来源
         use_in_batch_negatives=True
     )
 
@@ -227,6 +220,7 @@ def main():
         learning_rate=args.learning_rate,
         temperature=args.temperature,
         distance_weight=args.distance_weight,
+        data_dir=args.data_dir,
         fp16=args.fp16,
         enable_three_stage=True,
         stage1_epochs=args.stage1_epochs,
@@ -240,16 +234,17 @@ def main():
     callbacks = [
         LoggingCallback(logging_steps=100),
         CheckpointCallback(save_dir=args.output_dir, save_steps=2000),
-        EarlyStoppingCallback(patience=5, monitor="eval_loss", mode="min"),
+        EarlyStoppingCallback(patience=5, monitor="eval_recall@5", mode="max"),
     ]
 
-    # 训练器（传入eval_dataloader，实现基于dev_loss的最佳模型保存）
+    # 训练器（传入eval_dataloader + tokenizer，实现基于dev集Recall@5的最佳模型保存 + Stage 3自动挖掘）
     trainer = Trainer(
         model=model,
         args=training_args,
         train_dataloader=train_dataloader,
         eval_dataloader=eval_dataloader,
         loss_fn=loss_fn,
+        tokenizer=tokenizer,
         callbacks=callbacks
     )
 

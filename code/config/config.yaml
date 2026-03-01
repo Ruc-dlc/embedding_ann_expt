@@ -23,15 +23,15 @@ training:
   early_stopping:
     enabled: true
     patience: 5       # 三阶段模型容忍5个epoch无改善；Baseline训练使用patience=3
-    monitor: eval_loss
-    mode: min
+    monitor: eval_recall@5
+    mode: max
 
-# 三阶段训练配置
+# 三阶段训练配置（三阶段只改变负例来源，w全程恒定）
 three_stage_training:
   enabled: true
-  stage1_epochs: 4    # 纯InfoNCE热身
-  stage2_epochs: 8    # 引入距离约束
-  stage3_epochs: 12   # 联合优化+动态难负例
+  stage1_epochs: 4    # In-Batch负例
+  stage2_epochs: 8    # BM25难负例
+  stage3_epochs: 12   # 模型难负例
 
 # 损失函数配置
 loss:
@@ -42,7 +42,9 @@ loss:
 hard_negative:
   num_negatives: 7
   bm25_candidates: 100
-  refresh_interval: 1000  # 动态挖掘刷新间隔（步数）
+  mining_source: "training_pool"  # 从训练数据文档池挖掘
+  mining_top_k: 200
+  mining_keep: 50
 
 # 索引配置
 index:

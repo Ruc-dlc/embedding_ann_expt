@@ -88,15 +88,31 @@ class TrainingArguments:
         metadata={"help": "距离约束损失权重w"}
     )
     
+    # 数据目录
+    data_dir: str = field(
+        default="data_set/",
+        metadata={"help": "数据集根目录（Trainer在Stage 2→3自动挖掘时需要定位训练JSON）"}
+    )
+    
     # 难负例配置
     num_negatives: int = field(
         default=7,
         metadata={"help": "每个样本的负例数量"}
     )
     
-    hard_negative_refresh_steps: int = field(
-        default=1000,
-        metadata={"help": "难负例刷新间隔（步数）"}
+    mining_batch_size: int = field(
+        default=256,
+        metadata={"help": "Stage 3 难负例挖掘时的编码批次大小"}
+    )
+    
+    mining_top_k: int = field(
+        default=200,
+        metadata={"help": "Stage 3 挖掘时每个查询检索的候选数量"}
+    )
+    
+    mining_num_negatives: int = field(
+        default=50,
+        metadata={"help": "Stage 3 挖掘时每个查询保留的难负例数量"}
     )
     
     # 三阶段训练
@@ -107,17 +123,17 @@ class TrainingArguments:
     
     stage1_epochs: int = field(
         default=4,
-        metadata={"help": "第一阶段（预热）轮数"}
+        metadata={"help": "第一阶段（In-Batch负例）轮数"}
     )
     
     stage2_epochs: int = field(
         default=8,
-        metadata={"help": "第二阶段（距离引入）轮数"}
+        metadata={"help": "第二阶段（BM25难负例）轮数"}
     )
     
     stage3_epochs: int = field(
         default=12,
-        metadata={"help": "第三阶段（联合优化）轮数"}
+        metadata={"help": "第三阶段（模型难负例）轮数"}
     )
     
     # 保存和日志

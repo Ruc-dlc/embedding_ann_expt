@@ -115,7 +115,7 @@ class TestHardNegativeMiner:
         pass
     
     def test_dynamic_mining(self):
-        """测试动态难负例挖掘"""
+        """测试模型难负例挖掘"""
         # TODO: 实现测试
         pass
 

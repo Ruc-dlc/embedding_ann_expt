@@ -2,15 +2,16 @@
 三阶段训练数据加载器
 
 本模块实现支持三阶段训练策略的数据加载器：
-- 阶段1（预热）: 仅使用In-Batch负例，纯InfoNCE训练
-- 阶段2（距离引入）: 使用DPR预挖掘的难负例 + In-Batch负例
-- 阶段3（联合优化）: 使用动态难负例 + In-Batch负例
+- 阶段1（In-Batch负例）: 仅使用In-Batch负例
+- 阶段2（BM25难负例）: 使用DPR预挖掘的BM25难负例 + In-Batch负例
+- 阶段3（模型难负例）: 使用训练数据文档池挖掘的模型难负例 + In-Batch负例
 
 论文章节：第4章 4.3节 - 三阶段训练策略
 """
 
 import logging
 import random
+from pathlib import Path
 from typing import Dict, List, Optional, Iterator, Any
 
 import torch
@@ -125,10 +126,10 @@ class ThreeStageDataLoader:
     """
     三阶段训练数据加载器
 
-    根据训练阶段动态调整数据加载策略：
+    根据训练阶段切换数据加载策略：
     - 阶段1: 仅返回 query + pos_doc（In-Batch负例由损失函数处理）
-    - 阶段2: 返回 query + pos_doc + DPR预存难负例
-    - 阶段3: 返回 query + pos_doc + 动态难负例
+    - 阶段2: 返回 query + pos_doc + DPR预存BM25难负例
+    - 阶段3: 返回 query + pos_doc + 训练数据文档池挖掘的模型难负例
 
     参数:
         dataset: 训练数据集
@@ -207,24 +208,41 @@ class ThreeStageDataLoader:
             f"包含难负例={'是' if include_hard_negatives else '否'}"
         )
 
-    def refresh_hard_negatives(self, encoder: Any) -> None:
+    def reload_with_mined_data(self, mined_files: list) -> None:
         """
-        刷新动态难负例（阶段3使用）
+        使用挖掘结果重新加载数据集（Stage 3 使用）
 
-        使用当前编码器重新编码并检索最新的难负例。
-        该方法由 HardNegativeMiner 配合使用。
+        在 Stage 2→3 过渡时，Trainer 自动调用 mine_hard_negatives 挖掘模型难负例，
+        然后调用本方法将挖掘结果加载为新数据集，替换原始训练数据。
 
         参数:
-            encoder: 当前的BiEncoder模型
+            mined_files: 挖掘结果 JSON 文件路径列表
+                         （如 ['checkpoints/.../nq-train-mined.json', '.../trivia-train-mined.json']）
         """
-        if self.current_stage < 3:
-            logger.warning("仅阶段3支持动态难负例刷新，当前为阶段%d", self.current_stage)
-            return
+        from .dataset import NQDataset, TriviaQADataset, ConcatRetrievalDataset
 
-        logger.info("开始刷新动态难负例...")
-        # 动态难负例挖掘在 HardNegativeMiner 中实现，
-        # 此处预留接口，训练时由 Trainer 协调调用
-        pass
+        logger.info(f"加载挖掘的模型难负例数据: {mined_files}")
+
+        datasets = []
+        for fpath in mined_files:
+            fname = Path(fpath).name.lower()
+            if 'nq' in fname:
+                ds = NQDataset(fpath, num_hard_negatives=7)
+            elif 'trivia' in fname:
+                ds = TriviaQADataset(fpath, num_hard_negatives=7)
+            else:
+                # 默认使用 NQDataset（通用 DPR 格式兼容）
+                ds = NQDataset(fpath, num_hard_negatives=7)
+            datasets.append(ds)
+            logger.info(f"  已加载: {fpath} ({len(ds)} 条样本)")
+
+        if len(datasets) == 1:
+            self.dataset = datasets[0]
+        else:
+            self.dataset = ConcatRetrievalDataset(datasets)
+
+        logger.info(f"Stage 3 数据集重载完成，总样本数: {len(self.dataset)}")
+        self._rebuild_dataloader()
 
     def __iter__(self) -> Iterator[Dict[str, torch.Tensor]]:
         """迭代数据批次"""

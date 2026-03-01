@@ -2,16 +2,19 @@
 训练器主类
 
 本模块实现完整的训练流程，包括：
-- 三阶段训练策略（预热→距离引入→联合优化）
+- 三阶段训练策略（In-Batch负例→BM25难负例→模型难负例）
 - AdamW优化器（BERT层与其他层可设不同学习率）
 - 梯度累积与梯度裁剪
 - FP16混合精度训练
+- NaN检测与梯度跳过（防止FP16溢出导致训练崩溃）
 - 检查点保存与恢复
 
 论文章节：第4章 4.3节 - 训练流程
 """
 
 import logging
+import math
+import time
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
@@ -37,7 +40,8 @@ class Trainer:
         args: 训练参数
         train_dataloader: 训练数据加载器（ThreeStageDataLoader）
         eval_dataloader: 验证数据加载器（可选）
-        loss_fn: 损失函数（CombinedLoss 或 ScheduledCombinedLoss）
+        loss_fn: 损失函数（CombinedLoss）
+        tokenizer: HuggingFace tokenizer（Stage 2→3 自动挖掘时需要）
         optimizer: 优化器（None则自动创建AdamW）
         scheduler: 学习率调度器（None则自动创建）
         callbacks: 训练回调列表
@@ -50,6 +54,7 @@ class Trainer:
         train_dataloader: Any,
         eval_dataloader: Optional[Any] = None,
         loss_fn: Optional[nn.Module] = None,
+        tokenizer: Optional[Any] = None,
         optimizer: Optional[Any] = None,
         scheduler: Optional[Any] = None,
         callbacks: Optional[List[TrainingCallback]] = None
@@ -59,6 +64,7 @@ class Trainer:
         self.train_dataloader = train_dataloader
         self.eval_dataloader = eval_dataloader
         self.loss_fn = loss_fn
+        self.tokenizer = tokenizer
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.callbacks = callbacks or []
@@ -161,7 +167,7 @@ class Trainer:
 
         最佳模型保存策略（业界标准做法）：
         - 若提供了 eval_dataloader（dev集），则每个epoch末在dev集上评估，
-          基于 dev_loss 保存最佳模型权重，防止过拟合。
+          基于 Recall@5 保存最佳模型权重，防止过拟合。
         - 若未提供 eval_dataloader，则退化为基于 train_loss 保存。
         - 最佳模型同时保存为 checkpoint（含optimizer状态，可恢复训练）
           和 BiEncoder pretrained 格式（可直接加载用于推理）。
@@ -172,7 +178,7 @@ class Trainer:
         logger.info(f"开始训练，共 {self.args.num_epochs} 个epoch")
         logger.info(f"设备: {self.device}")
         if self.eval_dataloader is not None:
-            logger.info("已检测到验证集，将基于 dev_loss 保存最佳模型（防过拟合）")
+            logger.info("已检测到验证集，将基于 Recall@5 保存最佳模型（防过拟合）")
         else:
             logger.warning(
                 "⚠️ 未提供验证集(eval_dataloader=None)，"
@@ -182,7 +188,7 @@ class Trainer:
 
         self._call_callbacks("on_train_begin")
 
-        best_metric = float('inf')
+        best_metric = 0.0  # Recall@5 越大越好
         best_epoch = 0
         no_improve_count = 0
 
@@ -207,12 +213,18 @@ class Trainer:
                 train_metrics=train_metrics, eval_metrics=eval_metrics
             )
 
-            # 确定当前epoch的监控指标（优先使用dev_loss）
-            current_metric = eval_metrics.get('eval_loss', train_metrics.get('loss', 0))
-            metric_source = "dev_loss" if eval_metrics else "train_loss"
+            # 确定当前epoch的监控指标（优先使用dev集Recall@5）
+            current_metric = eval_metrics.get('eval_recall@5', 0.0)
+            metric_source = "dev_recall@5" if eval_metrics else "train_loss"
 
-            # 基于指标保存最佳模型
-            if current_metric < best_metric:
+            # 跳过NaN的epoch，不更新best_metric
+            if math.isnan(current_metric) or math.isinf(current_metric):
+                no_improve_count += 1
+                logger.warning(
+                    f"Epoch {epoch}: 监控指标为NaN/Inf，跳过最佳模型更新 "
+                    f"(EarlyStopping counter: {no_improve_count})"
+                )
+            elif current_metric > best_metric:
                 best_metric = current_metric
                 best_epoch = epoch
                 no_improve_count = 0
@@ -260,7 +272,7 @@ class Trainer:
         return {
             "final_epoch": self.current_epoch,
             "best_epoch": best_epoch,
-            "best_eval_loss": best_metric,
+            "best_recall@5": best_metric,
         }
 
     def _train_epoch(self) -> Dict[str, float]:
@@ -314,8 +326,9 @@ class Trainer:
         1. 将batch移动到设备
         2. 编码query和document获取向量
         3. 计算联合损失
-        4. 梯度裁剪 + 反向传播
-        5. 更新参数
+        4. NaN检测：若loss为NaN，跳过该step的梯度更新
+        5. 梯度裁剪 + 反向传播
+        6. 更新参数
 
         参数:
             batch: 包含 query/pos_doc/neg_doc 的输入张量字典
@@ -362,6 +375,15 @@ class Trainer:
             # 计算损失
             loss, loss_dict = self.loss_fn(query_emb, pos_doc_emb, neg_doc_embs)
 
+        # NaN检测：若loss为NaN/Inf，跳过该step的梯度更新，防止污染模型权重
+        if torch.isnan(loss) or torch.isinf(loss):
+            logger.warning(
+                f"Step {self.global_step}: 检测到loss={loss.item()}，"
+                f"跳过该step的梯度更新"
+            )
+            self.optimizer.zero_grad()
+            return float('nan'), loss_dict
+
         # 梯度缩放（梯度累积）
         loss = loss / self.args.gradient_accumulation_steps
 
@@ -391,20 +413,21 @@ class Trainer:
         if self.scheduler is not None:
             self.scheduler.step()
 
-        # 更新ScheduledCombinedLoss的权重步数（如果使用）
-        if hasattr(self.loss_fn, 'step'):
-            self.loss_fn.step()
-
         return loss.item() * self.args.gradient_accumulation_steps, loss_dict
 
     def _update_training_stage(self, epoch: int) -> None:
         """
         根据epoch更新三阶段训练的当前阶段
 
-        阶段划分：
-        - 阶段1: epoch < stage1_epochs（纯InfoNCE预热）
-        - 阶段2: stage1_epochs <= epoch < stage1_epochs + stage2_epochs（引入距离约束）
-        - 阶段3: epoch >= stage1_epochs + stage2_epochs（联合优化+动态难负例）
+        阶段划分（三阶段只改变负例来源，w全程恒定）：
+        - 阶段1: epoch < stage1_epochs（In-Batch负例）
+        - 阶段2: stage1_epochs <= epoch < stage1_epochs + stage2_epochs（BM25难负例）
+        - 阶段3: epoch >= stage1_epochs + stage2_epochs（模型难负例）
+
+        Stage 2→3 过渡时自动执行难负例挖掘：
+        1. 保存 Stage 2 模型
+        2. 使用当前模型编码训练数据文档池，挖掘模型难负例
+        3. 将挖掘结果加载为新训练数据
         """
         if not self.args.enable_three_stage:
             return
@@ -421,18 +444,104 @@ class Trainer:
 
         if new_stage != self.current_stage:
             logger.info(f"训练阶段切换: {self.current_stage} -> {new_stage} (epoch={epoch})")
+
+            # Stage 2→3 过渡：自动挖掘模型难负例
+            if self.current_stage == 2 and new_stage == 3:
+                self._run_stage3_mining()
+
             self.current_stage = new_stage
 
-            # 切换数据加载器阶段
+            # 切换数据加载器阶段（负例来源切换）
             if hasattr(self.train_dataloader, 'set_stage'):
                 self.train_dataloader.set_stage(new_stage)
 
-            # 阶段1: 距离权重为0
-            if new_stage == 1 and hasattr(self.loss_fn, 'set_distance_weight'):
-                self.loss_fn.set_distance_weight(0.0)
-            # 阶段2/3: 使用配置的距离权重
-            elif new_stage >= 2 and hasattr(self.loss_fn, 'set_distance_weight'):
-                self.loss_fn.set_distance_weight(self.args.distance_weight)
+    def _run_stage3_mining(self) -> None:
+        """
+        Stage 2→3 过渡时自动执行难负例挖掘
+
+        流程：
+        1. 保存 Stage 2 模型到 {output_dir}/stage2_model/
+        2. 对 NQ 和 TriviaQA 训练数据分别执行挖掘
+        3. 将挖掘结果加载到 train_dataloader 中
+        """
+        import sys
+        sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+        from scripts.mine_hard_negatives import run_mining
+
+        logger.info("=" * 60)
+        logger.info("Stage 2→3 过渡：开始自动挖掘模型难负例")
+        logger.info("=" * 60)
+
+        mining_start = time.time()
+
+        # 1. 保存 Stage 2 模型
+        stage2_dir = Path(self.args.output_dir) / "stage2_model"
+        stage2_dir.mkdir(parents=True, exist_ok=True)
+        if hasattr(self.model, 'save_pretrained'):
+            self.model.save_pretrained(str(stage2_dir))
+        logger.info(f"Stage 2 模型已保存: {stage2_dir}")
+
+        # 2. 切换到 eval 模式执行挖掘
+        self.model.eval()
+
+        if self.tokenizer is None:
+            # 回退：从 train_dataloader 获取 tokenizer
+            self.tokenizer = getattr(self.train_dataloader, 'tokenizer', None)
+        if self.tokenizer is None:
+            logger.error("无法获取 tokenizer，跳过 Stage 3 挖掘！将继续使用 Stage 2 的 BM25 难负例。")
+            self.model.train()
+            return
+
+        data_dir = Path(self.args.data_dir)
+        mined_dir = Path(self.args.output_dir) / "mined_negatives"
+        mined_dir.mkdir(parents=True, exist_ok=True)
+
+        # 定位训练数据文件
+        train_files = []
+        nq_train = data_dir / "NQ" / "nq-train.json"
+        trivia_train = data_dir / "TriviaQA" / "trivia-train.json"
+
+        if nq_train.exists():
+            train_files.append((str(nq_train), str(mined_dir / "nq-train-mined.json")))
+        if trivia_train.exists():
+            train_files.append((str(trivia_train), str(mined_dir / "trivia-train-mined.json")))
+
+        if not train_files:
+            logger.error(f"未找到训练数据文件: {data_dir}，跳过 Stage 3 挖掘！")
+            self.model.train()
+            return
+
+        # 3. 对每个训练文件执行挖掘
+        mined_outputs = []
+        for train_file, output_file in train_files:
+            logger.info(f"挖掘: {train_file} -> {output_file}")
+            file_start = time.time()
+            output_path = run_mining(
+                encoder=self.model,
+                tokenizer=self.tokenizer,
+                train_file=train_file,
+                output_file=output_file,
+                batch_size=self.args.mining_batch_size,
+                max_doc_length=256,
+                max_query_length=64,
+                top_k=self.args.mining_top_k,
+                num_negatives=self.args.mining_num_negatives,
+            )
+            mined_outputs.append(output_path)
+            logger.info(f"  完成，耗时 {time.time() - file_start:.1f} 秒")
+
+        # 4. 加载挖掘结果替换训练数据
+        if hasattr(self.train_dataloader, 'reload_with_mined_data'):
+            self.train_dataloader.reload_with_mined_data(mined_outputs)
+
+        # 5. 恢复训练模式
+        self.model.train()
+
+        total_time = time.time() - mining_start
+        logger.info("=" * 60)
+        logger.info(f"Stage 3 难负例挖掘完成！总耗时 {total_time:.1f} 秒 ({total_time/60:.1f} 分钟)")
+        logger.info(f"挖掘结果: {mined_outputs}")
+        logger.info("=" * 60)
 
     def evaluate(self) -> Dict[str, float]:
         """
@@ -447,6 +556,8 @@ class Trainer:
         self.model.eval()
         total_loss = 0.0
         num_batches = 0
+        recall_hits = 0
+        recall_total = 0
 
         with torch.no_grad():
             for batch in self.eval_dataloader:
@@ -477,12 +588,41 @@ class Trainer:
                     ).view(bs, nn_, -1)
 
                 loss, _ = self.loss_fn(query_emb, pos_doc_emb, neg_doc_embs)
-                total_loss += loss.item()
-                num_batches += 1
+
+                # 跳过NaN的batch
+                if not (torch.isnan(loss) or torch.isinf(loss)):
+                    total_loss += loss.item()
+                    num_batches += 1
+
+                # Recall@5：候选池 = batch内所有pos_doc + neg_docs（如有）
+                batch_size = query_emb.size(0)
+                # query 与 batch 内所有 pos_doc 的相似度 [B, B]
+                sim_matrix = torch.mm(query_emb, pos_doc_emb.t())
+
+                if neg_doc_embs is not None:
+                    # query 与自己的 neg_docs 的相似度 [B, N]
+                    sim_neg = torch.bmm(
+                        query_emb.unsqueeze(1),
+                        neg_doc_embs.transpose(1, 2)
+                    ).squeeze(1)
+                    # 拼接：[B, B+N]，正例位置仍在 [0..B-1] 列
+                    sim_matrix = torch.cat([sim_matrix, sim_neg], dim=1)
+
+                # 对每个 query_i，检查 pos_doc_i（列索引=i）是否在 top-5
+                k = min(5, sim_matrix.size(1))
+                _, top_indices = sim_matrix.topk(k, dim=1)
+                for i in range(batch_size):
+                    if i in top_indices[i]:
+                        recall_hits += 1
+                    recall_total += 1
 
         avg_loss = total_loss / max(num_batches, 1)
-        logger.info(f"验证完成: eval_loss={avg_loss:.4f}")
-        return {"eval_loss": avg_loss}
+        recall_at_5 = recall_hits / max(recall_total, 1)
+        logger.info(
+            f"验证完成: eval_loss={avg_loss:.4f}, "
+            f"eval_recall@5={recall_at_5:.4f} ({recall_hits}/{recall_total})"
+        )
+        return {"eval_loss": avg_loss, "eval_recall@5": recall_at_5}
 
     def save_checkpoint(self, path: str) -> None:
         """

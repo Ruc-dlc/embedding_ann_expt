@@ -91,7 +91,7 @@ class CombinedLoss(nn.Module):
 
     def set_distance_weight(self, weight: float) -> None:
         """
-        设置距离损失权重，用于三阶段训练中动态调整
+        设置距离损失权重
 
         参数:
             weight: 新的权重值
@@ -106,77 +106,3 @@ class CombinedLoss(nn.Module):
             当前权重值
         """
         return self.distance_weight
-
-
-class ScheduledCombinedLoss(CombinedLoss):
-    """
-    带调度的联合损失函数
-
-    支持距离权重的动态调度，用于三阶段训练策略：
-    - 预热阶段：权重为0（纯InfoNCE）
-    - 增长阶段：权重线性增长
-    - 稳定阶段：使用最终权重
-
-    参数:
-        temperature: InfoNCE温度参数
-        initial_distance_weight: 初始距离损失权重
-        final_distance_weight: 最终距离损失权重
-        warmup_steps: 预热步数（权重为0）
-        rampup_steps: 权重增长步数
-        use_in_batch_negatives: 是否使用批内负例
-    """
-
-    def __init__(
-        self,
-        temperature: float = 0.05,
-        initial_distance_weight: float = 0.0,
-        final_distance_weight: float = 0.6,
-        warmup_steps: int = 1000,
-        rampup_steps: int = 5000,
-        use_in_batch_negatives: bool = True
-    ):
-        super().__init__(
-            temperature=temperature,
-            distance_weight=initial_distance_weight,
-            use_in_batch_negatives=use_in_batch_negatives
-        )
-
-        self.initial_distance_weight = initial_distance_weight
-        self.final_distance_weight = final_distance_weight
-        self.warmup_steps = warmup_steps
-        self.rampup_steps = rampup_steps
-        self.current_step = 0
-
-    def step(self) -> None:
-        """更新步数并调整权重"""
-        self.current_step += 1
-        self._update_weight()
-
-    def _update_weight(self) -> None:
-        """根据当前步数更新距离损失权重"""
-        if self.current_step < self.warmup_steps:
-            # 预热阶段：权重为0
-            self.distance_weight = 0.0
-        elif self.current_step < self.warmup_steps + self.rampup_steps:
-            # 增长阶段：线性增长
-            progress = (self.current_step - self.warmup_steps) / self.rampup_steps
-            self.distance_weight = self.initial_distance_weight + \
-                (self.final_distance_weight - self.initial_distance_weight) * progress
-        else:
-            # 稳定阶段：使用最终权重
-            self.distance_weight = self.final_distance_weight
-
-    def get_schedule_info(self) -> Dict[str, float]:
-        """
-        获取调度状态信息
-
-        返回:
-            调度状态字典
-        """
-        return {
-            'current_step': self.current_step,
-            'current_weight': self.distance_weight,
-            'warmup_steps': self.warmup_steps,
-            'rampup_steps': self.rampup_steps,
-            'final_weight': self.final_distance_weight
-        }

@@ -3,16 +3,14 @@
 """
 ef_search 敏感度扫参脚本
 
-对指定模型在不同 ef_search 值下评估 Recall@100、Latency、Visited Nodes，
+对指定模型在不同 ef_search 值下评估 Recall@100、Visited Nodes，
 产出论文第五章 §5.4 ANN搜索效率分析所需的全部数据。
 
 产出图表：
     - 表5.9 tab:ef_sensitivity — Recall@100随ef_search的变化
-    - 表5.10 tab:latency — 平均查询延迟随ef_search的变化
-    - 表5.11 tab:visited_nodes — 平均访问节点数随ef_search的变化
+    - 表5.10 tab:visited_nodes — 平均访问节点数随ef_search的变化
     - 图5.6 fig:recall_vs_ef — Recall@100 vs ef_search
-    - 图5.7 fig:latency_vs_ef — Latency vs ef_search
-    - 图5.8 fig:recall_vs_visited — Recall@100 vs Visited Nodes
+    - 图5.7 fig:recall_vs_visited — Recall@100 vs Visited Nodes
 
 使用方法:
     python scripts/run_ef_sweep.py \
@@ -95,7 +93,7 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(model_name)
 
     index, doc_ids = load_faiss_index(args.index_path)
-    queries, answers, positive_doc_ids = load_test_data(args.test_file)
+    queries, answers, positive_doc_ids, _mode = load_test_data(args.test_file)
 
     logger.info("编码查询...")
     query_embeddings = encode_queries(

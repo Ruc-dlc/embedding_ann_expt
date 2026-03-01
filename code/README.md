@@ -6,7 +6,7 @@
 
 ## 项目概述
 
-DACL-DR 在标准对比学习（InfoNCE）的基础上，引入余弦距离约束损失，通过三阶段训练策略优化查询-文档向量的空间分布，使其更适配 HNSW 等近似最近邻（ANN）索引的搜索特性，从而在保持检索精度的同时显著降低访问节点数（Visited Nodes）和查询延迟（Latency）。
+DACL-DR 在标准对比学习（InfoNCE）的基础上，引入余弦距离约束损失，通过三阶段训练策略优化查询-文档向量的空间分布，使其更适配 HNSW 等近似最近邻（ANN）索引的搜索特性，从而在保持检索精度的同时显著降低访问节点数（Visited Nodes）。
 
 ### 核心公式
 
@@ -23,9 +23,9 @@ L_total = L_InfoNCE + w × L_dis
 
 | 阶段 | 名称 | Epoch数 | 距离权重 | 负例来源 |
 |------|------|---------|---------|---------|
-| Stage 1 | 热身 | 4 | w=0 | In-Batch Negatives |
-| Stage 2 | 引入距离 | 8 | 0→w（线性增长）| BM25 Hard Negatives |
-| Stage 3 | 联合优化 | 12 | w | Model Hard Negatives（动态挖掘） |
+| Stage 1 | In-Batch负例 | 4 | w（恒定） | In-Batch Negatives |
+| Stage 2 | BM25难负例 | 8 | w（恒定） | BM25 Hard Negatives |
+| Stage 3 | 模型难负例 | 12 | w（恒定） | Model Hard Negatives（训练数据文档池挖掘） |
 
 ## 环境配置
 
@@ -89,13 +89,14 @@ python scripts/train_baseline.py \
     --fp16
 ```
 
-### 3. 距离感知训练（DACL-DR，三阶段）
+### 3. 距离感知训练（DACL-DR，三阶段，全自动）
 
 ```bash
 # Stage2/3含7个hard neg，物理batch需设为32，通过梯度累积4步达到有效batch=128
+# Stage 2→3 过渡时自动挖掘模型难负例（无需手动介入）
 python scripts/train_distance_aware.py \
     --data_dir data_set \
-    --output_dir checkpoints/distance_aware \
+    --output_dir checkpoints/ablation_w0.6 \
     --distance_weight 0.6 \
     --batch_size 32 \
     --gradient_accumulation_steps 4 \
@@ -105,6 +106,10 @@ python scripts/train_distance_aware.py \
     --temperature 0.05 \
     --fp16
 ```
+
+> 训练过程全自动：Stage 1(In-Batch) → Stage 2(BM25) → 自动挖掘模型难负例 → Stage 3(模型难负例)。
+> Stage 2→3 过渡时，Trainer 自动调用 `mine_hard_negatives.py` 对训练数据文档池（2~5M 文档）进行编码检索，
+> 挖掘结果保存到 `{output_dir}/mined_negatives/`，然后自动加载继续训练。
 
 ### 4. 混合权重消融（w ∈ {0, 0.2, 0.4, 0.6, 0.8, 1.0}）
 
@@ -250,22 +255,23 @@ code/
 ├── analysis/                        # 分析模块
 │   ├── visualization.py             # 可视化工具（t-SNE、距离分布）
 │   ├── distribution_analysis.py     # 向量分布分析
-│   └── hnsw_simulator.py            # HNSW搜索效率分析（Visited Nodes、Latency）
+│   └── hnsw_simulator.py            # HNSW搜索效率分析（Visited Nodes）
 ├── evaluation/                      # 评估模块
 │   ├── comprehensive_eval.py        # 综合评估器
 │   ├── efficiency_eval.py           # ANN效率评估
 │   └── semantic_eval.py             # 语义评估
 ├── scripts/                         # 入口脚本
 │   ├── train_baseline.py            # Baseline训练
-│   ├── train_distance_aware.py      # 距离感知训练
+│   ├── train_distance_aware.py      # 距离感知训练（三阶段全自动）
 │   ├── train_ablation.py            # 混合权重消融训练
+│   ├── mine_hard_negatives.py       # Stage 3 难负例挖掘（自动集成+独立CLI）
 │   ├── build_index.py               # 索引构建
 │   ├── run_evaluation.py            # 检索评估
 │   ├── run_bm25_eval.py             # BM25基线评估
 │   ├── run_representation_eval.py   # 表示空间分析
 │   ├── run_ef_sweep.py              # ef_search敏感度扫描
 │   ├── run_ablation.py              # 消融实验（ABCD四模型）
-│   ├── generate_figures.py          # 论文图表生成（12张图）
+│   ├── generate_figures.py          # 论文图表生成（11张图）
 │   ├── preprocess_dpr.py            # 数据预处理验证
 │   └── preprocess_nq.py             # NQ数据预处理
 ├── tests/                           # 单元测试
@@ -292,7 +298,6 @@ code/
 | Alignment | 正样本对的L2距离均值（↓越好） | §5.3 |
 | Uniformity | 向量在超球面上的分布均匀性（↓越好） | §5.3 |
 | Visited Nodes | HNSW搜索过程中访问的节点数 | §5.4 |
-| Latency | 平均查询延迟（ms） | §5.4 |
 
 ## 技术栈
 

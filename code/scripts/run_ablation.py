@@ -199,8 +199,9 @@ def main():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # 加载测试数据
-    test_data = load_test_data(args.test_file)
+    # 加载测试数据（load_test_data返回4元组，取前3个作为test_data传递给下游函数）
+    _queries, _answers, _positive_doc_ids, _mode = load_test_data(args.test_file)
+    test_data = (_queries, _answers, _positive_doc_ids)
 
     all_results = {}
 

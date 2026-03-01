@@ -161,30 +161,26 @@ class TestCombinedLoss:
         loss_fn.set_distance_weight(0.8)
         assert loss_fn.get_distance_weight() == 0.8
         
-    def test_scheduled_loss(self):
-        """测试带调度的损失函数"""
-        from src.losses.combined_loss import ScheduledCombinedLoss
+    def test_set_distance_weight(self):
+        """测试 set_distance_weight 修改权重"""
+        from src.losses.combined_loss import CombinedLoss
         
-        loss_fn = ScheduledCombinedLoss(
-            initial_distance_weight=0.0,
-            final_distance_weight=0.6,
-            warmup_steps=10,
-            rampup_steps=20
-        )
+        loss_fn = CombinedLoss(distance_weight=0.6)
         
-        # 初始权重为0
-        assert loss_fn.distance_weight == 0.0
+        # 初始权重
+        assert loss_fn.get_distance_weight() == 0.6
         
-        # 模拟训练步数
-        for _ in range(10):
-            loss_fn.step()
-            
-        # warmup结束后开始增长
-        for _ in range(20):
-            loss_fn.step()
-            
-        # 应该接近最终权重
-        assert abs(loss_fn.distance_weight - 0.6) < 0.1
+        # 修改权重
+        loss_fn.set_distance_weight(0.8)
+        assert loss_fn.get_distance_weight() == 0.8
+        
+        # 修改为0
+        loss_fn.set_distance_weight(0.0)
+        assert loss_fn.get_distance_weight() == 0.0
+        
+        # 修改为1.0
+        loss_fn.set_distance_weight(1.0)
+        assert loss_fn.get_distance_weight() == 1.0
 
 
 if __name__ == "__main__":

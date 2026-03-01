@@ -24,26 +24,25 @@ loss:
   distance_weight: 0.6  # w = 0.6（论文最优值）
 
 hard_negative:
-  type: "dynamic"  # 阶段3使用动态难负例挖掘
+  type: "training_pool"  # 阶段3使用训练数据文档池挖掘难负例
   num_negatives: 7
-  refresh_interval: 1000
 
 # 三阶段训练配置
 three_stage_training:
   enabled: true
   stage1:
-    name: "warmup"
+    name: "in_batch_negatives"
     epochs: 4
-    distance_weight: 0.0  # 纯InfoNCE热身
+    distance_weight: 0.6  # w全程恒定，与stage2/3一致
   stage2:
-    name: "distance_introduction"
+    name: "bm25_hard_negatives"
     epochs: 8
-    distance_weight_schedule: "linear"  # 从0.0线性增长到0.6
+    distance_weight: 0.6
   stage3:
-    name: "joint_optimization"
+    name: "model_hard_negatives"
     epochs: 12
     distance_weight: 0.6
-    hard_negative_refresh: true  # 动态刷新难负例
+    hard_negative_source: "training_data_pool"  # 基于训练数据文档池挖掘
 
 index:
   type: "hnsw"

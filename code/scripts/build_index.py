@@ -201,7 +201,9 @@ def build_faiss_index(embeddings, index_type, hnsw_m=32, hnsw_ef_construction=20
     start_time = time.time()
 
     if index_type == "hnsw":
-        # HNSW索引（内积，因向量已L2归一化，内积等价于余弦相似度）
+        # HNSW索引（默认L2距离）
+        # 因向量已L2归一化：||a-b||² = 2(1-⟨a,b⟩)，
+        # L2距离排序与内积/余弦相似度排序完全等价
         index = faiss.IndexHNSWFlat(dim, hnsw_m)
         index.hnsw.efConstruction = hnsw_ef_construction
         index.add(embeddings)

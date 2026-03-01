@@ -3,7 +3,7 @@
 
 本模块实现难负例挖掘策略：
 - BM25静态难负例：基于词汇匹配（用于开源完整性，实际训练中阶段2使用DPR预存难负例）
-- 模型动态难负例：基于当前模型的FAISS索引检索（阶段3使用）
+- 模型难负例：基于当前模型的FAISS索引从训练数据文档池中检索（阶段3使用）
 
 论文章节：第4章 4.2节 - 难负例挖掘
 """
@@ -247,8 +247,8 @@ class HardNegativeMiner:
         if num_negatives is None:
             num_negatives = self.num_negatives
 
-        # FAISS检索（多检索一些候选以便过滤正例后还有足够数量）
-        search_k = num_negatives * 3
+        # FAISS检索（检索top-200候选，过滤正例后保留所需数量）
+        search_k = max(200, num_negatives * 3)
         query_vec = query_embedding.reshape(1, -1).astype(np.float32)
         scores, indices = self.faiss_index.search(query_vec, search_k)
 

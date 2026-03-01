@@ -59,6 +59,11 @@ def parse_args() -> argparse.Namespace:
                         help="查询最大token长度")
     parser.add_argument("--experiment_name", type=str, default="eval",
                         help="实验名称（用于输出文件名）")
+    parser.add_argument("--mode", type=str, default="auto",
+                        choices=["auto", "passage_id", "answer_match"],
+                        help="评估模式: auto(根据文件格式自动选择), passage_id(JSON), answer_match(CSV)")
+    parser.add_argument("--corpus_path", type=str, default=None,
+                        help="语料库文件路径（用于答案匹配模式，默认自动推断）")
 
     return parser.parse_args()
 
@@ -95,21 +100,26 @@ def load_faiss_index(index_path: str):
     return index, doc_ids
 
 
-def load_test_data(test_file: str):
+def load_test_data(test_file: str, mode: str = "auto"):
     """
     加载测试数据
 
     支持两种格式：
-    - CSV: question, answers（answers用制表符分隔）
+    - CSV: question, answers（answers用制表符或逗号分隔）
     - JSON: DPR格式（含positive_ctxs）
+
+    参数:
+        test_file: 测试文件路径
+        mode: 评估模式 ("auto"|"passage_id"|"answer_match")
 
     返回:
         queries: 查询文本列表
         answers: 答案列表（每个查询对应多个答案）
         positive_doc_ids: 正例文档ID列表（如果有）
+        mode: 实际使用的评估模式
     """
     path = Path(test_file)
-    logger.info(f"加载测试数据: {path}")
+    logger.info(f"加载测试数据: {path} (mode={mode})")
 
     queries = []
     answers = []
@@ -121,8 +131,12 @@ def load_test_data(test_file: str):
             for row in reader:
                 if len(row) >= 2:
                     queries.append(row[0])
-                    answers.append(row[1].split('\t') if '\t' in row[1] else [row[1]])
+                    # 支持逗号分隔的多个答案
+                    answers.append([ans.strip() for ans in row[1].split(',')])
                     positive_doc_ids.append([])
+        # CSV文件强制使用answer_match模式
+        if mode == "auto":
+            mode = "answer_match"
     elif path.suffix == '.json':
         with open(path, 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -135,11 +149,14 @@ def load_test_data(test_file: str):
                 if pid:
                     pos_ids.append(str(pid))
             positive_doc_ids.append(pos_ids)
+        # JSON文件默认使用passage_id模式
+        if mode == "auto":
+            mode = "passage_id"
     else:
         raise ValueError(f"不支持的测试文件格式: {path.suffix}")
 
-    logger.info(f"测试数据加载完成，共 {len(queries)} 条查询")
-    return queries, answers, positive_doc_ids
+    logger.info(f"测试数据加载完成，共 {len(queries)} 条查询 (mode={mode})")
+    return queries, answers, positive_doc_ids, mode
 
 
 @torch.no_grad()
@@ -182,8 +199,13 @@ def search_index(index, query_embeddings, k, hnsw_ef_search=128):
     query_embeddings = query_embeddings.astype(np.float32)
     num_queries = len(query_embeddings)
 
-    # 重置HNSW搜索统计计数器
-    if hasattr(faiss, 'cvar') and hasattr(faiss.cvar, 'hnsw_stats'):
+    # hnsw_stats 仅在单线程搜索时准确（FAISS官方文档要求）
+    # 保存原线程数，临时设置为单线程以确保统计准确
+    has_hnsw_stats = hasattr(faiss, 'cvar') and hasattr(faiss.cvar, 'hnsw_stats')
+    prev_num_threads = None
+    if has_hnsw_stats:
+        prev_num_threads = faiss.omp_get_max_threads()
+        faiss.omp_set_num_threads(1)
         faiss.cvar.hnsw_stats.reset()
 
     start_time = time.time()
@@ -195,9 +217,21 @@ def search_index(index, query_embeddings, k, hnsw_ef_search=128):
 
     # 收集Visited Nodes（HNSW距离计算次数 ≈ 访问节点数）
     avg_visited_nodes = 0
-    if hasattr(faiss, 'cvar') and hasattr(faiss.cvar, 'hnsw_stats'):
+    if has_hnsw_stats:
         total_ndis = faiss.cvar.hnsw_stats.ndis
         avg_visited_nodes = total_ndis / num_queries if num_queries > 0 else 0
+        # 恢复原线程数
+        faiss.omp_set_num_threads(prev_num_threads)
+        if avg_visited_nodes == 0 and num_queries > 0:
+            logger.warning(
+                "hnsw_stats.ndis 返回 0！HNSW Visited Nodes 统计不可用。"
+                "请检查 FAISS 版本（需要 >=1.9.0 且包含 #3309 修复）。"
+            )
+    elif hasattr(index, 'hnsw'):
+        logger.warning(
+            "当前 FAISS 版本不支持 faiss.cvar.hnsw_stats，"
+            "无法获取 Visited Nodes 统计。"
+        )
 
     return scores, indices, qps, avg_latency, avg_visited_nodes
 
@@ -324,6 +358,114 @@ def evaluate(
     return results
 
 
+def _answer_in_text(text: str, answers: List[str]) -> bool:
+    """检查文档文本中是否包含任一答案字符串（大小写不敏感）"""
+    text_lower = text.lower()
+    for answer in answers:
+        if answer.strip().lower() in text_lower:
+            return True
+    return False
+
+
+def evaluate_answer_match(
+    index, doc_ids, query_embeddings, ground_truth_answers,
+    k_values, hnsw_ef_search=128, corpus_path=None
+):
+    """
+    基于答案字符串匹配的评估
+
+    对于CSV测试集，检查检索到的文档文本中是否包含正确答案字符串。
+
+    参数:
+        index: FAISS索引
+        doc_ids: 文档ID列表
+        query_embeddings: 查询向量
+        ground_truth_answers: 每个查询的答案列表
+        k_values: 评估的K值列表
+        hnsw_ef_search: HNSW搜索ef参数
+        corpus_path: 语料库文件路径（psgs_w100.tsv），用于获取文档文本
+
+    返回:
+        结果字典，包含语义指标和效率指标
+    """
+    max_k = max(k_values)
+
+    # 检索
+    scores, indices, qps, avg_latency, avg_visited_nodes = search_index(
+        index, query_embeddings, max_k, hnsw_ef_search
+    )
+
+    # 加载文档文本（从 psgs_w100.tsv）
+    doc_texts = {}
+    if corpus_path and Path(corpus_path).exists():
+        logger.info(f"加载语料库文本: {corpus_path}")
+        with open(corpus_path, 'r', encoding='utf-8') as f:
+            for line_num, line in enumerate(f):
+                if line_num == 0:
+                    continue  # 跳过表头
+                parts = line.strip().split('\t')
+                if len(parts) >= 2:
+                    doc_id = parts[0]
+                    text = parts[1]
+                    if len(parts) >= 3:
+                        text = parts[1] + " " + parts[2]  # title + text
+                    doc_texts[doc_id] = text
+        logger.info(f"语料库已加载: {len(doc_texts)} 篇文档")
+    else:
+        logger.warning(f"语料库文件不存在或未指定: {corpus_path}，答案匹配将无法进行")
+
+    # 转换为文档ID
+    retrieved_ids = []
+    for row in indices:
+        ids = []
+        for idx in row:
+            if 0 <= idx < len(doc_ids):
+                ids.append(doc_ids[idx])
+            else:
+                ids.append("")
+        retrieved_ids.append(ids)
+
+    # 答案匹配评估
+    results = {
+        "semantic": {},
+        "efficiency": {
+            "qps": qps,
+            "avg_latency_ms": avg_latency,
+            "avg_visited_nodes": avg_visited_nodes,
+            "num_queries": len(query_embeddings),
+            "hnsw_ef_search": hnsw_ef_search,
+        }
+    }
+
+    for k in k_values:
+        hits = 0
+        total = 0
+        rr_sum = 0.0
+
+        for q_idx, (ret_ids, ans_list) in enumerate(zip(retrieved_ids, ground_truth_answers)):
+            if not ans_list:
+                continue
+            total += 1
+            found = False
+            for rank, doc_id in enumerate(ret_ids[:k], 1):
+                doc_text = doc_texts.get(doc_id, "")
+                if _answer_in_text(doc_text, ans_list):
+                    if not found:
+                        rr_sum += 1.0 / rank
+                        found = True
+                    break
+            if found:
+                hits += 1
+
+        recall = hits / max(total, 1)
+        mrr = rr_sum / max(total, 1)
+
+        results["semantic"][f"Recall@{k}"] = recall
+        results["semantic"][f"MRR@{k}"] = mrr
+
+    return results
+
+
 def main():
     args = parse_args()
 
@@ -344,7 +486,7 @@ def main():
     index, doc_ids = load_faiss_index(args.index_path)
 
     # 加载测试数据
-    queries, answers, positive_doc_ids = load_test_data(args.test_file)
+    queries, answers, positive_doc_ids, eval_mode = load_test_data(args.test_file, args.mode)
 
     # 编码查询
     logger.info("编码查询...")
@@ -355,11 +497,23 @@ def main():
     )
 
     # 评估
-    logger.info("执行评估...")
-    results = evaluate(
-        index, doc_ids, query_embeddings, positive_doc_ids,
-        args.k_values, args.hnsw_ef_search
-    )
+    logger.info(f"执行评估 (mode={eval_mode})...")
+    if eval_mode == "answer_match":
+        # CSV测试集使用答案匹配模式
+        corpus_path = args.corpus_path
+        if corpus_path is None:
+            corpus_path = str(Path(args.test_file).parent.parent / "psgs_w100.tsv")
+        results = evaluate_answer_match(
+            index, doc_ids, query_embeddings, answers,
+            args.k_values, args.hnsw_ef_search,
+            corpus_path=corpus_path
+        )
+    else:
+        # JSON测试集使用passage_id模式
+        results = evaluate(
+            index, doc_ids, query_embeddings, positive_doc_ids,
+            args.k_values, args.hnsw_ef_search
+        )
 
     # 保存结果
     output_dir = Path(args.output_path)
