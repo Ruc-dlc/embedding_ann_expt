@@ -292,10 +292,12 @@ class Trainer:
             self._call_callbacks("on_batch_begin", batch_idx=batch_idx)
 
             loss, metrics = self._train_step(batch)
-            total_loss += loss
-            total_infonce += metrics.get('infonce', 0)
+            if not math.isnan(loss):
+                total_loss += loss
+                total_infonce += metrics.get('infonce', 0)
+                num_batches += 1
+            # distance不受NaN影响（仅依赖cos_sim），始终累加
             total_distance += metrics.get('distance', 0)
-            num_batches += 1
 
             self._call_callbacks(
                 "on_batch_end", batch_idx=batch_idx,

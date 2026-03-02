@@ -234,7 +234,7 @@ def main():
     callbacks = [
         LoggingCallback(logging_steps=100),
         CheckpointCallback(save_dir=args.output_dir, save_steps=2000),
-        EarlyStoppingCallback(patience=5, monitor="eval_recall@5", mode="max"),
+        EarlyStoppingCallback(patience=10, monitor="eval_recall@5", mode="max"),
     ]
 
     # 训练器（传入eval_dataloader + tokenizer，实现基于dev集Recall@5的最佳模型保存 + Stage 3自动挖掘）

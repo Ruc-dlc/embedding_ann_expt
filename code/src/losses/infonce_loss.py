@@ -85,8 +85,9 @@ class InfoNCELoss(nn.Module):
         all_doc_sim = all_doc_sim / self.temperature
 
         # 数值稳定性：限制logits范围，防止FP16下exp()溢出
-        # FP16最大值为65504，exp(11)≈59874接近上限，保守限制在±50以内
-        all_doc_sim = torch.clamp(all_doc_sim, min=-50.0, max=50.0)
+        # cross_entropy内部用logsumexp(先减max再exp)，但fp16中间结果仍可能溢出
+        # exp(20)≈4.85e8，差值exp(logit-max)在[-40,0]范围内，fp16安全
+        all_doc_sim = torch.clamp(all_doc_sim, min=-20.0, max=20.0)
 
         # 计算InfoNCE损失
         # 正样本在第一位（对于批内负例）或单独处理
