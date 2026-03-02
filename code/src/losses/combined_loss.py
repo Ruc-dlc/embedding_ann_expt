@@ -53,7 +53,8 @@ class CombinedLoss(nn.Module):
         self,
         query_emb: torch.Tensor,
         pos_doc_emb: torch.Tensor,
-        neg_doc_embs: Optional[torch.Tensor] = None
+        neg_doc_embs: Optional[torch.Tensor] = None,
+        neg_doc_mask: Optional[torch.Tensor] = None
     ) -> Tuple[torch.Tensor, Dict[str, float]]:
         """
         计算联合损失
@@ -62,13 +63,15 @@ class CombinedLoss(nn.Module):
             query_emb: 查询向量 [batch_size, embedding_dim]
             pos_doc_emb: 正样本文档向量 [batch_size, embedding_dim]
             neg_doc_embs: 负样本文档向量 [batch_size, num_negatives, embedding_dim]（可选）
+            neg_doc_mask: 负样本有效掩码 [batch_size, num_negatives]
+                         1=有效负例，0=零填充的幽灵负例
 
         返回:
             loss: 总损失（标量）
             loss_dict: 各项损失的详细字典
         """
         # 计算InfoNCE损失
-        infonce, infonce_dict = self.infonce_loss(query_emb, pos_doc_emb, neg_doc_embs)
+        infonce, infonce_dict = self.infonce_loss(query_emb, pos_doc_emb, neg_doc_embs, neg_doc_mask)
 
         # 计算距离约束损失（仅正样本对）
         distance, distance_dict = self.distance_loss(query_emb, pos_doc_emb)

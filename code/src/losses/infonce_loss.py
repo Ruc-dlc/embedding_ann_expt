@@ -47,7 +47,8 @@ class InfoNCELoss(nn.Module):
         self,
         query_emb: torch.Tensor,
         pos_doc_emb: torch.Tensor,
-        neg_doc_embs: Optional[torch.Tensor] = None
+        neg_doc_embs: Optional[torch.Tensor] = None,
+        neg_doc_mask: Optional[torch.Tensor] = None
     ) -> Tuple[torch.Tensor, dict]:
         """
         计算InfoNCE损失
@@ -57,6 +58,8 @@ class InfoNCELoss(nn.Module):
             pos_doc_emb: 正样本文档向量 [batch_size, embedding_dim]
             neg_doc_embs: 负样本文档向量 [batch_size, num_negatives, embedding_dim]
                          如果为None且use_in_batch_negatives=True，则使用批内负例
+            neg_doc_mask: 负样本有效掩码 [batch_size, num_negatives]
+                         1=有效负例，0=零填充的幽灵负例。如果为None则视为全部有效。
 
         Returns:
             loss: InfoNCE损失值
@@ -78,52 +81,34 @@ class InfoNCELoss(nn.Module):
         if neg_doc_embs is not None:
             neg_sim = self._compute_similarity_batch(query_emb, neg_doc_embs)
 
-            if self.use_in_batch_negatives:
-                all_doc_sim = torch.cat([all_doc_sim, neg_sim], dim=1)
-            else:
-                all_doc_sim = torch.cat([all_doc_sim, neg_sim], dim=1)
+            # 将零填充的幽灵负例的相似度设为-inf，使其在softmax中贡献为0
+            if neg_doc_mask is not None:
+                neg_sim = neg_sim.masked_fill(neg_doc_mask == 0, float('-inf'))
+
+            all_doc_sim = torch.cat([all_doc_sim, neg_sim], dim=1)
 
         # 应用温度缩放
         pos_sim = pos_sim / self.temperature
         all_doc_sim = all_doc_sim / self.temperature
 
-        # NaN/Inf诊断：检测温度缩放后的异常值
-        if torch.isnan(all_doc_sim).any() or torch.isinf(all_doc_sim).any():
-            nan_count = torch.isnan(all_doc_sim).sum().item()
-            inf_count = torch.isinf(all_doc_sim).sum().item()
-            sim_max = all_doc_sim[~torch.isnan(all_doc_sim) & ~torch.isinf(all_doc_sim)].max().item() if (all_doc_sim.numel() - nan_count - inf_count) > 0 else float('nan')
-            logger.warning(
-                f"InfoNCE诊断: 温度缩放后all_doc_sim含异常值 "
-                f"(NaN={nan_count}, Inf={inf_count}, "
-                f"valid_max={sim_max:.4f}, shape={list(all_doc_sim.shape)}, "
-                f"dtype={all_doc_sim.dtype})"
-            )
+        # 将NaN替换为-inf（防御性处理，正常情况下不应触发）
+        all_doc_sim = torch.where(
+            torch.isnan(all_doc_sim),
+            torch.tensor(float('-inf'), device=all_doc_sim.device, dtype=all_doc_sim.dtype),
+            all_doc_sim
+        )
 
-        # 数值稳定性：限制logits范围，防止FP16下exp()溢出
-        # cross_entropy内部用logsumexp(先减max再exp)，但fp16中间结果仍可能溢出
-        # exp(20)≈4.85e8，差值exp(logit-max)在[-40,0]范围内，fp16安全
+        # 数值稳定性：限制logits范围
+        # 对有限值做clamp，-inf保持不变（clamp不影响-inf）
         all_doc_sim = torch.clamp(all_doc_sim, min=-20.0, max=20.0)
 
         # 计算InfoNCE损失
-        # 正样本在第一位（对于批内负例）或单独处理
         if self.use_in_batch_negatives:
-            # 对角线是正样本
             labels = torch.arange(batch_size, device=query_emb.device)
             loss = F.cross_entropy(all_doc_sim, labels)
         else:
-            # 第一列是正样本
             labels = torch.zeros(batch_size, dtype=torch.long, device=query_emb.device)
             loss = F.cross_entropy(all_doc_sim, labels)
-
-        # NaN诊断：检测cross_entropy输出
-        if torch.isnan(loss):
-            sim_max = all_doc_sim.max().item()
-            sim_min = all_doc_sim.min().item()
-            logger.warning(
-                f"InfoNCE诊断: cross_entropy输出NaN "
-                f"(logit_range=[{sim_min:.4f}, {sim_max:.4f}], "
-                f"dtype={all_doc_sim.dtype})"
-            )
 
         loss_dict = {
             'infonce': loss.item(),

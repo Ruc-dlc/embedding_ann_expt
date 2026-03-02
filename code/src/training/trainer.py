@@ -369,23 +369,48 @@ class Trainer:
 
             # 编码负例文档（如果存在）
             neg_doc_embs = None
+            neg_doc_mask = None
             if 'neg_doc_input_ids' in batch:
                 neg_ids = batch['neg_doc_input_ids']
-                neg_mask = batch['neg_doc_attention_mask']
+                neg_attn_mask = batch['neg_doc_attention_mask']
                 batch_size, num_negs, seq_len = neg_ids.shape
 
-                # 展平编码再还原
-                neg_ids_flat = neg_ids.view(-1, seq_len)
-                neg_mask_flat = neg_mask.view(-1, seq_len)
+                # 构建负例有效掩码：attention_mask 全为0的负例是零填充的幽灵负例
+                # neg_attn_mask: [batch_size, num_negs, seq_len]
+                # neg_doc_mask: [batch_size, num_negs]，1=有效，0=幽灵
+                neg_doc_mask = (neg_attn_mask.sum(dim=-1) > 0).long()
 
-                neg_doc_embs_flat = self.model.encode_document(
-                    input_ids=neg_ids_flat,
-                    attention_mask=neg_mask_flat
-                )
-                neg_doc_embs = neg_doc_embs_flat.view(batch_size, num_negs, -1)
+                # 展平编码再还原（只编码有效负例以节省计算）
+                neg_ids_flat = neg_ids.view(-1, seq_len)
+                neg_attn_mask_flat = neg_attn_mask.view(-1, seq_len)
+
+                # 找出有效负例的索引
+                valid_mask_flat = neg_doc_mask.view(-1).bool()
+
+                if valid_mask_flat.any():
+                    # 只编码有效负例
+                    valid_neg_ids = neg_ids_flat[valid_mask_flat]
+                    valid_neg_attn = neg_attn_mask_flat[valid_mask_flat]
+                    valid_embs = self.model.encode_document(
+                        input_ids=valid_neg_ids,
+                        attention_mask=valid_neg_attn
+                    )
+
+                    # 还原为完整形状，幽灵位置填零
+                    emb_dim = valid_embs.size(-1)
+                    neg_doc_embs_flat = torch.zeros(
+                        batch_size * num_negs, emb_dim,
+                        device=valid_embs.device, dtype=valid_embs.dtype
+                    )
+                    neg_doc_embs_flat[valid_mask_flat] = valid_embs
+                    neg_doc_embs = neg_doc_embs_flat.view(batch_size, num_negs, -1)
+                else:
+                    # 所有负例都是幽灵，跳过
+                    neg_doc_embs = None
+                    neg_doc_mask = None
 
             # 计算损失
-            loss, loss_dict = self.loss_fn(query_emb, pos_doc_emb, neg_doc_embs)
+            loss, loss_dict = self.loss_fn(query_emb, pos_doc_emb, neg_doc_embs, neg_doc_mask)
 
         # NaN检测：若loss为NaN/Inf，跳过该step的梯度更新，防止污染模型权重
         if torch.isnan(loss) or torch.isinf(loss):
@@ -590,16 +615,33 @@ class Trainer:
 
                 # 负例（如果有）
                 neg_doc_embs = None
+                neg_doc_mask = None
                 if 'neg_doc_input_ids' in batch:
                     neg_ids = batch['neg_doc_input_ids']
-                    neg_mask = batch['neg_doc_attention_mask']
+                    neg_attn_mask = batch['neg_doc_attention_mask']
                     bs, nn_, sl = neg_ids.shape
-                    neg_doc_embs = self.model.encode_document(
-                        input_ids=neg_ids.view(-1, sl),
-                        attention_mask=neg_mask.view(-1, sl)
-                    ).view(bs, nn_, -1)
+                    neg_doc_mask = (neg_attn_mask.sum(dim=-1) > 0).long()
+                    valid_mask_flat = neg_doc_mask.view(-1).bool()
 
-                loss, _ = self.loss_fn(query_emb, pos_doc_emb, neg_doc_embs)
+                    if valid_mask_flat.any():
+                        valid_neg_ids = neg_ids.view(-1, sl)[valid_mask_flat]
+                        valid_neg_attn = neg_attn_mask.view(-1, sl)[valid_mask_flat]
+                        valid_embs = self.model.encode_document(
+                            input_ids=valid_neg_ids,
+                            attention_mask=valid_neg_attn
+                        )
+                        emb_dim = valid_embs.size(-1)
+                        neg_doc_embs_flat = torch.zeros(
+                            bs * nn_, emb_dim,
+                            device=valid_embs.device, dtype=valid_embs.dtype
+                        )
+                        neg_doc_embs_flat[valid_mask_flat] = valid_embs
+                        neg_doc_embs = neg_doc_embs_flat.view(bs, nn_, -1)
+                    else:
+                        neg_doc_embs = None
+                        neg_doc_mask = None
+
+                loss, _ = self.loss_fn(query_emb, pos_doc_emb, neg_doc_embs, neg_doc_mask)
 
                 # 跳过NaN的batch
                 if not (torch.isnan(loss) or torch.isinf(loss)):
