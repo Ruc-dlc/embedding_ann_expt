@@ -58,7 +58,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--num_hard_negatives", type=int, default=7,
                         help="每条样本的难负例数量")
     parser.add_argument("--seed", type=int, default=42, help="随机种子")
-    parser.add_argument("--fp16", action="store_true", help="使用FP16混合精度")
+    parser.add_argument("--fp16", action="store_true", help="使用FP16混合精度（不推荐，低温度系数下易NaN）")
+    parser.add_argument("--bf16", action="store_true", help="使用BF16混合精度（推荐，指数范围与FP32一致）")
     parser.add_argument("--distance_weight", type=float, default=0.0,
                         help="距离损失权重w（默认0，消融实验Model B可设0.6）")
     parser.add_argument("--gradient_accumulation_steps", type=int, default=1,
@@ -208,6 +209,7 @@ def main():
         temperature=args.temperature,
         distance_weight=args.distance_weight,
         fp16=args.fp16,
+        bf16=args.bf16,
         enable_three_stage=False,
         gradient_accumulation_steps=args.gradient_accumulation_steps,
         seed=args.seed,

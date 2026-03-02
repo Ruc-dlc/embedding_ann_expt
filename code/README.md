@@ -86,7 +86,7 @@ python scripts/train_baseline.py \
     --batch_size 128 \
     --num_epochs 20 \
     --temperature 0.05 \
-    --fp16
+    --bf16
 ```
 
 ### 3. 距离感知训练（DACL-DR，三阶段，全自动）
@@ -104,7 +104,7 @@ python scripts/train_distance_aware.py \
     --stage2_epochs 8 \
     --stage3_epochs 12 \
     --temperature 0.05 \
-    --fp16
+    --bf16
 ```
 
 > 训练过程全自动：Stage 1(In-Batch) → Stage 2(BM25) → 自动挖掘模型难负例 → Stage 3(模型难负例)。
@@ -121,7 +121,7 @@ python scripts/train_ablation.py \
     --model_name ./local_model_backbone \
     --batch_size 32 \
     --gradient_accumulation_steps 4 \
-    --fp16
+    --bf16
 ```
 
 ### 5. 消融实验（ABCD 四组模型）

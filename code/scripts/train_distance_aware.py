@@ -70,7 +70,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--num_hard_negatives", type=int, default=7,
                         help="每条样本的难负例数量")
     parser.add_argument("--seed", type=int, default=42, help="随机种子")
-    parser.add_argument("--fp16", action="store_true", help="使用FP16混合精度")
+    parser.add_argument("--fp16", action="store_true", help="使用FP16混合精度（不推荐，低温度系数下易NaN）")
+    parser.add_argument("--bf16", action="store_true", help="使用BF16混合精度（推荐，指数范围与FP32一致）")
     parser.add_argument("--gradient_accumulation_steps", type=int, default=4,
                         help="梯度累积步数（Stage2/3有7 hard neg，默认4使物理batch=32有效batch=128）")
     parser.add_argument("--max_samples", type=int, default=None,
@@ -222,6 +223,7 @@ def main():
         distance_weight=args.distance_weight,
         data_dir=args.data_dir,
         fp16=args.fp16,
+        bf16=args.bf16,
         enable_three_stage=True,
         stage1_epochs=args.stage1_epochs,
         stage2_epochs=args.stage2_epochs,

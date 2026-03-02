@@ -7,10 +7,13 @@
 论文章节：第3章 3.2节 - 对比学习基础
 """
 
+import logging
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from typing import Optional, Tuple
+
+logger = logging.getLogger(__name__)
 
 
 class InfoNCELoss(nn.Module):
@@ -84,6 +87,18 @@ class InfoNCELoss(nn.Module):
         pos_sim = pos_sim / self.temperature
         all_doc_sim = all_doc_sim / self.temperature
 
+        # NaN/Inf诊断：检测温度缩放后的异常值
+        if torch.isnan(all_doc_sim).any() or torch.isinf(all_doc_sim).any():
+            nan_count = torch.isnan(all_doc_sim).sum().item()
+            inf_count = torch.isinf(all_doc_sim).sum().item()
+            sim_max = all_doc_sim[~torch.isnan(all_doc_sim) & ~torch.isinf(all_doc_sim)].max().item() if (all_doc_sim.numel() - nan_count - inf_count) > 0 else float('nan')
+            logger.warning(
+                f"InfoNCE诊断: 温度缩放后all_doc_sim含异常值 "
+                f"(NaN={nan_count}, Inf={inf_count}, "
+                f"valid_max={sim_max:.4f}, shape={list(all_doc_sim.shape)}, "
+                f"dtype={all_doc_sim.dtype})"
+            )
+
         # 数值稳定性：限制logits范围，防止FP16下exp()溢出
         # cross_entropy内部用logsumexp(先减max再exp)，但fp16中间结果仍可能溢出
         # exp(20)≈4.85e8，差值exp(logit-max)在[-40,0]范围内，fp16安全
@@ -99,6 +114,16 @@ class InfoNCELoss(nn.Module):
             # 第一列是正样本
             labels = torch.zeros(batch_size, dtype=torch.long, device=query_emb.device)
             loss = F.cross_entropy(all_doc_sim, labels)
+
+        # NaN诊断：检测cross_entropy输出
+        if torch.isnan(loss):
+            sim_max = all_doc_sim.max().item()
+            sim_min = all_doc_sim.min().item()
+            logger.warning(
+                f"InfoNCE诊断: cross_entropy输出NaN "
+                f"(logit_range=[{sim_min:.4f}, {sim_max:.4f}], "
+                f"dtype={all_doc_sim.dtype})"
+            )
 
         loss_dict = {
             'infonce': loss.item(),

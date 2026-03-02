@@ -17,12 +17,12 @@ training:
   warmup_steps: 1000
   max_grad_norm: 1.0
   gradient_accumulation_steps: 4  # Stage2/3有7 hard neg，物理batch=32×4=有效batch128
-  fp16: true
+  bf16: true  # BF16推荐：指数范围与FP32一致，低温度系数下不会溢出
   seed: 42
   weight_decay: 0.01
   early_stopping:
     enabled: true
-    patience: 5       # 三阶段模型容忍5个epoch无改善；Baseline训练使用patience=3
+    patience: 10      # 三阶段模型容忍10个epoch无改善（Stage2需足够时间学习hard neg）；Baseline使用patience=3
     monitor: eval_recall@5
     mode: max
 

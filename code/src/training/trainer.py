@@ -79,10 +79,21 @@ class Trainer:
         if self.loss_fn is not None:
             self.loss_fn.to(self.device)
 
-        # FP16混合精度
+        # 混合精度设置
         self.scaler = None
-        if args.fp16 and self.device.type == 'cuda':
-            self.scaler = torch.cuda.amp.GradScaler()
+        self.use_amp = False
+        self.amp_dtype = torch.float32
+        if self.device.type == 'cuda':
+            if getattr(args, 'bf16', False):
+                self.use_amp = True
+                self.amp_dtype = torch.bfloat16
+                # bf16无需GradScaler（指数范围与fp32一致，不会溢出）
+                logger.info("混合精度: BF16（推荐，无需GradScaler）")
+            elif args.fp16:
+                self.use_amp = True
+                self.amp_dtype = torch.float16
+                self.scaler = torch.cuda.amp.GradScaler()
+                logger.info("混合精度: FP16（使用GradScaler）")
 
         # 初始化优化器和调度器
         self._setup_optimizer()
@@ -345,8 +356,7 @@ class Trainer:
         }
 
         # 前向传播
-        use_fp16 = self.args.fp16 and self.device.type == 'cuda'
-        with torch.cuda.amp.autocast(enabled=use_fp16):
+        with torch.cuda.amp.autocast(enabled=self.use_amp, dtype=self.amp_dtype):
             # 编码query和正例文档
             query_emb = self.model.encode_query(
                 input_ids=batch['query_input_ids'],

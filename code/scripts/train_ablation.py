@@ -52,7 +52,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--stage2_epochs", type=int, default=8, help="阶段2轮数")
     parser.add_argument("--stage3_epochs", type=int, default=12, help="阶段3轮数")
     parser.add_argument("--seed", type=int, default=42, help="随机种子")
-    parser.add_argument("--fp16", action="store_true", help="使用FP16")
+    parser.add_argument("--fp16", action="store_true", help="使用FP16（不推荐）")
+    parser.add_argument("--bf16", action="store_true", help="使用BF16（推荐）")
     parser.add_argument("--max_samples", type=int, default=None, help="调试用最大样本数")
     parser.add_argument("--dry_run", action="store_true",
                         help="仅打印将要执行的命令，不实际运行")
@@ -80,7 +81,9 @@ def build_command(args, weight: float) -> list:
         "--seed", str(args.seed),
     ]
 
-    if args.fp16:
+    if args.bf16:
+        cmd.append("--bf16")
+    elif args.fp16:
         cmd.append("--fp16")
 
     if args.max_samples is not None:

@@ -73,8 +73,13 @@ class TrainingArguments:
     
     # 混合精度
     fp16: bool = field(
+        default=False,
+        metadata={"help": "是否使用FP16混合精度训练（不推荐，低温度系数下易产生NaN）"}
+    )
+    
+    bf16: bool = field(
         default=True,
-        metadata={"help": "是否使用FP16混合精度训练"}
+        metadata={"help": "是否使用BF16混合精度训练（推荐，指数范围与FP32一致，不会溢出）"}
     )
     
     # 损失函数配置
