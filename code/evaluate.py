@@ -105,7 +105,7 @@ def encode_queries(model, tokenizer, queries: List[str], max_len: int, batch_siz
         input_ids = encoded["input_ids"].to(device)
         attention_mask = encoded["attention_mask"].to(device)
 
-        with torch.amp.autocast("cuda", enabled=device.type == "cuda", dtype=torch.float16):
+        with torch.cuda.amp.autocast(enabled=device.type == "cuda", dtype=torch.float16):
             emb = model.encode_query(input_ids, attention_mask)
         all_emb.append(emb.cpu().numpy())
 

@@ -68,7 +68,7 @@ def encode_batch(model, tokenizer, texts: List[str], max_len: int, device) -> np
     input_ids = encoded["input_ids"].to(device)
     attention_mask = encoded["attention_mask"].to(device)
 
-    with torch.amp.autocast("cuda", enabled=device.type == "cuda", dtype=torch.float16):
+    with torch.cuda.amp.autocast(enabled=device.type == "cuda", dtype=torch.float16):
         emb = model.encode_document(input_ids, attention_mask)
 
     return emb.cpu().numpy().astype(np.float32)

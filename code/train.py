@@ -128,7 +128,7 @@ def train(args):
 
     # --- 混合精度 ---
     use_amp = device.type == "cuda"
-    scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
+    scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
     amp_dtype = torch.float16
     logger.info(f"混合精度: {'FP16' if use_amp else '关闭'}")
 
@@ -172,7 +172,7 @@ def train(args):
             w_t = compute_w(global_step, total_steps, args.wmax)
 
             # 前向
-            with torch.amp.autocast("cuda", enabled=use_amp, dtype=amp_dtype):
+            with torch.cuda.amp.autocast(enabled=use_amp, dtype=amp_dtype):
                 q_emb = model.encode_query(batch["query_input_ids"], batch["query_attention_mask"])
                 p_emb = model.encode_document(batch["passage_input_ids"], batch["passage_attention_mask"])
                 loss, info = loss_fn(q_emb, p_emb, bs, w_t)

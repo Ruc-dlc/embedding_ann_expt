@@ -75,7 +75,7 @@ def encode_texts(model, tokenizer, texts: List[str], max_len: int, device, encod
         )
         input_ids = encoded["input_ids"].to(device)
         attention_mask = encoded["attention_mask"].to(device)
-        with torch.amp.autocast("cuda", enabled=device.type == "cuda", dtype=torch.float16):
+        with torch.cuda.amp.autocast(enabled=device.type == "cuda", dtype=torch.float16):
             emb = encode_fn(input_ids, attention_mask)
         all_emb.append(emb.cpu().numpy())
     return np.concatenate(all_emb, axis=0).astype(np.float32)
