@@ -44,7 +44,8 @@ class BiEncoder(nn.Module):
         embedding_dim: Optional[int] = None,
         pooling_type: str = "cls",
         shared_encoder: bool = True,
-        normalize: bool = True
+        normalize: bool = True,
+        _skip_backbone_init: bool = False
     ):
         super().__init__()
 
@@ -61,22 +62,33 @@ class BiEncoder(nn.Module):
         # 初始化编码器
         self.query_encoder: Optional[QueryEncoder] = None
         self.doc_encoder: Optional[DocEncoder] = None
-        self._init_encoders()
+        self._init_encoders(_skip_backbone_init=_skip_backbone_init)
 
-    def _init_encoders(self) -> None:
+    def _init_encoders(self, _skip_backbone_init: bool = False) -> None:
         """
         初始化Query和Document编码器
 
         共享模式下两个编码器使用同一个backbone；
         独立模式下各自加载独立的预训练模型。
+
+        参数:
+            _skip_backbone_init: 如果为True，使用from_config创建空骨架（权重随机），
+                                 后续由load_state_dict覆盖。避免from_pretrained的浪费加载。
         """
         # 加载backbone
-        query_backbone = AutoModel.from_pretrained(self.model_name)
+        if _skip_backbone_init:
+            backbone_config = AutoConfig.from_pretrained(self.model_name)
+            query_backbone = AutoModel.from_config(backbone_config)
+        else:
+            query_backbone = AutoModel.from_pretrained(self.model_name)
 
         if self.shared_encoder:
             doc_backbone = query_backbone
         else:
-            doc_backbone = AutoModel.from_pretrained(self.model_name)
+            if _skip_backbone_init:
+                doc_backbone = AutoModel.from_config(backbone_config)
+            else:
+                doc_backbone = AutoModel.from_pretrained(self.model_name)
 
         # 创建池化层
         projection_dim = self.embedding_dim if self.embedding_dim != self.hidden_size else None
@@ -225,13 +237,14 @@ class BiEncoder(nn.Module):
         with open(config_path, 'r', encoding='utf-8') as f:
             config = json.load(f)
 
-        # 创建模型实例
+        # 创建模型实例（跳过预训练权重加载，后续由 load_state_dict 覆盖）
         model = cls(
             model_name=config['model_name'],
             embedding_dim=config.get('embedding_dim'),
             pooling_type=config.get('pooling_type', 'cls'),
             shared_encoder=config.get('shared_encoder', True),
             normalize=config.get('normalize', True),
+            _skip_backbone_init=True,
         )
 
         # 加载权重

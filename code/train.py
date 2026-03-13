@@ -25,6 +25,7 @@ import math
 import os
 import random
 import time
+import warnings
 
 import numpy as np
 import torch
@@ -148,7 +149,18 @@ def validate_nll(model, loss_fn, dev_loader, device):
         ctx_attention_mask = batch["ctx_attention_mask"].to(device)
 
         query_emb = model.encode_query(query_input_ids, query_attention_mask)
-        ctx_emb = model.encode_document(ctx_input_ids, ctx_attention_mask)
+
+        # 分块编码 passages（Stage 2 dev 也有 B*8 条 ctx）
+        ctx_chunk_size = query_input_ids.size(0)
+        if ctx_input_ids.size(0) <= ctx_chunk_size:
+            ctx_emb = model.encode_document(ctx_input_ids, ctx_attention_mask)
+        else:
+            ctx_emb_chunks = []
+            for i in range(0, ctx_input_ids.size(0), ctx_chunk_size):
+                chunk_ids = ctx_input_ids[i:i + ctx_chunk_size]
+                chunk_mask = ctx_attention_mask[i:i + ctx_chunk_size]
+                ctx_emb_chunks.append(model.encode_document(chunk_ids, chunk_mask))
+            ctx_emb = torch.cat(ctx_emb_chunks, dim=0)
 
         # 构造 positive_indices
         if "positive_indices" in batch:
@@ -214,7 +226,17 @@ def validate_average_rank(model, dev_dataset, tokenizer, args, device):
         pos_indices = batch["positive_indices"]  # relative to this batch's ctx
 
         q_emb = model.encode_query(query_input_ids, query_attention_mask)
-        ctx_emb = model.encode_document(ctx_input_ids, ctx_attention_mask)
+        # 分块编码 passages（32*8=256 条，安全起见仍分块）
+        ctx_chunk_size = query_input_ids.size(0)  # = eval_batch_size
+        if ctx_input_ids.size(0) <= ctx_chunk_size:
+            ctx_emb = model.encode_document(ctx_input_ids, ctx_attention_mask)
+        else:
+            ctx_emb_chunks = []
+            for ci in range(0, ctx_input_ids.size(0), ctx_chunk_size):
+                chunk_ids = ctx_input_ids[ci:ci + ctx_chunk_size]
+                chunk_mask = ctx_attention_mask[ci:ci + ctx_chunk_size]
+                ctx_emb_chunks.append(model.encode_document(chunk_ids, chunk_mask))
+            ctx_emb = torch.cat(ctx_emb_chunks, dim=0)
 
         all_q_embs.append(q_emb.cpu())
         all_ctx_embs.append(ctx_emb.cpu())
@@ -354,17 +376,39 @@ def train_stage(
                 positive_indices = torch.arange(bsz, device=device)
 
             # Forward
+            # Stage 2/3: ctx_input_ids 可能有 B*8 条（1 positive + 7 hard negatives per query），
+            # 一次性过 BERT 会 OOM，因此分块编码后拼接。
+            # 分块大小 = batch_size（与 query 数量一致），保证 Stage 1 无额外开销。
+            ctx_chunk_size = query_input_ids.size(0)  # = batch_size
+
             if args.fp16:
                 with autocast():
                     query_emb = model.encode_query(query_input_ids, query_attention_mask)
-                    ctx_emb = model.encode_document(ctx_input_ids, ctx_attention_mask)
+                    # 分块编码 passages
+                    if ctx_input_ids.size(0) <= ctx_chunk_size:
+                        ctx_emb = model.encode_document(ctx_input_ids, ctx_attention_mask)
+                    else:
+                        ctx_emb_chunks = []
+                        for i in range(0, ctx_input_ids.size(0), ctx_chunk_size):
+                            chunk_ids = ctx_input_ids[i:i + ctx_chunk_size]
+                            chunk_mask = ctx_attention_mask[i:i + ctx_chunk_size]
+                            ctx_emb_chunks.append(model.encode_document(chunk_ids, chunk_mask))
+                        ctx_emb = torch.cat(ctx_emb_chunks, dim=0)
                     loss_dict = loss_fn(query_emb, ctx_emb, positive_indices)
                     loss = loss_dict["loss"]
                     if args.gradient_accumulation_steps > 1:
                         loss = loss / args.gradient_accumulation_steps
             else:
                 query_emb = model.encode_query(query_input_ids, query_attention_mask)
-                ctx_emb = model.encode_document(ctx_input_ids, ctx_attention_mask)
+                if ctx_input_ids.size(0) <= ctx_chunk_size:
+                    ctx_emb = model.encode_document(ctx_input_ids, ctx_attention_mask)
+                else:
+                    ctx_emb_chunks = []
+                    for i in range(0, ctx_input_ids.size(0), ctx_chunk_size):
+                        chunk_ids = ctx_input_ids[i:i + ctx_chunk_size]
+                        chunk_mask = ctx_attention_mask[i:i + ctx_chunk_size]
+                        ctx_emb_chunks.append(model.encode_document(chunk_ids, chunk_mask))
+                    ctx_emb = torch.cat(ctx_emb_chunks, dim=0)
                 loss_dict = loss_fn(query_emb, ctx_emb, positive_indices)
                 loss = loss_dict["loss"]
                 if args.gradient_accumulation_steps > 1:
@@ -496,6 +540,9 @@ def main():
     args = get_args()
     os.makedirs(args.output_dir, exist_ok=True)
     set_seed(args.seed)
+
+    # 抑制 HuggingFace scheduler __init__ 中的良性警告
+    warnings.filterwarnings("ignore", message=".*lr_scheduler.step.*optimizer.step.*")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info("Device: %s", device)
@@ -651,6 +698,7 @@ def main():
         scheduler = get_linear_schedule_with_warmup(
             optimizer, num_warmup_steps=warmup_steps_s2, num_training_steps=total_steps_s2,
         )
+        scaler = GradScaler() if args.fp16 else None  # 重置 GradScaler
 
         logger.info("Stage 2: total_steps=%d, warmup_steps=%d", total_steps_s2, warmup_steps_s2)
 
@@ -714,6 +762,7 @@ def main():
         scheduler = get_linear_schedule_with_warmup(
             optimizer, num_warmup_steps=warmup_steps_s3, num_training_steps=total_steps_s3,
         )
+        scaler = GradScaler() if args.fp16 else None  # 重置 GradScaler
 
         logger.info("Stage 3: total_steps=%d, warmup_steps=%d", total_steps_s3, warmup_steps_s3)
 

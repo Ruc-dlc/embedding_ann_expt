@@ -205,8 +205,9 @@ def main():
             else:
                 emb = encode_fn(input_ids, attention_mask)
 
-            # 统一 L2 归一化（所有模型，含 baseline）
-            emb = torch.nn.functional.normalize(emb, p=2, dim=-1)
+            # L2 归一化：DACL-DR 模型内部已归一化，baseline 需外部统一归一化
+            if args.model_type != "dacl-dr":
+                emb = torch.nn.functional.normalize(emb, p=2, dim=-1)
 
             all_embs.append(emb.cpu().numpy())
 

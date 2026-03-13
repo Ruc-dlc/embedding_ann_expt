@@ -287,9 +287,14 @@ class BiEncoderCollator:
                 else:
                     # 极端情况：batch 太小，循环采样
                     ghosts = []
-                    while len(ghosts) < deficit:
-                        ghosts.extend(ghost_candidates)
-                    ghosts = ghosts[:deficit]
+                    if len(ghost_candidates) > 0:
+                        while len(ghosts) < deficit:
+                            ghosts.extend(ghost_candidates)
+                        ghosts = ghosts[:deficit]
+                    else:
+                        # batch_size=1 且无其他 query 的 positive 可用，
+                        # 复制当前 query 的 positive 作为 ghost negative
+                        ghosts = [all_positives[i]] * deficit
 
                 for title, text in ghosts:
                     hard_negs.append({"title": title, "text": text})
