@@ -37,6 +37,7 @@ dependencies:
     # 评估与分析
     - scikit-learn>=1.3
     - rank-bm25>=0.2.2
+    - regex>=2023.0.0  # SimpleTokenizer 依赖（Unicode-aware 正则，非标准库 re）
 
     # 可视化
     - matplotlib>=3.7
