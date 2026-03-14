@@ -108,7 +108,24 @@ def get_args():
     # DataLoader
     parser.add_argument("--num_workers", type=int, default=4)
 
-    return parser.parse_args()
+    # Stage 2/3 显存优化：独立的 batch_size 和 gradient_accumulation_steps
+    parser.add_argument("--stage2_batch_size", type=int, default=None,
+                        help="Stage 2/3 的 batch_size（默认与 --batch_size 相同）。"
+                             "Stage 2/3 每个 query 有 8 条 passage (1 pos + 7 neg)，"
+                             "显存需求约为 Stage 1 的 4.5 倍，建议设为 --batch_size 的 1/4。")
+    parser.add_argument("--stage2_gradient_accumulation_steps", type=int, default=None,
+                        help="Stage 2/3 的 gradient accumulation steps（默认与 --gradient_accumulation_steps 相同）。"
+                             "配合 --stage2_batch_size 使用以保持等效 batch_size。")
+
+    args = parser.parse_args()
+
+    # 默认值: Stage 2/3 参数未指定时继承全局设置
+    if args.stage2_batch_size is None:
+        args.stage2_batch_size = args.batch_size
+    if args.stage2_gradient_accumulation_steps is None:
+        args.stage2_gradient_accumulation_steps = args.gradient_accumulation_steps
+
+    return args
 
 
 def set_seed(seed):
@@ -332,6 +349,7 @@ def train_stage(
     train_loader, dev_loader,
     stage_name, start_epoch, num_epochs,
     args, device,
+    gradient_accumulation_steps=None,
     # Stage 3 专用
     use_average_rank=False,
     dev_dataset=None,
@@ -343,8 +361,11 @@ def train_stage(
         stage_name: "stage1", "stage2", "stage3"
         start_epoch: 全局起始 epoch
         num_epochs: 本阶段 epoch 数
+        gradient_accumulation_steps: 本阶段的梯度累积步数（默认用 args.gradient_accumulation_steps）
         use_average_rank: True 则用 Average Rank 验证 + 早停
     """
+    if gradient_accumulation_steps is None:
+        gradient_accumulation_steps = args.gradient_accumulation_steps
     best_metric = None
     patience_counter = 0
     global_step = 0
@@ -396,8 +417,8 @@ def train_stage(
                         ctx_emb = torch.cat(ctx_emb_chunks, dim=0)
                     loss_dict = loss_fn(query_emb, ctx_emb, positive_indices)
                     loss = loss_dict["loss"]
-                    if args.gradient_accumulation_steps > 1:
-                        loss = loss / args.gradient_accumulation_steps
+                    if gradient_accumulation_steps > 1:
+                        loss = loss / gradient_accumulation_steps
             else:
                 query_emb = model.encode_query(query_input_ids, query_attention_mask)
                 if ctx_input_ids.size(0) <= ctx_chunk_size:
@@ -411,8 +432,8 @@ def train_stage(
                     ctx_emb = torch.cat(ctx_emb_chunks, dim=0)
                 loss_dict = loss_fn(query_emb, ctx_emb, positive_indices)
                 loss = loss_dict["loss"]
-                if args.gradient_accumulation_steps > 1:
-                    loss = loss / args.gradient_accumulation_steps
+                if gradient_accumulation_steps > 1:
+                    loss = loss / gradient_accumulation_steps
 
             # NaN/Inf 检测
             if torch.isnan(loss) or torch.isinf(loss):
@@ -431,7 +452,7 @@ def train_stage(
                 loss.backward()
 
             # Gradient accumulation step
-            if (step + 1) % args.gradient_accumulation_steps == 0:
+            if (step + 1) % gradient_accumulation_steps == 0:
                 if args.fp16:
                     scaler.unscale_(optimizer)
 
@@ -543,6 +564,11 @@ def main():
 
     # 抑制 HuggingFace scheduler __init__ 中的良性警告
     warnings.filterwarnings("ignore", message=".*lr_scheduler.step.*optimizer.step.*")
+
+    # 抑制 BertTokenizerFast 的 "using __call__ is faster than pad" 警告
+    # 原因：collator 使用先 tokenize 后 pad 的标准两步策略，这是 collator 场景的正确做法
+    os.environ["TOKENIZERS_PARALLELISM"] = "false"
+    logging.getLogger("transformers.tokenization_utils_base").setLevel(logging.ERROR)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info("Device: %s", device)
@@ -678,18 +704,18 @@ def main():
         )
 
         train_loader_s2 = DataLoader(
-            train_ds_s2, batch_size=args.batch_size, shuffle=True,
+            train_ds_s2, batch_size=args.stage2_batch_size, shuffle=True,
             collate_fn=collator_s2, num_workers=args.num_workers,
             pin_memory=True, drop_last=True,
         )
         dev_loader_s2 = DataLoader(
-            dev_ds_s2, batch_size=args.batch_size, shuffle=False,
+            dev_ds_s2, batch_size=args.stage2_batch_size, shuffle=False,
             collate_fn=collator_s2, num_workers=args.num_workers,
             pin_memory=True,
         )
 
         # 重新初始化 Optimizer + Scheduler (Stage 2)
-        total_steps_s2 = len(train_loader_s2) * args.stage2_epochs // args.gradient_accumulation_steps
+        total_steps_s2 = len(train_loader_s2) * args.stage2_epochs // args.stage2_gradient_accumulation_steps
         warmup_steps_s2 = int(total_steps_s2 * args.warmup_ratio)
 
         optimizer = torch.optim.AdamW(
@@ -700,13 +726,16 @@ def main():
         )
         scaler = GradScaler() if args.fp16 else None  # 重置 GradScaler
 
-        logger.info("Stage 2: total_steps=%d, warmup_steps=%d", total_steps_s2, warmup_steps_s2)
+        logger.info("Stage 2: batch_size=%d, grad_accum=%d, total_steps=%d, warmup_steps=%d",
+                     args.stage2_batch_size, args.stage2_gradient_accumulation_steps,
+                     total_steps_s2, warmup_steps_s2)
 
         best_s2 = train_stage(
             model, optimizer, scheduler, scaler, loss_fn,
             train_loader_s2, dev_loader_s2,
             "stage2", start_epoch=args.stage1_epochs, num_epochs=args.stage2_epochs,
             args=args, device=device,
+            gradient_accumulation_steps=args.stage2_gradient_accumulation_steps,
         )
         logger.info("Stage 2 complete. Best NLL loss: %.4f", best_s2 if best_s2 else float("inf"))
 
@@ -747,13 +776,13 @@ def main():
         )
 
         train_loader_s3 = DataLoader(
-            train_ds_s3, batch_size=args.batch_size, shuffle=True,
+            train_ds_s3, batch_size=args.stage2_batch_size, shuffle=True,
             collate_fn=collator_s3, num_workers=args.num_workers,
             pin_memory=True, drop_last=True,
         )
 
         # Stage 3 重新初始化 Optimizer + Scheduler
-        total_steps_s3 = len(train_loader_s3) * args.stage3_max_epochs // args.gradient_accumulation_steps
+        total_steps_s3 = len(train_loader_s3) * args.stage3_max_epochs // args.stage2_gradient_accumulation_steps
         warmup_steps_s3 = int(total_steps_s3 * args.warmup_ratio)
 
         optimizer = torch.optim.AdamW(
@@ -764,7 +793,9 @@ def main():
         )
         scaler = GradScaler() if args.fp16 else None  # 重置 GradScaler
 
-        logger.info("Stage 3: total_steps=%d, warmup_steps=%d", total_steps_s3, warmup_steps_s3)
+        logger.info("Stage 3: batch_size=%d, grad_accum=%d, total_steps=%d, warmup_steps=%d",
+                     args.stage2_batch_size, args.stage2_gradient_accumulation_steps,
+                     total_steps_s3, warmup_steps_s3)
 
         best_s3 = train_stage(
             model, optimizer, scheduler, scaler, loss_fn,
@@ -773,6 +804,7 @@ def main():
             start_epoch=args.stage1_epochs + args.stage2_epochs,
             num_epochs=args.stage3_max_epochs,
             args=args, device=device,
+            gradient_accumulation_steps=args.stage2_gradient_accumulation_steps,
             use_average_rank=True,
             dev_dataset=dev_ds_s3,
             tokenizer=tokenizer,

@@ -149,12 +149,16 @@ for DS in "${DATASETS[@]}"; do
     log_step "Log: $TRAIN_LOG"
 
     # Stage 1 + Stage 2 训练
+    # Stage 1: batch_size=128 (in-batch negatives, 128 queries + 128 passages ≈ 30GB)
+    # Stage 2: stage2_batch_size=32, grad_accum=4 (hard negatives, 32 queries + 256 passages ≈ 35GB)
     python train.py \
         --dataset "$DS" \
         --data_dir "$DATA_DIR" \
         --model_name "$BERT_BACKBONE" \
         --output_dir "$OUTPUT" \
         --batch_size 128 \
+        --stage2_batch_size 32 \
+        --stage2_gradient_accumulation_steps 4 \
         --learning_rate 2e-5 \
         --stage1_epochs 10 \
         --stage2_epochs 20 \
@@ -208,6 +212,8 @@ for DS in "${DATASETS[@]}"; do
         --model_name "$BERT_BACKBONE" \
         --output_dir "$OUTPUT" \
         --batch_size 128 \
+        --stage2_batch_size 32 \
+        --stage2_gradient_accumulation_steps 4 \
         --learning_rate 2e-5 \
         --stage1_epochs 10 \
         --stage2_epochs 20 \
@@ -248,6 +254,8 @@ python train.py \
     --model_name "$BERT_BACKBONE" \
     --output_dir "$W0_OUTPUT" \
     --batch_size 128 \
+    --stage2_batch_size 32 \
+    --stage2_gradient_accumulation_steps 4 \
     --learning_rate 2e-5 \
     --stage1_epochs 10 \
     --stage2_epochs 20 \
