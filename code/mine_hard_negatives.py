@@ -4,17 +4,25 @@ Hard Negative Mining 脚本
 用 Stage 2 训练完成的模型对全量 psgs_w100.tsv（~21M passages）进行离线难负例挖掘。
 
 流程：
-  1. 编码全部 21M passages → float32 向量
-  2. 构建临时 FAISS Flat 索引（精确最近邻搜索）
-  3. 对训练集中每个 query 检索 top-200
-  4. 去除已知正例（positive_ctxs 中的 passage_id）
-  5. 保留前 50 个作为候选难负例
-  6. 保存为 nq-train-mined.json / trivia-train-mined.json
+  1. 流式读取 TSV + 编码全部 21M passages → memory-mapped float32 向量文件
+  2. 释放 model + GPU 显存
+  3. 构建 FAISS Flat 索引（从 mmap 分批添加）
+  4. 重新加载 model，编码 query，检索 top-200
+  5. 释放 FAISS 索引
+  6. 根据 doc_idx 从 TSV 按需读取 title/text
+  7. 去除已知正例，保留前 50 个难负例
+  8. 保存为 nq-train-mined.json / trivia-train-mined.json
+
+内存优化（vs 旧版）：
+  - 旧版峰值 RAM：passage 向量 60 GB (numpy) + FAISS 复制 60 GB + 文本 12 GB ≈ 132+ GB → OOM Kill
+  - 新版峰值 RAM：FAISS 索引 60 GB + 杂项 < 10 GB ≈ 65-70 GB
+  - 核心改动：向量写 mmap 文件不占 RAM；编码时流式读 TSV 不持有全部文本；
+    检索完释放 FAISS 后再按需读 TSV 构建结果
 
 用法：
-  python mine_hard_negatives.py \
-    --checkpoint_dir ./checkpoints/nq/best_model_stage2 \
-    --dataset nq \
+  python mine_hard_negatives.py \\
+    --checkpoint_dir ./checkpoints/nq/best_model_stage2 \\
+    --dataset nq \\
     --output_path ./data_set/NQ/nq-train-mined.json
 
 参考：
@@ -23,6 +31,7 @@ Hard Negative Mining 脚本
 """
 
 import argparse
+import gc
 import json
 import logging
 import os
@@ -69,56 +78,99 @@ def get_args():
     return parser.parse_args()
 
 
-def load_corpus(corpus_path):
-    """加载 psgs_w100.tsv 语料库。
-
-    格式：id \\t text \\t title（带表头行）
-    返回：(passage_ids, titles, texts) 三个列表
-    """
-    logger.info("Loading corpus from %s ...", corpus_path)
+def load_corpus_ids_only(corpus_path):
+    """仅加载 passage_ids（省 ~10 GB RAM，不加载 title/text）。"""
+    logger.info("Loading passage IDs from %s ...", corpus_path)
     passage_ids = []
-    titles = []
-    texts = []
 
     with open(corpus_path, "r", encoding="utf-8") as f:
         for line_idx, line in enumerate(f):
             if line_idx == 0:
-                # 跳过表头
                 continue
-            parts = line.rstrip("\n").split("\t")
-            if len(parts) < 3:
+            parts = line.rstrip("\n").split("\t", 2)
+            if len(parts) < 1:
                 continue
-            pid, text, title = parts[0], parts[1], parts[2]
-            passage_ids.append(pid)
-            texts.append(normalize_passage(text))
-            titles.append(title)
+            passage_ids.append(parts[0])
 
             if (line_idx + 1) % 5000000 == 0:
-                logger.info("  Loaded %d passages...", line_idx)
+                logger.info("  Loaded %d passage IDs...", line_idx)
 
-    logger.info("Corpus loaded: %d passages", len(passage_ids))
-    return passage_ids, titles, texts
+    logger.info("Loaded %d passage IDs", len(passage_ids))
+    return passage_ids
+
+
+def lookup_passages_from_tsv(corpus_path, doc_indices_set):
+    """从 TSV 文件按需读取指定 doc_idx 的 title 和 text。
+
+    Args:
+        corpus_path: psgs_w100.tsv 路径
+        doc_indices_set: 需要读取的 doc_idx 集合（0-based，不含表头）
+
+    Returns:
+        dict: {doc_idx: {"title": ..., "text": ...}}
+    """
+    logger.info("Looking up %d passages from TSV...", len(doc_indices_set))
+    result = {}
+
+    with open(corpus_path, "r", encoding="utf-8") as f:
+        for line_idx, line in enumerate(f):
+            if line_idx == 0:
+                continue
+            doc_idx = line_idx - 1  # 0-based
+            if doc_idx in doc_indices_set:
+                parts = line.rstrip("\n").split("\t")
+                if len(parts) >= 3:
+                    result[doc_idx] = {
+                        "title": parts[2],
+                        "text": parts[1],
+                    }
+                if len(result) == len(doc_indices_set):
+                    break
+
+    logger.info("Looked up %d passages", len(result))
+    return result
+
+
+def count_corpus_lines(corpus_path):
+    """统计语料库行数（不含表头）。"""
+    logger.info("Counting passages in %s ...", corpus_path)
+    n = 0
+    with open(corpus_path, "r", encoding="utf-8") as f:
+        for _ in f:
+            n += 1
+    n -= 1  # 减去表头
+    logger.info("Total passages: %d", n)
+    return n
 
 
 @torch.no_grad()
-def encode_passages(model, tokenizer, titles, texts, args, device):
-    """编码全部 passages，返回 numpy float32 向量矩阵。
+def encode_passages_to_mmap(model, tokenizer, corpus_path, args, device, mmap_path):
+    """流式读取 TSV + 编码 → 直接写入 mmap 文件。
 
-    采用分批编码 + 追加到列表的策略，避免一次性分配 OOM。
+    不在 RAM 中持有全部 corpus 文本，也不持有全部向量。
+    每次只有一个 batch 的文本和向量在内存中。
+
+    Returns: (n_passages, dim)
     """
     model.eval()
-    all_embs = []
-    n = len(texts)
 
-    logger.info("Encoding %d passages (batch_size=%d)...", n, args.encode_batch_size)
+    n_passages = count_corpus_lines(corpus_path)
+
+    logger.info("Encoding %d passages (batch_size=%d) → mmap file...",
+                n_passages, args.encode_batch_size)
     t_start = time.time()
 
-    for start in tqdm(range(0, n, args.encode_batch_size), desc="Encoding passages"):
-        end = min(start + args.encode_batch_size, n)
-        batch_titles = titles[start:end]
-        batch_texts = texts[start:end]
+    dim = None
+    mmap_embs = None
+    batch_titles = []
+    batch_texts = []
+    global_idx = 0
 
-        # Tokenize: [CLS] title [SEP] text [SEP]
+    def flush_batch():
+        nonlocal dim, mmap_embs, global_idx
+        if not batch_titles:
+            return
+
         encodings = tokenizer(
             batch_titles,
             text_pair=batch_texts,
@@ -127,7 +179,6 @@ def encode_passages(model, tokenizer, titles, texts, args, device):
             padding=True,
             return_tensors="pt",
         )
-
         input_ids = encodings["input_ids"].to(device)
         attention_mask = encodings["attention_mask"].to(device)
 
@@ -137,12 +188,53 @@ def encode_passages(model, tokenizer, titles, texts, args, device):
         else:
             emb = model.encode_document(input_ids, attention_mask)
 
-        all_embs.append(emb.cpu().numpy())
+        emb_np = emb.cpu().numpy()
+
+        if mmap_embs is None:
+            dim = emb_np.shape[1]
+            mmap_embs = np.memmap(mmap_path, dtype="float32", mode="w+",
+                                  shape=(n_passages, dim))
+            logger.info("Created mmap file: %s (shape=[%d, %d], ~%.1f GB on disk)",
+                        mmap_path, n_passages, dim, n_passages * dim * 4 / 1e9)
+
+        mmap_embs[global_idx:global_idx + len(emb_np)] = emb_np
+        global_idx += len(emb_np)
+
+    with open(corpus_path, "r", encoding="utf-8") as f:
+        for line_idx, line in enumerate(f):
+            if line_idx == 0:
+                continue
+            parts = line.rstrip("\n").split("\t")
+            if len(parts) < 3:
+                batch_titles.append("")
+                batch_texts.append("")
+            else:
+                batch_titles.append(parts[2])
+                batch_texts.append(normalize_passage(parts[1]))
+
+            if len(batch_titles) >= args.encode_batch_size:
+                flush_batch()
+                batch_titles.clear()
+                batch_texts.clear()
+
+                if (global_idx // args.encode_batch_size) % 2000 == 0:
+                    logger.info("  Encoded %d / %d passages...", global_idx, n_passages)
+
+    # 最后一个不满 batch
+    flush_batch()
+
+    if mmap_embs is not None:
+        mmap_embs.flush()
 
     elapsed = time.time() - t_start
-    logger.info("Passage encoding complete: %.1f seconds (%.0f passages/sec)", elapsed, n / elapsed)
+    logger.info("Passage encoding complete: %.1f seconds (%.0f passages/sec)",
+                elapsed, n_passages / elapsed)
+    logger.info("Encoded %d passages, dim=%d", global_idx, dim)
 
-    return np.concatenate(all_embs, axis=0)
+    # 关闭 mmap 引用
+    del mmap_embs
+
+    return n_passages, dim
 
 
 @torch.no_grad()
@@ -192,28 +284,76 @@ def main():
 
     tokenizer = AutoTokenizer.from_pretrained(model.model_name)
 
-    # 加载语料库
-    passage_ids, titles, texts = load_corpus(args.corpus_path)
+    # =========================================================================
+    # Step 1: 编码 passages → mmap 文件（支持断点恢复）
+    #   如果 mmap 文件已存在且大小匹配，跳过编码（省 ~7 小时）
+    #   RAM 占用：仅 model (~0.5 GB) + 1 个 batch 的文本和向量 (~几十 MB)
+    #   mmap 文件 ~60 GB 在磁盘，OS 按需 page in/out
+    # =========================================================================
+    output_dir = os.path.dirname(args.output_path) or "."
+    mmap_path = os.path.join(output_dir, f".passage_embs_{args.dataset}.mmap")
 
-    # 构建 passage_id → index 映射
-    pid_to_idx = {pid: idx for idx, pid in enumerate(passage_ids)}
+    # 先数行数，用于校验 mmap 文件
+    n_passages = count_corpus_lines(args.corpus_path)
+    dim = 768  # bert-base hidden_size，后续会被实际值覆盖
 
-    # 编码全部 passages
-    passage_embs = encode_passages(model, tokenizer, titles, texts, args, device)
-    dim = passage_embs.shape[1]
-    logger.info("Passage embeddings shape: %s", passage_embs.shape)
+    # 检查是否有可复用的 mmap 文件
+    mmap_reused = False
+    if os.path.exists(mmap_path):
+        file_size = os.path.getsize(mmap_path)
+        # mmap 文件大小 = n_passages * dim * 4 (float32)
+        # 尝试用 dim=768 校验（BERT base 的 hidden_size）
+        expected_size = n_passages * 768 * 4
+        if file_size == expected_size:
+            dim = 768
+            logger.info("Found existing mmap file: %s (%.1f GB, matches %d x %d)",
+                        mmap_path, file_size / 1e9, n_passages, dim)
+            logger.info("Skipping passage encoding (reusing cached embeddings)")
+            mmap_reused = True
+        else:
+            logger.info("Existing mmap file size mismatch (got %d, expected %d). Re-encoding.",
+                        file_size, expected_size)
+            os.remove(mmap_path)
 
-    # 构建 FAISS Flat 索引
-    logger.info("Building FAISS Flat index (dim=%d)...", dim)
-    # 使用 inner product（向量已 L2 归一化，IP ≡ cosine）
+    if not mmap_reused:
+        n_passages, dim = encode_passages_to_mmap(
+            model, tokenizer, args.corpus_path, args, device, mmap_path
+        )
+
+    # 释放 model 和 GPU 显存
+    del model
+    torch.cuda.empty_cache()
+    gc.collect()
+    logger.info("Model released, GPU memory freed")
+
+    # =========================================================================
+    # Step 2: 构建 FAISS 索引（从 mmap 分批添加）
+    #   RAM 占用：FAISS 索引逐步增长到 ~60 GB + 每次 1M batch ~3 GB
+    #   注意：FAISS 内部 std::vector 可能在增长时 realloc
+    # =========================================================================
+    passage_embs = np.memmap(mmap_path, dtype="float32", mode="r", shape=(n_passages, dim))
+    logger.info("Passage embeddings mmap opened: shape=(%d, %d)", n_passages, dim)
+
+    logger.info("Building FAISS Flat index (dim=%d, n=%d)...", dim, n_passages)
     index = faiss.IndexFlatIP(dim)
-    index.add(passage_embs)
+
+    ADD_BATCH = 1_000_000
+    for add_start in range(0, n_passages, ADD_BATCH):
+        add_end = min(add_start + ADD_BATCH, n_passages)
+        batch = np.array(passage_embs[add_start:add_end])
+        index.add(batch)
+        del batch
+        if (add_start // ADD_BATCH) % 5 == 0:
+            logger.info("  Added %d / %d vectors to index", add_end, n_passages)
+
     logger.info("Index built: %d vectors", index.ntotal)
 
-    # 释放 passage_embs 节省内存
     del passage_embs
+    gc.collect()
 
-    # 加载训练数据
+    # =========================================================================
+    # Step 3: 加载训练数据 + 编码 queries
+    # =========================================================================
     if args.dataset == "nq":
         train_path = os.path.join(args.data_dir, "NQ", "nq-train.json")
     else:
@@ -224,7 +364,6 @@ def main():
         train_data = json.load(f)
     logger.info("Loaded %d training samples", len(train_data))
 
-    # 收集 queries 和 positive passage ids
     questions = []
     positive_pid_sets = []
     valid_indices = []
@@ -243,16 +382,51 @@ def main():
 
     logger.info("Valid queries for mining: %d", len(questions))
 
-    # 编码 queries
+    # 重新加载 model 编码 queries
+    logger.info("Reloading model for query encoding...")
+    model = BiEncoder.from_pretrained(args.checkpoint_dir)
+    model.to(device)
+
     query_embs = encode_queries(model, tokenizer, questions, args, device)
     logger.info("Query embeddings shape: %s", query_embs.shape)
 
-    # 批量检索 top-K
+    del model
+    torch.cuda.empty_cache()
+    gc.collect()
+
+    # =========================================================================
+    # Step 4: 检索 top-K
+    # =========================================================================
     logger.info("Searching top-%d for each query...", args.top_k)
     scores, result_ids = index.search(query_embs, args.top_k)
     logger.info("Search complete")
 
-    # 构建 mined hard negatives
+    # 释放 FAISS 索引（~60 GB）
+    del index
+    del query_embs
+    gc.collect()
+    logger.info("FAISS index released, ~60 GB RAM freed")
+
+    # =========================================================================
+    # Step 5: 按需读取 passage 内容
+    #   先收集所有需要的 doc_idx，然后一次遍历 TSV 读取
+    #   RAM 占用：passage_ids ~2 GB + lookup 结果（远小于全量）
+    # =========================================================================
+    passage_ids = load_corpus_ids_only(args.corpus_path)
+
+    needed_doc_indices = set()
+    for i in range(len(valid_indices)):
+        for rank in range(args.top_k):
+            doc_idx = int(result_ids[i, rank])
+            if doc_idx >= 0:
+                needed_doc_indices.add(doc_idx)
+    logger.info("Unique passages needed for results: %d", len(needed_doc_indices))
+
+    passage_lookup = lookup_passages_from_tsv(args.corpus_path, needed_doc_indices)
+
+    # =========================================================================
+    # Step 6: 构建 mined hard negatives
+    # =========================================================================
     logger.info("Building mined hard negatives (keep_top_n=%d)...", args.keep_top_n)
     mined_data = []
 
@@ -266,12 +440,13 @@ def main():
             if doc_idx < 0:
                 continue
             pid = passage_ids[doc_idx]
-            # 去除已知正例
             if pid in pos_pids:
                 continue
+
+            info = passage_lookup.get(doc_idx, {})
             hard_negative_ctxs.append({
-                "title": titles[doc_idx],
-                "text": texts[doc_idx],
+                "title": info.get("title", ""),
+                "text": info.get("text", ""),
                 "passage_id": pid,
                 "score": float(scores[i, rank]),
             })
@@ -290,16 +465,23 @@ def main():
 
     logger.info("Mined %d samples", len(mined_data))
 
-    # 原子写入
-    output_dir = os.path.dirname(args.output_path)
-    if output_dir:
-        os.makedirs(output_dir, exist_ok=True)
+    # =========================================================================
+    # Step 7: 保存结果 + 清理
+    # =========================================================================
+    save_dir = os.path.dirname(args.output_path)
+    if save_dir:
+        os.makedirs(save_dir, exist_ok=True)
 
     tmp_path = args.output_path + ".tmp"
     with open(tmp_path, "w", encoding="utf-8") as f:
         json.dump(mined_data, f, ensure_ascii=False, indent=2)
     os.replace(tmp_path, args.output_path)
     logger.info("Saved mined data to %s", args.output_path)
+
+    # 清理 mmap 临时文件
+    if os.path.exists(mmap_path):
+        os.remove(mmap_path)
+        logger.info("Cleaned up mmap file: %s", mmap_path)
 
     # 统计
     hn_counts = [len(s["hard_negative_ctxs"]) for s in mined_data]

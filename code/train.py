@@ -753,7 +753,9 @@ def main():
     # ====================
     # Stage 3: Model Hard Negatives (可选)
     # ====================
+    stage3_ran = False
     if args.mined_data_path and os.path.exists(args.mined_data_path):
+        stage3_ran = True
         logger.info("=" * 60)
         logger.info("Stage 3: Model Hard Negatives (epochs %d-%d, early stopping patience=%d)",
                     args.stage1_epochs + args.stage2_epochs,
@@ -823,12 +825,20 @@ def main():
         logger.info("No mined data path provided or file not found. Skipping Stage 3.")
         logger.info("To run Stage 3, first run mine_hard_negatives.py, then re-run with --mined_data_path")
 
-    # 最终保存
-    final_dir = os.path.join(args.output_dir, "best_model_%s" % args.dataset)
-    model.save_pretrained(final_dir)
-    logger.info("=" * 60)
-    logger.info("Training complete. Final model saved to %s", final_dir)
-    logger.info("=" * 60)
+    # 最终保存：仅在 Stage 3 实际运行后才保存 best_model_{dataset}
+    # 避免 Stage 1+2 训练时误创建最终模型目录，导致后续 Stage 3 被断点续跑跳过
+    if stage3_ran:
+        final_dir = os.path.join(args.output_dir, "best_model_%s" % args.dataset)
+        model.save_pretrained(final_dir)
+        logger.info("=" * 60)
+        logger.info("Training complete. Final model saved to %s", final_dir)
+        logger.info("=" * 60)
+    else:
+        logger.info("=" * 60)
+        logger.info("Stage 1+2 complete. Best model: %s",
+                     os.path.join(args.output_dir, "best_model_stage2"))
+        logger.info("To complete training, run mine_hard_negatives.py then re-run with --resume_stage 3")
+        logger.info("=" * 60)
 
 
 if __name__ == "__main__":
