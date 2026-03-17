@@ -1,3 +1,6 @@
 /code/data_set/
 /code/bert-base-uncase-backbone
 /code/DPR
+/code/ance-backbone
+/code/dpr-backbone
+/code/contriever-backbone

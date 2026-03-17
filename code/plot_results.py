@@ -94,8 +94,8 @@ def extract_hnsw_data(model_results):
     }
 
 
-def extract_ivf_data(model_results, idx_name):
-    """从 IVF/IVF-PQ 结果中提取 (nprobe_values, recall_100, latency, qps)。"""
+def extract_ivf_data(model_results, idx_name="ivf"):
+    """从 IVF 结果中提取 (nprobe_values, recall_100, latency, qps)。"""
     ivf = model_results.get("indexes", {}).get(idx_name, {})
     if not ivf:
         return None
@@ -208,12 +208,12 @@ def plot_sensitivity_hnsw(all_results, output_dir, dataset_label):
     logger.info("Saved: %s", path)
 
 
-def plot_sensitivity_ivf(all_results, idx_name, output_dir, dataset_label):
-    """绘制 IVF/IVF-PQ nprobe 敏感度曲线。"""
+def plot_sensitivity_ivf(all_results, output_dir, dataset_label):
+    """绘制 IVF nprobe 敏感度曲线。"""
     fig, ax = plt.subplots(1, 1, figsize=(8, 6))
 
     for model_type, results in all_results.items():
-        data = extract_ivf_data(results, idx_name)
+        data = extract_ivf_data(results)
         if data is None:
             continue
 
@@ -224,12 +224,12 @@ def plot_sensitivity_ivf(all_results, idx_name, output_dir, dataset_label):
 
     ax.set_xlabel("nprobe", fontsize=12)
     ax.set_ylabel("Recall@100", fontsize=12)
-    ax.set_title("%s nprobe Sensitivity (%s)" % (idx_name.upper(), dataset_label), fontsize=14)
+    ax.set_title("IVF nprobe Sensitivity (%s)" % dataset_label, fontsize=14)
     ax.set_xscale("log", base=2)
     ax.legend(fontsize=10)
     ax.grid(True, alpha=0.3)
 
-    path = os.path.join(output_dir, "sensitivity_%s_%s.png" % (idx_name, dataset_label))
+    path = os.path.join(output_dir, "sensitivity_ivf_%s.png" % dataset_label)
     fig.savefig(path, dpi=150, bbox_inches="tight")
     plt.close(fig)
     logger.info("Saved: %s", path)
@@ -280,12 +280,7 @@ def main():
     # IVF 图表
     plot_recall_latency(all_results, "ivf", args.output_dir, dataset_label)
     plot_recall_qps(all_results, "ivf", args.output_dir, dataset_label)
-    plot_sensitivity_ivf(all_results, "ivf", args.output_dir, dataset_label)
-
-    # IVF-PQ 图表
-    plot_recall_latency(all_results, "ivf_pq", args.output_dir, dataset_label)
-    plot_recall_qps(all_results, "ivf_pq", args.output_dir, dataset_label)
-    plot_sensitivity_ivf(all_results, "ivf_pq", args.output_dir, dataset_label)
+    plot_sensitivity_ivf(all_results, args.output_dir, dataset_label)
 
     logger.info("All plots saved to %s", args.output_dir)
 

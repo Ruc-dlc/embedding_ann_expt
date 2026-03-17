@@ -4,12 +4,12 @@
 #
 # 执行策略：增量流水线（训练 → 编码 → 评估 → 持久化 → 清理 → 下一个模型）
 #
-# Phase 1: DACL-DR NQ 全流程（训练 → 编码 → 评估 NQ-test）
-# Phase 2: DACL-DR TriviaQA 全流程（训练 → 编码 → 评估 TriviaQA-test）
-# Phase 3: DPR 评估（编码 → 评估 NQ-test + TriviaQA-test）
-# Phase 4: ANCE 评估（编码 → 评估 NQ-test + TriviaQA-test）
-# Phase 5: Contriever 评估（编码 → 评估 NQ-test + TriviaQA-test）
-# Phase 6: w=0 Baseline 全流程（训练 → 编码 → 评估 NQ-test）
+# Phase 1: DPR 评估（编码 → 评估 NQ-test + TriviaQA-test）  ← 先跑 baseline 验证流水线
+# Phase 2: ANCE 评估（编码 → 评估 NQ-test + TriviaQA-test）
+# Phase 3: Contriever 评估（编码 → 评估 NQ-test + TriviaQA-test）
+# Phase 4: DACL-DR NQ 全流程（训练 → 编码 → 评估 NQ-test）
+# Phase 5: DACL-DR TriviaQA 全流程（训练 → 编码 → 评估 TriviaQA-test）
+# Phase 6: w=0 Baseline 全流程（训练 → 编码 → 评估 NQ-test + TriviaQA-test）
 # Phase 7: Embedding 空间分析 + t-SNE 可视化 + 结果绘图
 #
 # 断点续跑：每个步骤前检查产出文件，已完成的自动跳过
@@ -461,10 +461,63 @@ log_step "GPU info:"
 nvidia-smi --query-gpu=name,memory.total,memory.free,driver_version --format=csv,noheader
 
 ################################################################################
-# Phase 1: DACL-DR NQ 全流程（训练 → 编码 → 评估 NQ-test）
+# Phase 1: DPR 评估（编码 → 评估 NQ-test + TriviaQA-test）
+#   先跑 baseline，验证评估流水线（编码/索引/评估）无误
 ################################################################################
-log_section "Phase 1: DACL-DR NQ (train + encode + evaluate NQ-test)"
+log_section "Phase 1: DPR Evaluation (encode + evaluate NQ & TriviaQA)"
 PHASE1_START=$(date +%s)
+
+run_encode_evaluate \
+    "dpr" "dpr" \
+    "$DPR_CTX_PATH" \
+    "$DPR_QUERY_PATH" \
+    "dpr" \
+    "nq" "trivia"
+
+log_step "Phase 1 完成: DPR ($(elapsed_since $PHASE1_START))"
+log_step ">>> DPR 结果已持久化: $RESULT_DIR/nq/dpr_nq.json, $RESULT_DIR/trivia/dpr_trivia.json <<<"
+
+################################################################################
+# Phase 2: ANCE 评估（编码 → 评估 NQ-test + TriviaQA-test）
+################################################################################
+log_section "Phase 2: ANCE Evaluation (encode + evaluate NQ & TriviaQA)"
+PHASE2_START=$(date +%s)
+
+run_encode_evaluate \
+    "ance" "ance" \
+    "$ANCE_CTX_PATH" \
+    "$ANCE_QUERY_PATH" \
+    "ance" \
+    "nq" "trivia"
+
+log_step "Phase 2 完成: ANCE ($(elapsed_since $PHASE2_START))"
+log_step ">>> ANCE 结果已持久化: $RESULT_DIR/nq/ance_nq.json, $RESULT_DIR/trivia/ance_trivia.json <<<"
+
+################################################################################
+# Phase 3: Contriever 评估（编码 → 评估 NQ-test + TriviaQA-test）
+################################################################################
+log_section "Phase 3: Contriever Evaluation (encode + evaluate NQ & TriviaQA)"
+PHASE3_START=$(date +%s)
+
+run_encode_evaluate \
+    "contriever" "contriever" \
+    "$CONTRIEVER_PATH" \
+    "$CONTRIEVER_PATH" \
+    "contriever" \
+    "nq" "trivia"
+
+log_step "Phase 3 完成: Contriever ($(elapsed_since $PHASE3_START))"
+log_step ">>> Contriever 结果已持久化: $RESULT_DIR/nq/contriever_nq.json, $RESULT_DIR/trivia/contriever_trivia.json <<<"
+
+log_section "=== Baseline 评估全部完成 ==="
+log_step "DPR/ANCE/Contriever 结果均已生成，请检查 $RESULT_DIR/ 下的 JSON 文件。"
+log_step "若结果正确，后续 Phase 将继续训练和评估 DACL-DR 模型。"
+
+################################################################################
+# Phase 4: DACL-DR NQ 全流程（训练 → 编码 → 评估 NQ-test）
+################################################################################
+log_section "Phase 4: DACL-DR NQ (train + encode + evaluate NQ-test)"
+PHASE4_START=$(date +%s)
 
 # 训练 Stage 1+2+3
 train_dacl_dr "nq" "0.4" "$CKPT_DIR/nq"
@@ -477,15 +530,14 @@ run_encode_evaluate \
     "dacl-dr-nq" \
     "nq"
 
-log_step "Phase 1 完成: DACL-DR NQ ($(elapsed_since $PHASE1_START))"
-log_step ">>> 第一个结果已持久化: $RESULT_DIR/nq/dacl-dr_nq.json <<<"
-log_step ">>> 可 scp 到本地分析 <<<"
+log_step "Phase 4 完成: DACL-DR NQ ($(elapsed_since $PHASE4_START))"
+log_step ">>> DACL-DR NQ 结果已持久化: $RESULT_DIR/nq/dacl-dr_nq.json <<<"
 
 ################################################################################
-# Phase 2: DACL-DR TriviaQA 全流程（训练 → 编码 → 评估 TriviaQA-test）
+# Phase 5: DACL-DR TriviaQA 全流程（训练 → 编码 → 评估 TriviaQA-test）
 ################################################################################
-log_section "Phase 2: DACL-DR TriviaQA (train + encode + evaluate TriviaQA-test)"
-PHASE2_START=$(date +%s)
+log_section "Phase 5: DACL-DR TriviaQA (train + encode + evaluate TriviaQA-test)"
+PHASE5_START=$(date +%s)
 
 # 训练 Stage 1+2+3
 train_dacl_dr "trivia" "0.4" "$CKPT_DIR/trivia"
@@ -498,61 +550,13 @@ run_encode_evaluate \
     "dacl-dr-trivia" \
     "trivia"
 
-log_step "Phase 2 完成: DACL-DR TriviaQA ($(elapsed_since $PHASE2_START))"
-log_step ">>> 第二个结果已持久化: $RESULT_DIR/trivia/dacl-dr_trivia.json <<<"
+log_step "Phase 5 完成: DACL-DR TriviaQA ($(elapsed_since $PHASE5_START))"
+log_step ">>> DACL-DR TriviaQA 结果已持久化: $RESULT_DIR/trivia/dacl-dr_trivia.json <<<"
 
 ################################################################################
-# Phase 3: DPR 评估（编码 → 评估 NQ-test + TriviaQA-test）
+# Phase 6: w=0 Baseline 全流程（训练 → 编码 → 评估 NQ-test + TriviaQA-test）
 ################################################################################
-log_section "Phase 3: DPR Evaluation (encode + evaluate NQ & TriviaQA)"
-PHASE3_START=$(date +%s)
-
-run_encode_evaluate \
-    "dpr" "dpr" \
-    "$DPR_CTX_PATH" \
-    "$DPR_QUERY_PATH" \
-    "dpr" \
-    "nq" "trivia"
-
-log_step "Phase 3 完成: DPR ($(elapsed_since $PHASE3_START))"
-log_step ">>> DPR 结果已持久化: $RESULT_DIR/nq/dpr_nq.json, $RESULT_DIR/trivia/dpr_trivia.json <<<"
-
-################################################################################
-# Phase 4: ANCE 评估（编码 → 评估 NQ-test + TriviaQA-test）
-################################################################################
-log_section "Phase 4: ANCE Evaluation (encode + evaluate NQ & TriviaQA)"
-PHASE4_START=$(date +%s)
-
-run_encode_evaluate \
-    "ance" "ance" \
-    "$ANCE_CTX_PATH" \
-    "$ANCE_QUERY_PATH" \
-    "ance" \
-    "nq" "trivia"
-
-log_step "Phase 4 完成: ANCE ($(elapsed_since $PHASE4_START))"
-log_step ">>> ANCE 结果已持久化: $RESULT_DIR/nq/ance_nq.json, $RESULT_DIR/trivia/ance_trivia.json <<<"
-
-################################################################################
-# Phase 5: Contriever 评估（编码 → 评估 NQ-test + TriviaQA-test）
-################################################################################
-log_section "Phase 5: Contriever Evaluation (encode + evaluate NQ & TriviaQA)"
-PHASE5_START=$(date +%s)
-
-run_encode_evaluate \
-    "contriever" "contriever" \
-    "$CONTRIEVER_PATH" \
-    "$CONTRIEVER_PATH" \
-    "contriever" \
-    "nq" "trivia"
-
-log_step "Phase 5 完成: Contriever ($(elapsed_since $PHASE5_START))"
-log_step ">>> Contriever 结果已持久化: $RESULT_DIR/nq/contriever_nq.json, $RESULT_DIR/trivia/contriever_trivia.json <<<"
-
-################################################################################
-# Phase 6: w=0 Baseline 全流程（训练 → 编码 → 评估 NQ-test）
-################################################################################
-log_section "Phase 6: w=0 Baseline (train + encode + evaluate NQ-test)"
+log_section "Phase 6: w=0 Baseline (train + encode + evaluate NQ-test + TriviaQA-test)"
 PHASE6_START=$(date +%s)
 
 mkdir -p "$W0_OUTPUT"
@@ -560,17 +564,17 @@ mkdir -p "$W0_OUTPUT"
 # 训练 Stage 1+2（无 Stage 3）
 train_dacl_dr "nq" "0.0" "$W0_OUTPUT" "true"
 
-# 编码 + 评估 NQ-test + 清理索引
+# 编码 + 评估 NQ-test + TriviaQA-test + 清理索引
 # w=0 的最终模型就是 best_model_stage2
 run_encode_evaluate \
     "w0" "dacl-dr" \
     "$W0_OUTPUT/best_model_stage2" \
     "$W0_OUTPUT/best_model_stage2" \
     "w0-nq" \
-    "nq"
+    "nq" "trivia"
 
 log_step "Phase 6 完成: w=0 Baseline ($(elapsed_since $PHASE6_START))"
-log_step ">>> w=0 结果已持久化: $RESULT_DIR/nq/w0_nq.json <<<"
+log_step ">>> w=0 结果已持久化: $RESULT_DIR/nq/w0_nq.json, $RESULT_DIR/trivia/w0_trivia.json <<<"
 
 ################################################################################
 # Phase 7: Embedding 空间分析 + t-SNE 可视化 + 结果绘图

@@ -7,7 +7,7 @@
   - QPS / Latency (ms/query)
   - 距离计算次数 (HNSW: faiss.cvar.hnsw_stats.ndis)
 
-支持 HNSW/IVF/IVF-PQ 的参数扫描。
+支持 HNSW/IVF 的参数扫描。
 
 用法：
   python evaluate.py \
@@ -23,7 +23,7 @@
 """
 
 import argparse
-import ast
+import csv
 import json
 import logging
 import os
@@ -78,6 +78,7 @@ def load_test_data(dataset, data_dir):
 
     测试集格式为 TSV：question \\t answers
     answers 列是 Python 列表的字符串表示。
+    使用 csv.reader 以正确处理 CSV 双引号转义（TriviaQA 中存在）。
     """
     if dataset == "nq":
         path = os.path.join(data_dir, "NQ", "nq-test.csv")
@@ -88,15 +89,12 @@ def load_test_data(dataset, data_dir):
     answers_list = []
 
     with open(path, "r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
+        reader = csv.reader(f, delimiter="\t")
+        for row in reader:
+            if len(row) < 2:
                 continue
-            parts = line.split("\t")
-            if len(parts) < 2:
-                continue
-            question = normalize_question(parts[0])
-            answers = ast.literal_eval(parts[1])
+            question = normalize_question(row[0])
+            answers = eval(row[1])
             questions.append(question)
             answers_list.append(answers)
 
@@ -280,8 +278,8 @@ def compute_recall_at_k(result_ids_ann, result_ids_flat, k_values):
     for k in k_values:
         recall_sum = 0.0
         for qi in range(result_ids_ann.shape[0]):
-            ann_set = set(result_ids_ann[qi, :k].tolist())
-            flat_set = set(result_ids_flat[qi, :k].tolist())
+            ann_set = set(x for x in result_ids_ann[qi, :k].tolist() if x >= 0)
+            flat_set = set(x for x in result_ids_flat[qi, :k].tolist() if x >= 0)
             if len(flat_set) > 0:
                 recall_sum += len(ann_set & flat_set) / len(flat_set)
         results[k] = recall_sum / result_ids_ann.shape[0]
@@ -450,15 +448,12 @@ def main():
         results["indexes"]["hnsw"] = hnsw_results
         del hnsw_index
 
-    # ====== IVF / IVF-PQ 参数扫描 ======
-    for prefix, idx_name in [("ivf_nlist", "ivf"), ("ivf_pq_nlist", "ivf_pq")]:
-        idx_files = sorted([f for f in os.listdir(args.index_dir) if f.startswith(prefix) and f.endswith(".index")])
-        if not idx_files:
-            continue
-
+    # ====== IVF 参数扫描 ======
+    idx_files = sorted([f for f in os.listdir(args.index_dir) if f.startswith("ivf_nlist") and f.endswith(".index")])
+    if idx_files:
         idx_path = os.path.join(args.index_dir, idx_files[0])
         logger.info("=" * 50)
-        logger.info("Evaluating %s index: %s", idx_name, idx_path)
+        logger.info("Evaluating IVF index: %s", idx_path)
         ivf_index = faiss.read_index(idx_path)
 
         ivf_results = {}
@@ -485,7 +480,7 @@ def main():
             logger.info("  nprobe=%d: Top-100=%.4f, Recall@100=%.4f, Latency=%.2fms, QPS=%.0f",
                         nprobe, top_k_acc.get(100, 0), recall.get(100, 0), latency, qps)
 
-        results["indexes"][idx_name] = ivf_results
+        results["indexes"]["ivf"] = ivf_results
         del ivf_index
 
     # 保存结果

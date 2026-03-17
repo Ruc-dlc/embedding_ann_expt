@@ -1,11 +1,10 @@
 """
 FAISS 索引构建脚本
 
-从编码好的 passage embeddings 构建 4 种 FAISS 索引：
+从编码好的 passage embeddings 构建 3 种 FAISS 索引：
   - Flat (暴力精确搜索)
   - HNSW (M=32, efConstruction=200)
   - IVF (nlist=4096)
-  - IVF-PQ (nlist=4096, m=48, nbits=8)
 
 用法：
   python build_index.py --embeddings_dir ./embeddings/dacl-dr --index_type all
@@ -36,7 +35,7 @@ def get_args():
     parser.add_argument("--embeddings_dir", type=str, required=True,
                         help="包含 passage_embeddings.npy 的目录")
     parser.add_argument("--index_type", type=str, required=True,
-                        choices=["flat", "hnsw", "ivf", "ivf_pq", "all"])
+                        choices=["flat", "hnsw", "ivf", "all"])
     parser.add_argument("--output_dir", type=str, default=None,
                         help="索引输出目录（默认与 embeddings_dir 同级 indexes/ 目录）")
 
@@ -46,10 +45,6 @@ def get_args():
 
     # IVF 参数
     parser.add_argument("--ivf_nlist", type=int, default=4096)
-
-    # IVF-PQ 参数
-    parser.add_argument("--pq_m", type=int, default=48, help="PQ 子向量数")
-    parser.add_argument("--pq_nbits", type=int, default=8, help="PQ 每子向量 bits")
 
     # IVF 训练
     parser.add_argument("--ivf_train_size", type=int, default=1000000,
@@ -117,33 +112,6 @@ def build_ivf(embs, dim, nlist, train_size):
     return index
 
 
-def build_ivf_pq(embs, dim, nlist, pq_m, pq_nbits, train_size):
-    """构建 IVF-PQ (倒排+乘积量化) 索引。"""
-    logger.info("Building IVF-PQ index (dim=%d, nlist=%d, m=%d, nbits=%d)...",
-                dim, nlist, pq_m, pq_nbits)
-    quantizer = faiss.IndexFlatIP(dim)
-    index = faiss.IndexIVFPQ(quantizer, dim, nlist, pq_m, pq_nbits, faiss.METRIC_INNER_PRODUCT)
-
-    # 训练
-    n = embs.shape[0]
-    if n > train_size:
-        train_indices = np.random.choice(n, train_size, replace=False)
-        train_data = embs[train_indices]
-    else:
-        train_data = embs
-
-    logger.info("Training IVF-PQ with %d vectors...", train_data.shape[0])
-    t = time.time()
-    index.train(train_data)
-    logger.info("IVF-PQ training done: %.1f seconds", time.time() - t)
-
-    logger.info("Adding vectors to IVF-PQ index...")
-    t = time.time()
-    index.add(embs)
-    logger.info("IVF-PQ index built: %d vectors, %.1f seconds", index.ntotal, time.time() - t)
-    return index
-
-
 def save_index(index, output_dir, name):
     """保存 FAISS 索引到磁盘。"""
     os.makedirs(output_dir, exist_ok=True)
@@ -162,7 +130,7 @@ def main():
 
     types_to_build = []
     if args.index_type == "all":
-        types_to_build = ["flat", "hnsw", "ivf", "ivf_pq"]
+        types_to_build = ["flat", "hnsw", "ivf"]
     else:
         types_to_build = [args.index_type]
 
@@ -180,10 +148,6 @@ def main():
         elif idx_type == "ivf":
             index = build_ivf(embs, dim, args.ivf_nlist, args.ivf_train_size)
             save_index(index, output_dir, "ivf_nlist%d" % args.ivf_nlist)
-
-        elif idx_type == "ivf_pq":
-            index = build_ivf_pq(embs, dim, args.ivf_nlist, args.pq_m, args.pq_nbits, args.ivf_train_size)
-            save_index(index, output_dir, "ivf_pq_nlist%d_m%d" % (args.ivf_nlist, args.pq_m))
 
         del index  # 释放内存
 

@@ -47,6 +47,9 @@ dependencies:
     - pyyaml>=6.0
     - tqdm>=4.65
 
+    # BEIR zero-shot 评测
+    - beir>=2.0.0
+
     # 测试
     - pytest>=7.0
 
