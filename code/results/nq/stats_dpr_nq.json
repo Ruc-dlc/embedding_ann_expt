@@ -1,0 +1,18 @@
+{
+  "model_type": "dpr",
+  "dataset": "nq",
+  "num_samples": 6515,
+  "positive_cosine_mean": 0.691640317440033,
+  "positive_cosine_var": 0.002215001964941621,
+  "negative_cosine_mean": 0.4105207920074463,
+  "negative_cosine_var": 0.002907665679231286,
+  "alignment": 0.6167193651199341,
+  "uniformity": -1.9835861921310425,
+  "positive_cosine_distribution": {
+    "min": 0.423103928565979,
+    "max": 0.7971693873405457,
+    "p25": 0.6681506037712097,
+    "p50": 0.6989948749542236,
+    "p75": 0.7248202264308929
+  }
+}

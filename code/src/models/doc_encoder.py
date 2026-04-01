@@ -2,8 +2,6 @@
 Document编码器
 
 本模块实现Document专用的编码器，将文档文本转换为稠密向量表示。
-
-论文章节：第4章 4.1节 - Document编码
 """
 
 import torch
@@ -163,7 +161,6 @@ class DocEncoderWithPrefix(DocEncoder):
         """
         初始化前缀token IDs
         """
-        # TODO: 实现前缀初始化
         pass
     
     def forward(
@@ -181,5 +178,4 @@ class DocEncoderWithPrefix(DocEncoder):
         Returns:
             Document向量 [batch_size, output_dim]
         """
-        # TODO: 实现带前缀的编码
         return super().forward(input_ids, attention_mask, **kwargs)

@@ -1,0 +1,1024 @@
+2026-03-16 09:00:50 - INFO - __main__ - Device: cuda
+2026-03-16 09:00:50 - INFO - __main__ - Args: {
+  "dataset": "trivia",
+  "data_dir": "./data_set",
+  "mined_data_path": null,
+  "model_name": "./bert-base-uncase-backbone",
+  "pooling_type": "cls",
+  "shared_encoder": false,
+  "normalize": true,
+  "batch_size": 128,
+  "learning_rate": 2e-05,
+  "warmup_ratio": 0.1,
+  "weight_decay": 0.0,
+  "max_grad_norm": 2.0,
+  "fp16": true,
+  "temperature": 0.05,
+  "distance_weight": 0.4,
+  "num_hard_negatives": 7,
+  "seed": 42,
+  "gradient_accumulation_steps": 1,
+  "max_query_length": 256,
+  "max_passage_length": 256,
+  "stage1_epochs": 10,
+  "stage2_epochs": 20,
+  "stage3_max_epochs": 10,
+  "early_stopping_patience": 5,
+  "val_av_rank_max_qs": 2000,
+  "output_dir": "./checkpoints/trivia",
+  "log_steps": 50,
+  "resume_checkpoint": null,
+  "resume_stage": 1,
+  "num_workers": 4,
+  "stage2_batch_size": 32,
+  "stage2_gradient_accumulation_steps": 4
+}
+2026-03-16 09:00:51 - INFO - __main__ - Train: ./data_set/TriviaQA/trivia-train.json
+2026-03-16 09:00:51 - INFO - __main__ - Dev: ./data_set/TriviaQA/trivia-dev.json
+2026-03-16 09:00:51 - INFO - __main__ - Model loaded: ./bert-base-uncase-backbone (shared=False, normalize=True, pooling=cls)
+2026-03-16 09:00:51 - INFO - __main__ - ============================================================
+2026-03-16 09:00:51 - INFO - __main__ - Stage 1: In-Batch Negatives (epochs 0-9)
+2026-03-16 09:00:51 - INFO - __main__ - ============================================================
+2026-03-16 09:01:26 - WARNING - src.data.dataset - Filtered 18372 samples with empty positive_ctxs (23.3%)
+2026-03-16 09:01:27 - INFO - src.data.dataset - Loaded 60413 samples from ./data_set/TriviaQA/trivia-train.json (stage=in_batch)
+2026-03-16 09:01:30 - WARNING - src.data.dataset - Filtered 2077 samples with empty positive_ctxs (23.5%)
+2026-03-16 09:01:30 - INFO - src.data.dataset - Loaded 6760 samples from ./data_set/TriviaQA/trivia-dev.json (stage=in_batch)
+2026-03-16 09:01:31 - INFO - __main__ - Stage 1: total_steps=4710, warmup_steps=471
+2026-03-16 09:01:53 - INFO - __main__ - [stage1] Epoch 0 Step 50/471 | loss=4.2065 infonce=4.0606 dist=0.3647 | lr=2.12e-06
+2026-03-16 09:02:13 - INFO - __main__ - [stage1] Epoch 0 Step 100/471 | loss=2.8372 infonce=2.6928 dist=0.3612 | lr=4.25e-06
+2026-03-16 09:02:32 - INFO - __main__ - [stage1] Epoch 0 Step 150/471 | loss=2.1359 infonce=1.9952 dist=0.3519 | lr=6.37e-06
+2026-03-16 09:02:52 - INFO - __main__ - [stage1] Epoch 0 Step 200/471 | loss=1.7382 infonce=1.5988 dist=0.3486 | lr=8.49e-06
+2026-03-16 09:03:10 - INFO - __main__ - [stage1] Epoch 0 Step 250/471 | loss=1.4841 infonce=1.3456 dist=0.3464 | lr=1.06e-05
+2026-03-16 09:03:30 - INFO - __main__ - [stage1] Epoch 0 Step 300/471 | loss=1.3062 infonce=1.1681 dist=0.3453 | lr=1.27e-05
+2026-03-16 09:03:49 - INFO - __main__ - [stage1] Epoch 0 Step 350/471 | loss=1.1746 infonce=1.0370 dist=0.3439 | lr=1.49e-05
+2026-03-16 09:04:09 - INFO - __main__ - [stage1] Epoch 0 Step 400/471 | loss=1.0742 infonce=0.9369 dist=0.3431 | lr=1.70e-05
+2026-03-16 09:04:28 - INFO - __main__ - [stage1] Epoch 0 Step 450/471 | loss=0.9948 infonce=0.8579 dist=0.3421 | lr=1.91e-05
+2026-03-16 09:04:37 - INFO - __main__ - [stage1] Epoch 0 finished | avg_loss=0.9660 accuracy=0.8384 | time=186.4s | nan_batches=0
+2026-03-16 09:05:02 - INFO - __main__ - [stage1] Epoch 0 validation: nll_loss=0.2800 accuracy=0.9562
+2026-03-16 09:05:04 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_0.pt (epoch=0, step=471)
+2026-03-16 09:05:07 - INFO - __main__ - Saved checkpoint: best_stage1.pt (epoch=0, step=471)
+2026-03-16 09:05:08 - INFO - __main__ - Saved best model to ./checkpoints/trivia/best_model_stage1
+2026-03-16 09:05:08 - INFO - __main__ - [stage1] New best nll_loss=0.2800 at epoch 0
+2026-03-16 09:05:29 - INFO - __main__ - [stage1] Epoch 1 Step 50/471 | loss=0.2827 infonce=0.1528 dist=0.3248 | lr=1.98e-05
+2026-03-16 09:05:49 - INFO - __main__ - [stage1] Epoch 1 Step 100/471 | loss=0.2816 infonce=0.1518 dist=0.3244 | lr=1.95e-05
+2026-03-16 09:06:08 - INFO - __main__ - [stage1] Epoch 1 Step 150/471 | loss=0.2760 infonce=0.1465 dist=0.3238 | lr=1.93e-05
+2026-03-16 09:06:27 - INFO - __main__ - [stage1] Epoch 1 Step 200/471 | loss=0.2714 infonce=0.1427 dist=0.3217 | lr=1.91e-05
+2026-03-16 09:06:48 - INFO - __main__ - [stage1] Epoch 1 Step 250/471 | loss=0.2689 infonce=0.1404 dist=0.3212 | lr=1.88e-05
+2026-03-16 09:07:07 - INFO - __main__ - [stage1] Epoch 1 Step 300/471 | loss=0.2673 infonce=0.1390 dist=0.3207 | lr=1.86e-05
+2026-03-16 09:07:26 - INFO - __main__ - [stage1] Epoch 1 Step 350/471 | loss=0.2653 infonce=0.1372 dist=0.3203 | lr=1.83e-05
+2026-03-16 09:07:46 - INFO - __main__ - [stage1] Epoch 1 Step 400/471 | loss=0.2625 infonce=0.1350 dist=0.3190 | lr=1.81e-05
+2026-03-16 09:08:05 - INFO - __main__ - [stage1] Epoch 1 Step 450/471 | loss=0.2600 infonce=0.1328 dist=0.3180 | lr=1.79e-05
+2026-03-16 09:08:14 - INFO - __main__ - [stage1] Epoch 1 finished | avg_loss=0.2596 accuracy=0.9735 | time=186.5s | nan_batches=0
+2026-03-16 09:08:38 - INFO - __main__ - [stage1] Epoch 1 validation: nll_loss=0.2408 accuracy=0.9660
+2026-03-16 09:08:41 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_1.pt (epoch=1, step=942)
+2026-03-16 09:08:45 - INFO - __main__ - Saved checkpoint: best_stage1.pt (epoch=1, step=942)
+2026-03-16 09:08:47 - INFO - __main__ - Saved best model to ./checkpoints/trivia/best_model_stage1
+2026-03-16 09:08:47 - INFO - __main__ - [stage1] New best nll_loss=0.2408 at epoch 1
+2026-03-16 09:09:08 - INFO - __main__ - [stage1] Epoch 2 Step 50/471 | loss=0.1792 infonce=0.0626 dist=0.2915 | lr=1.75e-05
+2026-03-16 09:09:28 - INFO - __main__ - [stage1] Epoch 2 Step 100/471 | loss=0.1799 infonce=0.0641 dist=0.2895 | lr=1.73e-05
+2026-03-16 09:09:47 - INFO - __main__ - [stage1] Epoch 2 Step 150/471 | loss=0.1784 infonce=0.0636 dist=0.2870 | lr=1.71e-05
+2026-03-16 09:10:06 - INFO - __main__ - [stage1] Epoch 2 Step 200/471 | loss=0.1770 infonce=0.0630 dist=0.2850 | lr=1.68e-05
+2026-03-16 09:10:26 - INFO - __main__ - [stage1] Epoch 2 Step 250/471 | loss=0.1766 infonce=0.0630 dist=0.2840 | lr=1.66e-05
+2026-03-16 09:10:45 - INFO - __main__ - [stage1] Epoch 2 Step 300/471 | loss=0.1760 infonce=0.0628 dist=0.2831 | lr=1.64e-05
+2026-03-16 09:11:04 - INFO - __main__ - [stage1] Epoch 2 Step 350/471 | loss=0.1758 infonce=0.0629 dist=0.2823 | lr=1.61e-05
+2026-03-16 09:11:23 - INFO - __main__ - [stage1] Epoch 2 Step 400/471 | loss=0.1757 infonce=0.0630 dist=0.2817 | lr=1.59e-05
+2026-03-16 09:11:43 - INFO - __main__ - [stage1] Epoch 2 Step 450/471 | loss=0.1751 infonce=0.0626 dist=0.2812 | lr=1.57e-05
+2026-03-16 09:11:52 - INFO - __main__ - [stage1] Epoch 2 finished | avg_loss=0.1750 accuracy=0.9892 | time=185.5s | nan_batches=0
+2026-03-16 09:12:16 - INFO - __main__ - [stage1] Epoch 2 validation: nll_loss=0.2325 accuracy=0.9666
+2026-03-16 09:12:18 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_2.pt (epoch=2, step=1413)
+2026-03-16 09:12:23 - INFO - __main__ - Saved checkpoint: best_stage1.pt (epoch=2, step=1413)
+2026-03-16 09:12:24 - INFO - __main__ - Saved best model to ./checkpoints/trivia/best_model_stage1
+2026-03-16 09:12:24 - INFO - __main__ - [stage1] New best nll_loss=0.2325 at epoch 2
+2026-03-16 09:12:46 - INFO - __main__ - [stage1] Epoch 3 Step 50/471 | loss=0.1470 infonce=0.0421 dist=0.2621 | lr=1.53e-05
+2026-03-16 09:13:05 - INFO - __main__ - [stage1] Epoch 3 Step 100/471 | loss=0.1464 infonce=0.0434 dist=0.2576 | lr=1.51e-05
+2026-03-16 09:13:24 - INFO - __main__ - [stage1] Epoch 3 Step 150/471 | loss=0.1465 infonce=0.0440 dist=0.2562 | lr=1.48e-05
+2026-03-16 09:13:43 - INFO - __main__ - [stage1] Epoch 3 Step 200/471 | loss=0.1463 infonce=0.0442 dist=0.2552 | lr=1.46e-05
+2026-03-16 09:14:02 - INFO - __main__ - [stage1] Epoch 3 Step 250/471 | loss=0.1465 infonce=0.0448 dist=0.2544 | lr=1.44e-05
+2026-03-16 09:14:22 - INFO - __main__ - [stage1] Epoch 3 Step 300/471 | loss=0.1464 infonce=0.0448 dist=0.2539 | lr=1.41e-05
+2026-03-16 09:14:42 - INFO - __main__ - [stage1] Epoch 3 Step 350/471 | loss=0.1463 infonce=0.0450 dist=0.2534 | lr=1.39e-05
+2026-03-16 09:15:01 - INFO - __main__ - [stage1] Epoch 3 Step 400/471 | loss=0.1460 infonce=0.0448 dist=0.2532 | lr=1.37e-05
+2026-03-16 09:15:22 - INFO - __main__ - [stage1] Epoch 3 Step 450/471 | loss=0.1460 infonce=0.0449 dist=0.2528 | lr=1.34e-05
+2026-03-16 09:15:31 - INFO - __main__ - [stage1] Epoch 3 finished | avg_loss=0.1460 accuracy=0.9928 | time=187.0s | nan_batches=0
+2026-03-16 09:15:55 - INFO - __main__ - [stage1] Epoch 3 validation: nll_loss=0.2334 accuracy=0.9632
+2026-03-16 09:15:57 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_3.pt (epoch=3, step=1884)
+2026-03-16 09:15:57 - INFO - __main__ - [stage1] No improvement. patience=1 (early stopping disabled)
+2026-03-16 09:16:19 - INFO - __main__ - [stage1] Epoch 4 Step 50/471 | loss=0.1322 infonce=0.0364 dist=0.2394 | lr=1.31e-05
+2026-03-16 09:16:38 - INFO - __main__ - [stage1] Epoch 4 Step 100/471 | loss=0.1296 infonce=0.0354 dist=0.2353 | lr=1.29e-05
+2026-03-16 09:16:57 - INFO - __main__ - [stage1] Epoch 4 Step 150/471 | loss=0.1296 infonce=0.0359 dist=0.2340 | lr=1.26e-05
+2026-03-16 09:17:16 - INFO - __main__ - [stage1] Epoch 4 Step 200/471 | loss=0.1291 infonce=0.0359 dist=0.2329 | lr=1.24e-05
+2026-03-16 09:17:36 - INFO - __main__ - [stage1] Epoch 4 Step 250/471 | loss=0.1294 infonce=0.0363 dist=0.2328 | lr=1.22e-05
+2026-03-16 09:17:55 - INFO - __main__ - [stage1] Epoch 4 Step 300/471 | loss=0.1291 infonce=0.0362 dist=0.2323 | lr=1.19e-05
+2026-03-16 09:18:15 - INFO - __main__ - [stage1] Epoch 4 Step 350/471 | loss=0.1289 infonce=0.0363 dist=0.2317 | lr=1.17e-05
+2026-03-16 09:18:34 - INFO - __main__ - [stage1] Epoch 4 Step 400/471 | loss=0.1287 infonce=0.0362 dist=0.2312 | lr=1.14e-05
+2026-03-16 09:18:54 - INFO - __main__ - [stage1] Epoch 4 Step 450/471 | loss=0.1288 infonce=0.0364 dist=0.2310 | lr=1.12e-05
+2026-03-16 09:19:03 - INFO - __main__ - [stage1] Epoch 4 finished | avg_loss=0.1286 accuracy=0.9948 | time=185.9s | nan_batches=0
+2026-03-16 09:19:27 - INFO - __main__ - [stage1] Epoch 4 validation: nll_loss=0.2329 accuracy=0.9627
+2026-03-16 09:19:30 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_4.pt (epoch=4, step=2355)
+2026-03-16 09:19:30 - INFO - __main__ - [stage1] No improvement. patience=2 (early stopping disabled)
+2026-03-16 09:19:52 - INFO - __main__ - [stage1] Epoch 5 Step 50/471 | loss=0.1158 infonce=0.0286 dist=0.2180 | lr=1.09e-05
+2026-03-16 09:20:12 - INFO - __main__ - [stage1] Epoch 5 Step 100/471 | loss=0.1177 infonce=0.0310 dist=0.2168 | lr=1.06e-05
+2026-03-16 09:20:31 - INFO - __main__ - [stage1] Epoch 5 Step 150/471 | loss=0.1177 infonce=0.0310 dist=0.2166 | lr=1.04e-05
+2026-03-16 09:20:51 - INFO - __main__ - [stage1] Epoch 5 Step 200/471 | loss=0.1171 infonce=0.0308 dist=0.2159 | lr=1.02e-05
+2026-03-16 09:21:10 - INFO - __main__ - [stage1] Epoch 5 Step 250/471 | loss=0.1174 infonce=0.0312 dist=0.2154 | lr=9.93e-06
+2026-03-16 09:21:30 - INFO - __main__ - [stage1] Epoch 5 Step 300/471 | loss=0.1173 infonce=0.0313 dist=0.2149 | lr=9.70e-06
+2026-03-16 09:21:49 - INFO - __main__ - [stage1] Epoch 5 Step 350/471 | loss=0.1177 infonce=0.0317 dist=0.2150 | lr=9.46e-06
+2026-03-16 09:22:08 - INFO - __main__ - [stage1] Epoch 5 Step 400/471 | loss=0.1179 infonce=0.0320 dist=0.2148 | lr=9.22e-06
+2026-03-16 09:22:27 - INFO - __main__ - [stage1] Epoch 5 Step 450/471 | loss=0.1176 infonce=0.0318 dist=0.2143 | lr=8.99e-06
+2026-03-16 09:22:37 - INFO - __main__ - [stage1] Epoch 5 finished | avg_loss=0.1177 accuracy=0.9956 | time=187.0s | nan_batches=0
+2026-03-16 09:23:00 - INFO - __main__ - [stage1] Epoch 5 validation: nll_loss=0.2400 accuracy=0.9598
+2026-03-16 09:23:03 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_5.pt (epoch=5, step=2826)
+2026-03-16 09:23:03 - INFO - __main__ - [stage1] No improvement. patience=3 (early stopping disabled)
+2026-03-16 09:23:24 - INFO - __main__ - [stage1] Epoch 6 Step 50/471 | loss=0.1114 infonce=0.0290 dist=0.2059 | lr=8.65e-06
+2026-03-16 09:23:43 - INFO - __main__ - [stage1] Epoch 6 Step 100/471 | loss=0.1114 infonce=0.0292 dist=0.2054 | lr=8.42e-06
+2026-03-16 09:24:03 - INFO - __main__ - [stage1] Epoch 6 Step 150/471 | loss=0.1110 infonce=0.0294 dist=0.2040 | lr=8.18e-06
+2026-03-16 09:24:22 - INFO - __main__ - [stage1] Epoch 6 Step 200/471 | loss=0.1113 infonce=0.0297 dist=0.2039 | lr=7.95e-06
+2026-03-16 09:24:42 - INFO - __main__ - [stage1] Epoch 6 Step 250/471 | loss=0.1112 infonce=0.0296 dist=0.2038 | lr=7.71e-06
+2026-03-16 09:25:01 - INFO - __main__ - [stage1] Epoch 6 Step 300/471 | loss=0.1111 infonce=0.0299 dist=0.2032 | lr=7.47e-06
+2026-03-16 09:25:20 - INFO - __main__ - [stage1] Epoch 6 Step 350/471 | loss=0.1112 infonce=0.0301 dist=0.2029 | lr=7.24e-06
+2026-03-16 09:25:40 - INFO - __main__ - [stage1] Epoch 6 Step 400/471 | loss=0.1109 infonce=0.0299 dist=0.2026 | lr=7.00e-06
+2026-03-16 09:26:00 - INFO - __main__ - [stage1] Epoch 6 Step 450/471 | loss=0.1105 infonce=0.0297 dist=0.2021 | lr=6.77e-06
+2026-03-16 09:26:09 - INFO - __main__ - [stage1] Epoch 6 finished | avg_loss=0.1106 accuracy=0.9953 | time=186.3s | nan_batches=0
+2026-03-16 09:26:33 - INFO - __main__ - [stage1] Epoch 6 validation: nll_loss=0.2440 accuracy=0.9583
+2026-03-16 09:26:35 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_6.pt (epoch=6, step=3297)
+2026-03-16 09:26:35 - INFO - __main__ - [stage1] No improvement. patience=4 (early stopping disabled)
+2026-03-16 09:26:56 - INFO - __main__ - [stage1] Epoch 7 Step 50/471 | loss=0.1022 infonce=0.0248 dist=0.1935 | lr=6.43e-06
+2026-03-16 09:27:16 - INFO - __main__ - [stage1] Epoch 7 Step 100/471 | loss=0.1039 infonce=0.0266 dist=0.1932 | lr=6.19e-06
+2026-03-16 09:27:35 - INFO - __main__ - [stage1] Epoch 7 Step 150/471 | loss=0.1044 infonce=0.0272 dist=0.1930 | lr=5.96e-06
+2026-03-16 09:27:55 - INFO - __main__ - [stage1] Epoch 7 Step 200/471 | loss=0.1041 infonce=0.0270 dist=0.1928 | lr=5.72e-06
+2026-03-16 09:28:14 - INFO - __main__ - [stage1] Epoch 7 Step 250/471 | loss=0.1041 infonce=0.0270 dist=0.1927 | lr=5.49e-06
+2026-03-16 09:28:33 - INFO - __main__ - [stage1] Epoch 7 Step 300/471 | loss=0.1042 infonce=0.0272 dist=0.1926 | lr=5.25e-06
+2026-03-16 09:28:53 - INFO - __main__ - [stage1] Epoch 7 Step 350/471 | loss=0.1040 infonce=0.0270 dist=0.1924 | lr=5.02e-06
+2026-03-16 09:29:12 - INFO - __main__ - [stage1] Epoch 7 Step 400/471 | loss=0.1039 infonce=0.0270 dist=0.1922 | lr=4.78e-06
+2026-03-16 09:29:32 - INFO - __main__ - [stage1] Epoch 7 Step 450/471 | loss=0.1038 infonce=0.0270 dist=0.1920 | lr=4.54e-06
+2026-03-16 09:29:41 - INFO - __main__ - [stage1] Epoch 7 finished | avg_loss=0.1037 accuracy=0.9963 | time=185.8s | nan_batches=0
+2026-03-16 09:30:05 - INFO - __main__ - [stage1] Epoch 7 validation: nll_loss=0.2467 accuracy=0.9568
+2026-03-16 09:30:09 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_7.pt (epoch=7, step=3768)
+2026-03-16 09:30:09 - INFO - __main__ - [stage1] No improvement. patience=5 (early stopping disabled)
+2026-03-16 09:30:30 - INFO - __main__ - [stage1] Epoch 8 Step 50/471 | loss=0.0994 infonce=0.0243 dist=0.1877 | lr=4.21e-06
+2026-03-16 09:30:50 - INFO - __main__ - [stage1] Epoch 8 Step 100/471 | loss=0.1013 infonce=0.0264 dist=0.1873 | lr=3.97e-06
+2026-03-16 09:31:09 - INFO - __main__ - [stage1] Epoch 8 Step 150/471 | loss=0.1006 infonce=0.0259 dist=0.1868 | lr=3.74e-06
+2026-03-16 09:31:28 - INFO - __main__ - [stage1] Epoch 8 Step 200/471 | loss=0.0999 infonce=0.0255 dist=0.1859 | lr=3.50e-06
+2026-03-16 09:31:47 - INFO - __main__ - [stage1] Epoch 8 Step 250/471 | loss=0.0992 infonce=0.0252 dist=0.1851 | lr=3.26e-06
+2026-03-16 09:32:07 - INFO - __main__ - [stage1] Epoch 8 Step 300/471 | loss=0.0993 infonce=0.0254 dist=0.1848 | lr=3.03e-06
+2026-03-16 09:32:26 - INFO - __main__ - [stage1] Epoch 8 Step 350/471 | loss=0.0993 infonce=0.0254 dist=0.1847 | lr=2.79e-06
+2026-03-16 09:32:45 - INFO - __main__ - [stage1] Epoch 8 Step 400/471 | loss=0.0994 infonce=0.0255 dist=0.1847 | lr=2.56e-06
+2026-03-16 09:33:05 - INFO - __main__ - [stage1] Epoch 8 Step 450/471 | loss=0.0998 infonce=0.0259 dist=0.1849 | lr=2.32e-06
+2026-03-16 09:33:15 - INFO - __main__ - [stage1] Epoch 8 finished | avg_loss=0.0998 accuracy=0.9962 | time=186.0s | nan_batches=0
+2026-03-16 09:33:38 - INFO - __main__ - [stage1] Epoch 8 validation: nll_loss=0.2486 accuracy=0.9552
+2026-03-16 09:33:41 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_8.pt (epoch=8, step=4239)
+2026-03-16 09:33:41 - INFO - __main__ - [stage1] No improvement. patience=6 (early stopping disabled)
+2026-03-16 09:34:02 - INFO - __main__ - [stage1] Epoch 9 Step 50/471 | loss=0.0998 infonce=0.0270 dist=0.1821 | lr=1.99e-06
+2026-03-16 09:34:21 - INFO - __main__ - [stage1] Epoch 9 Step 100/471 | loss=0.0986 infonce=0.0260 dist=0.1813 | lr=1.75e-06
+2026-03-16 09:34:41 - INFO - __main__ - [stage1] Epoch 9 Step 150/471 | loss=0.0983 infonce=0.0258 dist=0.1811 | lr=1.51e-06
+2026-03-16 09:35:00 - INFO - __main__ - [stage1] Epoch 9 Step 200/471 | loss=0.0979 infonce=0.0255 dist=0.1809 | lr=1.28e-06
+2026-03-16 09:35:20 - INFO - __main__ - [stage1] Epoch 9 Step 250/471 | loss=0.0980 infonce=0.0256 dist=0.1810 | lr=1.04e-06
+2026-03-16 09:35:39 - INFO - __main__ - [stage1] Epoch 9 Step 300/471 | loss=0.0981 infonce=0.0255 dist=0.1813 | lr=8.07e-07
+2026-03-16 09:35:58 - INFO - __main__ - [stage1] Epoch 9 Step 350/471 | loss=0.0977 infonce=0.0253 dist=0.1810 | lr=5.71e-07
+2026-03-16 09:36:18 - INFO - __main__ - [stage1] Epoch 9 Step 400/471 | loss=0.0976 infonce=0.0253 dist=0.1807 | lr=3.35e-07
+2026-03-16 09:36:37 - INFO - __main__ - [stage1] Epoch 9 Step 450/471 | loss=0.0975 infonce=0.0253 dist=0.1807 | lr=9.91e-08
+2026-03-16 09:36:47 - INFO - __main__ - [stage1] Epoch 9 finished | avg_loss=0.0975 accuracy=0.9963 | time=185.8s | nan_batches=0
+2026-03-16 09:37:10 - INFO - __main__ - [stage1] Epoch 9 validation: nll_loss=0.2511 accuracy=0.9547
+2026-03-16 09:37:13 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_9.pt (epoch=9, step=4710)
+2026-03-16 09:37:13 - INFO - __main__ - [stage1] No improvement. patience=7 (early stopping disabled)
+2026-03-16 09:37:13 - INFO - __main__ - Stage 1 complete. Best NLL loss: 0.2325
+2026-03-16 09:37:13 - INFO - __main__ - Loading best Stage 1 model from ./checkpoints/trivia/best_model_stage1
+2026-03-16 09:37:17 - INFO - __main__ - ============================================================
+2026-03-16 09:37:17 - INFO - __main__ - Stage 2: BM25 Hard Negatives (epochs 10-29)
+2026-03-16 09:37:17 - INFO - __main__ - ============================================================
+2026-03-16 09:37:50 - WARNING - src.data.dataset - Filtered 18372 samples with empty positive_ctxs (23.3%)
+2026-03-16 09:37:50 - INFO - src.data.dataset - Loaded 60413 samples from ./data_set/TriviaQA/trivia-train.json (stage=hard_neg)
+2026-03-16 09:37:53 - WARNING - src.data.dataset - Filtered 2077 samples with empty positive_ctxs (23.5%)
+2026-03-16 09:37:54 - INFO - src.data.dataset - Loaded 6760 samples from ./data_set/TriviaQA/trivia-dev.json (stage=hard_neg)
+2026-03-16 09:37:54 - INFO - __main__ - Stage 2: batch_size=32, grad_accum=4, total_steps=9435, warmup_steps=943
+2026-03-16 09:38:30 - INFO - __main__ - [stage2] Epoch 10 Step 50/1887 | loss=0.9423 infonce=0.8363 dist=0.2650 | lr=2.55e-07
+2026-03-16 09:39:03 - INFO - __main__ - [stage2] Epoch 10 Step 100/1887 | loss=0.9468 infonce=0.8403 dist=0.2664 | lr=5.30e-07
+2026-03-16 09:39:36 - INFO - __main__ - [stage2] Epoch 10 Step 150/1887 | loss=0.9378 infonce=0.8317 dist=0.2653 | lr=7.85e-07
+2026-03-16 09:40:08 - INFO - __main__ - [stage2] Epoch 10 Step 200/1887 | loss=0.9319 infonce=0.8255 dist=0.2659 | lr=1.06e-06
+2026-03-16 09:40:43 - INFO - __main__ - [stage2] Epoch 10 Step 250/1887 | loss=0.9234 infonce=0.8170 dist=0.2660 | lr=1.31e-06
+2026-03-16 09:41:16 - INFO - __main__ - [stage2] Epoch 10 Step 300/1887 | loss=0.9204 infonce=0.8139 dist=0.2663 | lr=1.59e-06
+2026-03-16 09:41:50 - INFO - __main__ - [stage2] Epoch 10 Step 350/1887 | loss=0.9110 infonce=0.8041 dist=0.2673 | lr=1.85e-06
+2026-03-16 09:42:23 - INFO - __main__ - [stage2] Epoch 10 Step 400/1887 | loss=0.9038 infonce=0.7963 dist=0.2686 | lr=2.12e-06
+2026-03-16 09:42:57 - INFO - __main__ - [stage2] Epoch 10 Step 450/1887 | loss=0.8947 infonce=0.7867 dist=0.2700 | lr=2.38e-06
+2026-03-16 09:43:31 - INFO - __main__ - [stage2] Epoch 10 Step 500/1887 | loss=0.8899 infonce=0.7814 dist=0.2713 | lr=2.65e-06
+2026-03-16 09:44:04 - INFO - __main__ - [stage2] Epoch 10 Step 550/1887 | loss=0.8853 infonce=0.7762 dist=0.2727 | lr=2.91e-06
+2026-03-16 09:44:37 - INFO - __main__ - [stage2] Epoch 10 Step 600/1887 | loss=0.8779 infonce=0.7681 dist=0.2744 | lr=3.18e-06
+2026-03-16 09:45:11 - INFO - __main__ - [stage2] Epoch 10 Step 650/1887 | loss=0.8741 infonce=0.7637 dist=0.2762 | lr=3.44e-06
+2026-03-16 09:45:44 - INFO - __main__ - [stage2] Epoch 10 Step 700/1887 | loss=0.8710 infonce=0.7598 dist=0.2779 | lr=3.71e-06
+2026-03-16 09:46:18 - INFO - __main__ - [stage2] Epoch 10 Step 750/1887 | loss=0.8685 infonce=0.7567 dist=0.2795 | lr=3.97e-06
+2026-03-16 09:46:51 - INFO - __main__ - [stage2] Epoch 10 Step 800/1887 | loss=0.8660 infonce=0.7535 dist=0.2812 | lr=4.24e-06
+2026-03-16 09:47:24 - INFO - __main__ - [stage2] Epoch 10 Step 850/1887 | loss=0.8611 infonce=0.7479 dist=0.2829 | lr=4.50e-06
+2026-03-16 09:47:58 - INFO - __main__ - [stage2] Epoch 10 Step 900/1887 | loss=0.8572 infonce=0.7434 dist=0.2845 | lr=4.77e-06
+2026-03-16 09:48:31 - INFO - __main__ - [stage2] Epoch 10 Step 950/1887 | loss=0.8511 infonce=0.7368 dist=0.2859 | lr=5.03e-06
+2026-03-16 09:49:04 - INFO - __main__ - [stage2] Epoch 10 Step 1000/1887 | loss=0.8477 infonce=0.7326 dist=0.2878 | lr=5.30e-06
+2026-03-16 09:49:38 - INFO - __main__ - [stage2] Epoch 10 Step 1050/1887 | loss=0.8419 infonce=0.7261 dist=0.2894 | lr=5.56e-06
+2026-03-16 09:50:12 - INFO - __main__ - [stage2] Epoch 10 Step 1100/1887 | loss=0.8391 infonce=0.7229 dist=0.2907 | lr=5.83e-06
+2026-03-16 09:50:45 - INFO - __main__ - [stage2] Epoch 10 Step 1150/1887 | loss=0.8379 infonce=0.7210 dist=0.2922 | lr=6.09e-06
+2026-03-16 09:51:18 - INFO - __main__ - [stage2] Epoch 10 Step 1200/1887 | loss=0.8343 infonce=0.7168 dist=0.2937 | lr=6.36e-06
+2026-03-16 09:51:51 - INFO - __main__ - [stage2] Epoch 10 Step 1250/1887 | loss=0.8318 infonce=0.7138 dist=0.2951 | lr=6.62e-06
+2026-03-16 09:52:25 - INFO - __main__ - [stage2] Epoch 10 Step 1300/1887 | loss=0.8276 infonce=0.7091 dist=0.2962 | lr=6.89e-06
+2026-03-16 09:52:58 - INFO - __main__ - [stage2] Epoch 10 Step 1350/1887 | loss=0.8239 infonce=0.7048 dist=0.2976 | lr=7.15e-06
+2026-03-16 09:53:32 - INFO - __main__ - [stage2] Epoch 10 Step 1400/1887 | loss=0.8220 infonce=0.7025 dist=0.2989 | lr=7.42e-06
+2026-03-16 09:54:05 - INFO - __main__ - [stage2] Epoch 10 Step 1450/1887 | loss=0.8201 infonce=0.7000 dist=0.3001 | lr=7.68e-06
+2026-03-16 09:54:38 - INFO - __main__ - [stage2] Epoch 10 Step 1500/1887 | loss=0.8189 infonce=0.6983 dist=0.3013 | lr=7.95e-06
+2026-03-16 09:55:10 - INFO - __main__ - [stage2] Epoch 10 Step 1550/1887 | loss=0.8172 infonce=0.6962 dist=0.3025 | lr=8.21e-06
+2026-03-16 09:55:44 - INFO - __main__ - [stage2] Epoch 10 Step 1600/1887 | loss=0.8147 infonce=0.6933 dist=0.3035 | lr=8.48e-06
+2026-03-16 09:56:17 - INFO - __main__ - [stage2] Epoch 10 Step 1650/1887 | loss=0.8122 infonce=0.6904 dist=0.3045 | lr=8.74e-06
+2026-03-16 09:56:50 - INFO - __main__ - [stage2] Epoch 10 Step 1700/1887 | loss=0.8105 infonce=0.6882 dist=0.3055 | lr=9.01e-06
+2026-03-16 09:57:24 - INFO - __main__ - [stage2] Epoch 10 Step 1750/1887 | loss=0.8075 infonce=0.6849 dist=0.3065 | lr=9.27e-06
+2026-03-16 09:57:56 - INFO - __main__ - [stage2] Epoch 10 Step 1800/1887 | loss=0.8052 infonce=0.6822 dist=0.3075 | lr=9.54e-06
+2026-03-16 09:58:29 - INFO - __main__ - [stage2] Epoch 10 Step 1850/1887 | loss=0.8038 infonce=0.6804 dist=0.3085 | lr=9.80e-06
+2026-03-16 09:58:55 - INFO - __main__ - [stage2] Epoch 10 finished | avg_loss=0.8026 accuracy=0.7809 | time=1261.8s | nan_batches=0
+2026-03-16 10:01:28 - INFO - __main__ - [stage2] Epoch 10 validation: nll_loss=0.8799 accuracy=0.7646
+2026-03-16 10:01:31 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_10.pt (epoch=10, step=471)
+2026-03-16 10:01:33 - INFO - __main__ - Saved checkpoint: best_stage2.pt (epoch=10, step=471)
+2026-03-16 10:01:34 - INFO - __main__ - Saved best model to ./checkpoints/trivia/best_model_stage2
+2026-03-16 10:01:34 - INFO - __main__ - [stage2] New best nll_loss=0.8799 at epoch 10
+2026-03-16 10:02:10 - INFO - __main__ - [stage2] Epoch 11 Step 50/1887 | loss=0.6565 infonce=0.5198 dist=0.3417 | lr=1.02e-05
+2026-03-16 10:02:43 - INFO - __main__ - [stage2] Epoch 11 Step 100/1887 | loss=0.6556 infonce=0.5194 dist=0.3404 | lr=1.05e-05
+2026-03-16 10:03:17 - INFO - __main__ - [stage2] Epoch 11 Step 150/1887 | loss=0.6579 infonce=0.5219 dist=0.3401 | lr=1.08e-05
+2026-03-16 10:03:50 - INFO - __main__ - [stage2] Epoch 11 Step 200/1887 | loss=0.6658 infonce=0.5294 dist=0.3408 | lr=1.10e-05
+2026-03-16 10:04:23 - INFO - __main__ - [stage2] Epoch 11 Step 250/1887 | loss=0.6600 infonce=0.5238 dist=0.3406 | lr=1.13e-05
+2026-03-16 10:04:57 - INFO - __main__ - [stage2] Epoch 11 Step 300/1887 | loss=0.6600 infonce=0.5238 dist=0.3405 | lr=1.16e-05
+2026-03-16 10:05:29 - INFO - __main__ - [stage2] Epoch 11 Step 350/1887 | loss=0.6606 infonce=0.5242 dist=0.3408 | lr=1.18e-05
+2026-03-16 10:06:03 - INFO - __main__ - [stage2] Epoch 11 Step 400/1887 | loss=0.6630 infonce=0.5264 dist=0.3414 | lr=1.21e-05
+2026-03-16 10:06:37 - INFO - __main__ - [stage2] Epoch 11 Step 450/1887 | loss=0.6644 infonce=0.5277 dist=0.3417 | lr=1.24e-05
+2026-03-16 10:07:11 - INFO - __main__ - [stage2] Epoch 11 Step 500/1887 | loss=0.6662 infonce=0.5291 dist=0.3426 | lr=1.26e-05
+2026-03-16 10:07:44 - INFO - __main__ - [stage2] Epoch 11 Step 550/1887 | loss=0.6661 infonce=0.5289 dist=0.3430 | lr=1.29e-05
+2026-03-16 10:08:17 - INFO - __main__ - [stage2] Epoch 11 Step 600/1887 | loss=0.6655 infonce=0.5280 dist=0.3438 | lr=1.32e-05
+2026-03-16 10:08:52 - INFO - __main__ - [stage2] Epoch 11 Step 650/1887 | loss=0.6674 infonce=0.5297 dist=0.3443 | lr=1.34e-05
+2026-03-16 10:09:25 - INFO - __main__ - [stage2] Epoch 11 Step 700/1887 | loss=0.6677 infonce=0.5297 dist=0.3451 | lr=1.37e-05
+2026-03-16 10:09:58 - INFO - __main__ - [stage2] Epoch 11 Step 750/1887 | loss=0.6681 infonce=0.5300 dist=0.3454 | lr=1.40e-05
+2026-03-16 10:10:31 - INFO - __main__ - [stage2] Epoch 11 Step 800/1887 | loss=0.6652 infonce=0.5268 dist=0.3460 | lr=1.42e-05
+2026-03-16 10:11:05 - INFO - __main__ - [stage2] Epoch 11 Step 850/1887 | loss=0.6633 infonce=0.5248 dist=0.3463 | lr=1.45e-05
+2026-03-16 10:11:39 - INFO - __main__ - [stage2] Epoch 11 Step 900/1887 | loss=0.6624 infonce=0.5238 dist=0.3465 | lr=1.48e-05
+2026-03-16 10:12:12 - INFO - __main__ - [stage2] Epoch 11 Step 950/1887 | loss=0.6617 infonce=0.5230 dist=0.3467 | lr=1.50e-05
+2026-03-16 10:12:46 - INFO - __main__ - [stage2] Epoch 11 Step 1000/1887 | loss=0.6615 infonce=0.5226 dist=0.3472 | lr=1.53e-05
+2026-03-16 10:13:19 - INFO - __main__ - [stage2] Epoch 11 Step 1050/1887 | loss=0.6622 infonce=0.5232 dist=0.3476 | lr=1.55e-05
+2026-03-16 10:13:52 - INFO - __main__ - [stage2] Epoch 11 Step 1100/1887 | loss=0.6613 infonce=0.5224 dist=0.3474 | lr=1.58e-05
+2026-03-16 10:14:26 - INFO - __main__ - [stage2] Epoch 11 Step 1150/1887 | loss=0.6610 infonce=0.5220 dist=0.3476 | lr=1.61e-05
+2026-03-16 10:15:00 - INFO - __main__ - [stage2] Epoch 11 Step 1200/1887 | loss=0.6602 infonce=0.5212 dist=0.3475 | lr=1.64e-05
+2026-03-16 10:15:33 - INFO - __main__ - [stage2] Epoch 11 Step 1250/1887 | loss=0.6600 infonce=0.5209 dist=0.3477 | lr=1.66e-05
+2026-03-16 10:16:07 - INFO - __main__ - [stage2] Epoch 11 Step 1300/1887 | loss=0.6604 infonce=0.5212 dist=0.3481 | lr=1.69e-05
+2026-03-16 10:16:40 - INFO - __main__ - [stage2] Epoch 11 Step 1350/1887 | loss=0.6611 infonce=0.5218 dist=0.3484 | lr=1.71e-05
+2026-03-16 10:17:13 - INFO - __main__ - [stage2] Epoch 11 Step 1400/1887 | loss=0.6622 infonce=0.5227 dist=0.3488 | lr=1.74e-05
+2026-03-16 10:17:47 - INFO - __main__ - [stage2] Epoch 11 Step 1450/1887 | loss=0.6619 infonce=0.5223 dist=0.3489 | lr=1.77e-05
+2026-03-16 10:18:20 - INFO - __main__ - [stage2] Epoch 11 Step 1500/1887 | loss=0.6620 infonce=0.5223 dist=0.3491 | lr=1.79e-05
+2026-03-16 10:18:54 - INFO - __main__ - [stage2] Epoch 11 Step 1550/1887 | loss=0.6625 infonce=0.5228 dist=0.3492 | lr=1.82e-05
+2026-03-16 10:19:28 - INFO - __main__ - [stage2] Epoch 11 Step 1600/1887 | loss=0.6622 infonce=0.5224 dist=0.3493 | lr=1.85e-05
+2026-03-16 10:20:01 - INFO - __main__ - [stage2] Epoch 11 Step 1650/1887 | loss=0.6615 infonce=0.5217 dist=0.3495 | lr=1.87e-05
+2026-03-16 10:20:35 - INFO - __main__ - [stage2] Epoch 11 Step 1700/1887 | loss=0.6614 infonce=0.5215 dist=0.3497 | lr=1.90e-05
+2026-03-16 10:21:08 - INFO - __main__ - [stage2] Epoch 11 Step 1750/1887 | loss=0.6618 infonce=0.5218 dist=0.3500 | lr=1.93e-05
+2026-03-16 10:21:40 - INFO - __main__ - [stage2] Epoch 11 Step 1800/1887 | loss=0.6624 infonce=0.5222 dist=0.3503 | lr=1.95e-05
+2026-03-16 10:22:14 - INFO - __main__ - [stage2] Epoch 11 Step 1850/1887 | loss=0.6618 infonce=0.5217 dist=0.3504 | lr=1.98e-05
+2026-03-16 10:22:41 - INFO - __main__ - [stage2] Epoch 11 finished | avg_loss=0.6620 accuracy=0.8378 | time=1266.6s | nan_batches=0
+2026-03-16 10:25:12 - INFO - __main__ - [stage2] Epoch 11 validation: nll_loss=0.8361 accuracy=0.7803
+2026-03-16 10:25:15 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_11.pt (epoch=11, step=942)
+2026-03-16 10:25:19 - INFO - __main__ - Saved checkpoint: best_stage2.pt (epoch=11, step=942)
+2026-03-16 10:25:20 - INFO - __main__ - Saved best model to ./checkpoints/trivia/best_model_stage2
+2026-03-16 10:25:20 - INFO - __main__ - [stage2] New best nll_loss=0.8361 at epoch 11
+2026-03-16 10:25:59 - INFO - __main__ - [stage2] Epoch 12 Step 50/1887 | loss=0.5402 infonce=0.4005 dist=0.3493 | lr=2.00e-05
+2026-03-16 10:26:32 - INFO - __main__ - [stage2] Epoch 12 Step 100/1887 | loss=0.5425 infonce=0.4032 dist=0.3484 | lr=1.99e-05
+2026-03-16 10:27:06 - INFO - __main__ - [stage2] Epoch 12 Step 150/1887 | loss=0.5384 infonce=0.3987 dist=0.3493 | lr=1.99e-05
+2026-03-16 10:27:38 - INFO - __main__ - [stage2] Epoch 12 Step 200/1887 | loss=0.5376 infonce=0.3973 dist=0.3507 | lr=1.99e-05
+2026-03-16 10:28:12 - INFO - __main__ - [stage2] Epoch 12 Step 250/1887 | loss=0.5360 infonce=0.3961 dist=0.3499 | lr=1.99e-05
+2026-03-16 10:28:45 - INFO - __main__ - [stage2] Epoch 12 Step 300/1887 | loss=0.5328 infonce=0.3925 dist=0.3508 | lr=1.98e-05
+2026-03-16 10:29:19 - INFO - __main__ - [stage2] Epoch 12 Step 350/1887 | loss=0.5336 infonce=0.3930 dist=0.3514 | lr=1.98e-05
+2026-03-16 10:29:52 - INFO - __main__ - [stage2] Epoch 12 Step 400/1887 | loss=0.5319 infonce=0.3918 dist=0.3504 | lr=1.98e-05
+2026-03-16 10:30:26 - INFO - __main__ - [stage2] Epoch 12 Step 450/1887 | loss=0.5317 infonce=0.3913 dist=0.3509 | lr=1.97e-05
+2026-03-16 10:30:59 - INFO - __main__ - [stage2] Epoch 12 Step 500/1887 | loss=0.5318 infonce=0.3913 dist=0.3510 | lr=1.97e-05
+2026-03-16 10:31:33 - INFO - __main__ - [stage2] Epoch 12 Step 550/1887 | loss=0.5296 infonce=0.3893 dist=0.3507 | lr=1.97e-05
+2026-03-16 10:32:05 - INFO - __main__ - [stage2] Epoch 12 Step 600/1887 | loss=0.5301 infonce=0.3895 dist=0.3513 | lr=1.96e-05
+2026-03-16 10:32:38 - INFO - __main__ - [stage2] Epoch 12 Step 650/1887 | loss=0.5293 infonce=0.3887 dist=0.3516 | lr=1.96e-05
+2026-03-16 10:33:12 - INFO - __main__ - [stage2] Epoch 12 Step 700/1887 | loss=0.5283 infonce=0.3876 dist=0.3518 | lr=1.96e-05
+2026-03-16 10:33:45 - INFO - __main__ - [stage2] Epoch 12 Step 750/1887 | loss=0.5294 infonce=0.3885 dist=0.3520 | lr=1.96e-05
+2026-03-16 10:34:17 - INFO - __main__ - [stage2] Epoch 12 Step 800/1887 | loss=0.5299 infonce=0.3890 dist=0.3520 | lr=1.95e-05
+2026-03-16 10:34:50 - INFO - __main__ - [stage2] Epoch 12 Step 850/1887 | loss=0.5293 infonce=0.3884 dist=0.3521 | lr=1.95e-05
+2026-03-16 10:35:23 - INFO - __main__ - [stage2] Epoch 12 Step 900/1887 | loss=0.5305 infonce=0.3895 dist=0.3524 | lr=1.95e-05
+2026-03-16 10:35:56 - INFO - __main__ - [stage2] Epoch 12 Step 950/1887 | loss=0.5315 infonce=0.3905 dist=0.3525 | lr=1.94e-05
+2026-03-16 10:36:30 - INFO - __main__ - [stage2] Epoch 12 Step 1000/1887 | loss=0.5302 infonce=0.3893 dist=0.3524 | lr=1.94e-05
+2026-03-16 10:37:03 - INFO - __main__ - [stage2] Epoch 12 Step 1050/1887 | loss=0.5312 infonce=0.3901 dist=0.3527 | lr=1.94e-05
+2026-03-16 10:37:36 - INFO - __main__ - [stage2] Epoch 12 Step 1100/1887 | loss=0.5316 infonce=0.3905 dist=0.3528 | lr=1.94e-05
+2026-03-16 10:38:09 - INFO - __main__ - [stage2] Epoch 12 Step 1150/1887 | loss=0.5320 infonce=0.3909 dist=0.3527 | lr=1.93e-05
+2026-03-16 10:38:43 - INFO - __main__ - [stage2] Epoch 12 Step 1200/1887 | loss=0.5325 infonce=0.3913 dist=0.3528 | lr=1.93e-05
+2026-03-16 10:39:16 - INFO - __main__ - [stage2] Epoch 12 Step 1250/1887 | loss=0.5325 infonce=0.3912 dist=0.3533 | lr=1.93e-05
+2026-03-16 10:39:49 - INFO - __main__ - [stage2] Epoch 12 Step 1300/1887 | loss=0.5326 infonce=0.3913 dist=0.3534 | lr=1.92e-05
+2026-03-16 10:40:23 - INFO - __main__ - [stage2] Epoch 12 Step 1350/1887 | loss=0.5326 infonce=0.3912 dist=0.3535 | lr=1.92e-05
+2026-03-16 10:40:56 - INFO - __main__ - [stage2] Epoch 12 Step 1400/1887 | loss=0.5327 infonce=0.3913 dist=0.3535 | lr=1.92e-05
+2026-03-16 10:41:30 - INFO - __main__ - [stage2] Epoch 12 Step 1450/1887 | loss=0.5323 infonce=0.3909 dist=0.3534 | lr=1.91e-05
+2026-03-16 10:42:03 - INFO - __main__ - [stage2] Epoch 12 Step 1500/1887 | loss=0.5321 infonce=0.3908 dist=0.3534 | lr=1.91e-05
+2026-03-16 10:42:36 - INFO - __main__ - [stage2] Epoch 12 Step 1550/1887 | loss=0.5324 infonce=0.3911 dist=0.3534 | lr=1.91e-05
+2026-03-16 10:43:09 - INFO - __main__ - [stage2] Epoch 12 Step 1600/1887 | loss=0.5326 infonce=0.3912 dist=0.3535 | lr=1.91e-05
+2026-03-16 10:43:42 - INFO - __main__ - [stage2] Epoch 12 Step 1650/1887 | loss=0.5325 infonce=0.3911 dist=0.3534 | lr=1.90e-05
+2026-03-16 10:44:16 - INFO - __main__ - [stage2] Epoch 12 Step 1700/1887 | loss=0.5324 infonce=0.3910 dist=0.3534 | lr=1.90e-05
+2026-03-16 10:44:50 - INFO - __main__ - [stage2] Epoch 12 Step 1750/1887 | loss=0.5331 infonce=0.3917 dist=0.3535 | lr=1.90e-05
+2026-03-16 10:45:23 - INFO - __main__ - [stage2] Epoch 12 Step 1800/1887 | loss=0.5326 infonce=0.3912 dist=0.3535 | lr=1.89e-05
+2026-03-16 10:45:57 - INFO - __main__ - [stage2] Epoch 12 Step 1850/1887 | loss=0.5325 infonce=0.3911 dist=0.3536 | lr=1.89e-05
+2026-03-16 10:46:24 - INFO - __main__ - [stage2] Epoch 12 finished | avg_loss=0.5323 accuracy=0.8841 | time=1263.9s | nan_batches=0
+2026-03-16 10:48:55 - INFO - __main__ - [stage2] Epoch 12 validation: nll_loss=0.8445 accuracy=0.7836
+2026-03-16 10:48:57 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_12.pt (epoch=12, step=1413)
+2026-03-16 10:48:57 - INFO - __main__ - [stage2] No improvement. patience=1 (early stopping disabled)
+2026-03-16 10:49:34 - INFO - __main__ - [stage2] Epoch 13 Step 50/1887 | loss=0.3946 infonce=0.2601 dist=0.3363 | lr=1.89e-05
+2026-03-16 10:50:08 - INFO - __main__ - [stage2] Epoch 13 Step 100/1887 | loss=0.3957 infonce=0.2611 dist=0.3365 | lr=1.88e-05
+2026-03-16 10:50:41 - INFO - __main__ - [stage2] Epoch 13 Step 150/1887 | loss=0.3980 infonce=0.2632 dist=0.3371 | lr=1.88e-05
+2026-03-16 10:51:14 - INFO - __main__ - [stage2] Epoch 13 Step 200/1887 | loss=0.3972 infonce=0.2619 dist=0.3381 | lr=1.88e-05
+2026-03-16 10:51:48 - INFO - __main__ - [stage2] Epoch 13 Step 250/1887 | loss=0.4023 infonce=0.2665 dist=0.3396 | lr=1.87e-05
+2026-03-16 10:52:22 - INFO - __main__ - [stage2] Epoch 13 Step 300/1887 | loss=0.3995 infonce=0.2635 dist=0.3399 | lr=1.87e-05
+2026-03-16 10:52:55 - INFO - __main__ - [stage2] Epoch 13 Step 350/1887 | loss=0.4020 infonce=0.2661 dist=0.3396 | lr=1.87e-05
+2026-03-16 10:53:29 - INFO - __main__ - [stage2] Epoch 13 Step 400/1887 | loss=0.4034 infonce=0.2673 dist=0.3403 | lr=1.87e-05
+2026-03-16 10:54:03 - INFO - __main__ - [stage2] Epoch 13 Step 450/1887 | loss=0.4056 infonce=0.2693 dist=0.3407 | lr=1.86e-05
+2026-03-16 10:54:36 - INFO - __main__ - [stage2] Epoch 13 Step 500/1887 | loss=0.4047 infonce=0.2684 dist=0.3409 | lr=1.86e-05
+2026-03-16 10:55:09 - INFO - __main__ - [stage2] Epoch 13 Step 550/1887 | loss=0.4045 infonce=0.2681 dist=0.3410 | lr=1.86e-05
+2026-03-16 10:55:43 - INFO - __main__ - [stage2] Epoch 13 Step 600/1887 | loss=0.4058 infonce=0.2694 dist=0.3410 | lr=1.85e-05
+2026-03-16 10:56:16 - INFO - __main__ - [stage2] Epoch 13 Step 650/1887 | loss=0.4065 infonce=0.2700 dist=0.3412 | lr=1.85e-05
+2026-03-16 10:56:50 - INFO - __main__ - [stage2] Epoch 13 Step 700/1887 | loss=0.4063 infonce=0.2698 dist=0.3413 | lr=1.85e-05
+2026-03-16 10:57:23 - INFO - __main__ - [stage2] Epoch 13 Step 750/1887 | loss=0.4076 infonce=0.2710 dist=0.3414 | lr=1.85e-05
+2026-03-16 10:57:58 - INFO - __main__ - [stage2] Epoch 13 Step 800/1887 | loss=0.4070 infonce=0.2703 dist=0.3418 | lr=1.84e-05
+2026-03-16 10:58:31 - INFO - __main__ - [stage2] Epoch 13 Step 850/1887 | loss=0.4082 infonce=0.2713 dist=0.3421 | lr=1.84e-05
+2026-03-16 10:59:04 - INFO - __main__ - [stage2] Epoch 13 Step 900/1887 | loss=0.4075 infonce=0.2706 dist=0.3423 | lr=1.84e-05
+2026-03-16 10:59:39 - INFO - __main__ - [stage2] Epoch 13 Step 950/1887 | loss=0.4077 infonce=0.2708 dist=0.3424 | lr=1.83e-05
+2026-03-16 11:00:12 - INFO - __main__ - [stage2] Epoch 13 Step 1000/1887 | loss=0.4074 infonce=0.2703 dist=0.3427 | lr=1.83e-05
+2026-03-16 11:00:44 - INFO - __main__ - [stage2] Epoch 13 Step 1050/1887 | loss=0.4077 infonce=0.2706 dist=0.3428 | lr=1.83e-05
+2026-03-16 11:01:18 - INFO - __main__ - [stage2] Epoch 13 Step 1100/1887 | loss=0.4074 infonce=0.2702 dist=0.3429 | lr=1.82e-05
+2026-03-16 11:01:51 - INFO - __main__ - [stage2] Epoch 13 Step 1150/1887 | loss=0.4079 infonce=0.2707 dist=0.3429 | lr=1.82e-05
+2026-03-16 11:02:24 - INFO - __main__ - [stage2] Epoch 13 Step 1200/1887 | loss=0.4081 infonce=0.2710 dist=0.3428 | lr=1.82e-05
+2026-03-16 11:02:58 - INFO - __main__ - [stage2] Epoch 13 Step 1250/1887 | loss=0.4080 infonce=0.2709 dist=0.3428 | lr=1.82e-05
+2026-03-16 11:03:32 - INFO - __main__ - [stage2] Epoch 13 Step 1300/1887 | loss=0.4099 infonce=0.2727 dist=0.3429 | lr=1.81e-05
+2026-03-16 11:04:04 - INFO - __main__ - [stage2] Epoch 13 Step 1350/1887 | loss=0.4098 infonce=0.2726 dist=0.3430 | lr=1.81e-05
+2026-03-16 11:04:38 - INFO - __main__ - [stage2] Epoch 13 Step 1400/1887 | loss=0.4098 infonce=0.2727 dist=0.3429 | lr=1.81e-05
+2026-03-16 11:05:10 - INFO - __main__ - [stage2] Epoch 13 Step 1450/1887 | loss=0.4103 infonce=0.2732 dist=0.3429 | lr=1.80e-05
+2026-03-16 11:05:44 - INFO - __main__ - [stage2] Epoch 13 Step 1500/1887 | loss=0.4108 infonce=0.2736 dist=0.3429 | lr=1.80e-05
+2026-03-16 11:06:19 - INFO - __main__ - [stage2] Epoch 13 Step 1550/1887 | loss=0.4106 infonce=0.2734 dist=0.3429 | lr=1.80e-05
+2026-03-16 11:06:52 - INFO - __main__ - [stage2] Epoch 13 Step 1600/1887 | loss=0.4104 infonce=0.2732 dist=0.3430 | lr=1.80e-05
+2026-03-16 11:07:25 - INFO - __main__ - [stage2] Epoch 13 Step 1650/1887 | loss=0.4098 infonce=0.2726 dist=0.3430 | lr=1.79e-05
+2026-03-16 11:07:59 - INFO - __main__ - [stage2] Epoch 13 Step 1700/1887 | loss=0.4103 infonce=0.2730 dist=0.3431 | lr=1.79e-05
+2026-03-16 11:08:32 - INFO - __main__ - [stage2] Epoch 13 Step 1750/1887 | loss=0.4101 infonce=0.2728 dist=0.3432 | lr=1.79e-05
+2026-03-16 11:09:06 - INFO - __main__ - [stage2] Epoch 13 Step 1800/1887 | loss=0.4105 infonce=0.2732 dist=0.3433 | lr=1.78e-05
+2026-03-16 11:09:39 - INFO - __main__ - [stage2] Epoch 13 Step 1850/1887 | loss=0.4112 infonce=0.2740 dist=0.3432 | lr=1.78e-05
+2026-03-16 11:10:06 - INFO - __main__ - [stage2] Epoch 13 finished | avg_loss=0.4115 accuracy=0.9262 | time=1268.7s | nan_batches=0
+2026-03-16 11:12:39 - INFO - __main__ - [stage2] Epoch 13 validation: nll_loss=0.8503 accuracy=0.7796
+2026-03-16 11:12:42 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_13.pt (epoch=13, step=1884)
+2026-03-16 11:12:42 - INFO - __main__ - [stage2] No improvement. patience=2 (early stopping disabled)
+2026-03-16 11:13:18 - INFO - __main__ - [stage2] Epoch 14 Step 50/1887 | loss=0.3173 infonce=0.1879 dist=0.3235 | lr=1.78e-05
+2026-03-16 11:13:52 - INFO - __main__ - [stage2] Epoch 14 Step 100/1887 | loss=0.3385 infonce=0.2082 dist=0.3258 | lr=1.77e-05
+2026-03-16 11:14:26 - INFO - __main__ - [stage2] Epoch 14 Step 150/1887 | loss=0.3388 infonce=0.2075 dist=0.3282 | lr=1.77e-05
+2026-03-16 11:14:59 - INFO - __main__ - [stage2] Epoch 14 Step 200/1887 | loss=0.3360 infonce=0.2044 dist=0.3289 | lr=1.77e-05
+2026-03-16 11:15:33 - INFO - __main__ - [stage2] Epoch 14 Step 250/1887 | loss=0.3340 infonce=0.2025 dist=0.3287 | lr=1.76e-05
+2026-03-16 11:16:07 - INFO - __main__ - [stage2] Epoch 14 Step 300/1887 | loss=0.3323 infonce=0.2005 dist=0.3294 | lr=1.76e-05
+2026-03-16 11:16:41 - INFO - __main__ - [stage2] Epoch 14 Step 350/1887 | loss=0.3300 infonce=0.1983 dist=0.3294 | lr=1.76e-05
+2026-03-16 11:17:15 - INFO - __main__ - [stage2] Epoch 14 Step 400/1887 | loss=0.3322 infonce=0.2003 dist=0.3297 | lr=1.75e-05
+2026-03-16 11:17:48 - INFO - __main__ - [stage2] Epoch 14 Step 450/1887 | loss=0.3322 infonce=0.2003 dist=0.3298 | lr=1.75e-05
+2026-03-16 11:18:20 - INFO - __main__ - [stage2] Epoch 14 Step 500/1887 | loss=0.3320 infonce=0.2002 dist=0.3294 | lr=1.75e-05
+2026-03-16 11:18:53 - INFO - __main__ - [stage2] Epoch 14 Step 550/1887 | loss=0.3307 infonce=0.1989 dist=0.3294 | lr=1.75e-05
+2026-03-16 11:19:27 - INFO - __main__ - [stage2] Epoch 14 Step 600/1887 | loss=0.3312 infonce=0.1995 dist=0.3294 | lr=1.74e-05
+2026-03-16 11:20:02 - INFO - __main__ - [stage2] Epoch 14 Step 650/1887 | loss=0.3312 infonce=0.1994 dist=0.3296 | lr=1.74e-05
+2026-03-16 11:20:35 - INFO - __main__ - [stage2] Epoch 14 Step 700/1887 | loss=0.3311 infonce=0.1993 dist=0.3294 | lr=1.74e-05
+2026-03-16 11:21:07 - INFO - __main__ - [stage2] Epoch 14 Step 750/1887 | loss=0.3312 infonce=0.1994 dist=0.3294 | lr=1.73e-05
+2026-03-16 11:21:40 - INFO - __main__ - [stage2] Epoch 14 Step 800/1887 | loss=0.3314 infonce=0.1996 dist=0.3294 | lr=1.73e-05
+2026-03-16 11:22:14 - INFO - __main__ - [stage2] Epoch 14 Step 850/1887 | loss=0.3315 infonce=0.1997 dist=0.3295 | lr=1.73e-05
+2026-03-16 11:22:47 - INFO - __main__ - [stage2] Epoch 14 Step 900/1887 | loss=0.3315 infonce=0.1996 dist=0.3297 | lr=1.73e-05
+2026-03-16 11:23:21 - INFO - __main__ - [stage2] Epoch 14 Step 950/1887 | loss=0.3315 infonce=0.1997 dist=0.3295 | lr=1.72e-05
+2026-03-16 11:23:55 - INFO - __main__ - [stage2] Epoch 14 Step 1000/1887 | loss=0.3315 infonce=0.1998 dist=0.3293 | lr=1.72e-05
+2026-03-16 11:24:29 - INFO - __main__ - [stage2] Epoch 14 Step 1050/1887 | loss=0.3320 infonce=0.2003 dist=0.3291 | lr=1.72e-05
+2026-03-16 11:25:02 - INFO - __main__ - [stage2] Epoch 14 Step 1100/1887 | loss=0.3314 infonce=0.1997 dist=0.3292 | lr=1.71e-05
+2026-03-16 11:25:37 - INFO - __main__ - [stage2] Epoch 14 Step 1150/1887 | loss=0.3313 infonce=0.1996 dist=0.3292 | lr=1.71e-05
+2026-03-16 11:26:10 - INFO - __main__ - [stage2] Epoch 14 Step 1200/1887 | loss=0.3313 infonce=0.1997 dist=0.3291 | lr=1.71e-05
+2026-03-16 11:26:43 - INFO - __main__ - [stage2] Epoch 14 Step 1250/1887 | loss=0.3315 infonce=0.1999 dist=0.3290 | lr=1.70e-05
+2026-03-16 11:27:16 - INFO - __main__ - [stage2] Epoch 14 Step 1300/1887 | loss=0.3323 infonce=0.2006 dist=0.3293 | lr=1.70e-05
+2026-03-16 11:27:49 - INFO - __main__ - [stage2] Epoch 14 Step 1350/1887 | loss=0.3329 infonce=0.2011 dist=0.3295 | lr=1.70e-05
+2026-03-16 11:28:23 - INFO - __main__ - [stage2] Epoch 14 Step 1400/1887 | loss=0.3332 infonce=0.2013 dist=0.3297 | lr=1.70e-05
+2026-03-16 11:28:56 - INFO - __main__ - [stage2] Epoch 14 Step 1450/1887 | loss=0.3329 infonce=0.2011 dist=0.3296 | lr=1.69e-05
+2026-03-16 11:29:30 - INFO - __main__ - [stage2] Epoch 14 Step 1500/1887 | loss=0.3333 infonce=0.2015 dist=0.3295 | lr=1.69e-05
+2026-03-16 11:30:03 - INFO - __main__ - [stage2] Epoch 14 Step 1550/1887 | loss=0.3333 infonce=0.2015 dist=0.3294 | lr=1.69e-05
+2026-03-16 11:30:37 - INFO - __main__ - [stage2] Epoch 14 Step 1600/1887 | loss=0.3330 infonce=0.2013 dist=0.3293 | lr=1.68e-05
+2026-03-16 11:31:11 - INFO - __main__ - [stage2] Epoch 14 Step 1650/1887 | loss=0.3333 infonce=0.2015 dist=0.3293 | lr=1.68e-05
+2026-03-16 11:31:44 - INFO - __main__ - [stage2] Epoch 14 Step 1700/1887 | loss=0.3340 infonce=0.2022 dist=0.3295 | lr=1.68e-05
+2026-03-16 11:32:18 - INFO - __main__ - [stage2] Epoch 14 Step 1750/1887 | loss=0.3338 infonce=0.2020 dist=0.3295 | lr=1.68e-05
+2026-03-16 11:32:51 - INFO - __main__ - [stage2] Epoch 14 Step 1800/1887 | loss=0.3338 infonce=0.2020 dist=0.3295 | lr=1.67e-05
+2026-03-16 11:33:24 - INFO - __main__ - [stage2] Epoch 14 Step 1850/1887 | loss=0.3342 infonce=0.2024 dist=0.3295 | lr=1.67e-05
+2026-03-16 11:33:52 - INFO - __main__ - [stage2] Epoch 14 finished | avg_loss=0.3341 accuracy=0.9506 | time=1269.8s | nan_batches=0
+2026-03-16 11:36:24 - INFO - __main__ - [stage2] Epoch 14 validation: nll_loss=0.8584 accuracy=0.7839
+2026-03-16 11:36:27 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_14.pt (epoch=14, step=2355)
+2026-03-16 11:36:27 - INFO - __main__ - [stage2] No improvement. patience=3 (early stopping disabled)
+2026-03-16 11:37:03 - INFO - __main__ - [stage2] Epoch 15 Step 50/1887 | loss=0.2853 infonce=0.1577 dist=0.3188 | lr=1.66e-05
+2026-03-16 11:37:38 - INFO - __main__ - [stage2] Epoch 15 Step 100/1887 | loss=0.2782 infonce=0.1511 dist=0.3176 | lr=1.66e-05
+2026-03-16 11:38:11 - INFO - __main__ - [stage2] Epoch 15 Step 150/1887 | loss=0.2806 infonce=0.1536 dist=0.3173 | lr=1.66e-05
+2026-03-16 11:38:45 - INFO - __main__ - [stage2] Epoch 15 Step 200/1887 | loss=0.2825 infonce=0.1552 dist=0.3183 | lr=1.66e-05
+2026-03-16 11:39:18 - INFO - __main__ - [stage2] Epoch 15 Step 250/1887 | loss=0.2806 infonce=0.1536 dist=0.3176 | lr=1.65e-05
+2026-03-16 11:39:51 - INFO - __main__ - [stage2] Epoch 15 Step 300/1887 | loss=0.2796 infonce=0.1528 dist=0.3169 | lr=1.65e-05
+2026-03-16 11:40:24 - INFO - __main__ - [stage2] Epoch 15 Step 350/1887 | loss=0.2781 infonce=0.1517 dist=0.3160 | lr=1.65e-05
+2026-03-16 11:40:57 - INFO - __main__ - [stage2] Epoch 15 Step 400/1887 | loss=0.2765 infonce=0.1502 dist=0.3158 | lr=1.64e-05
+2026-03-16 11:41:31 - INFO - __main__ - [stage2] Epoch 15 Step 450/1887 | loss=0.2775 infonce=0.1514 dist=0.3153 | lr=1.64e-05
+2026-03-16 11:42:05 - INFO - __main__ - [stage2] Epoch 15 Step 500/1887 | loss=0.2778 infonce=0.1516 dist=0.3153 | lr=1.64e-05
+2026-03-16 11:42:37 - INFO - __main__ - [stage2] Epoch 15 Step 550/1887 | loss=0.2784 infonce=0.1523 dist=0.3154 | lr=1.64e-05
+2026-03-16 11:43:10 - INFO - __main__ - [stage2] Epoch 15 Step 600/1887 | loss=0.2778 infonce=0.1517 dist=0.3153 | lr=1.63e-05
+2026-03-16 11:43:43 - INFO - __main__ - [stage2] Epoch 15 Step 650/1887 | loss=0.2778 infonce=0.1517 dist=0.3153 | lr=1.63e-05
+2026-03-16 11:44:17 - INFO - __main__ - [stage2] Epoch 15 Step 700/1887 | loss=0.2778 infonce=0.1516 dist=0.3155 | lr=1.63e-05
+2026-03-16 11:44:50 - INFO - __main__ - [stage2] Epoch 15 Step 750/1887 | loss=0.2781 infonce=0.1519 dist=0.3156 | lr=1.62e-05
+2026-03-16 11:45:25 - INFO - __main__ - [stage2] Epoch 15 Step 800/1887 | loss=0.2777 infonce=0.1515 dist=0.3156 | lr=1.62e-05
+2026-03-16 11:45:58 - INFO - __main__ - [stage2] Epoch 15 Step 850/1887 | loss=0.2773 infonce=0.1511 dist=0.3156 | lr=1.62e-05
+2026-03-16 11:46:31 - INFO - __main__ - [stage2] Epoch 15 Step 900/1887 | loss=0.2776 infonce=0.1514 dist=0.3154 | lr=1.61e-05
+2026-03-16 11:47:04 - INFO - __main__ - [stage2] Epoch 15 Step 950/1887 | loss=0.2773 infonce=0.1512 dist=0.3153 | lr=1.61e-05
+2026-03-16 11:47:38 - INFO - __main__ - [stage2] Epoch 15 Step 1000/1887 | loss=0.2774 infonce=0.1514 dist=0.3152 | lr=1.61e-05
+2026-03-16 11:48:12 - INFO - __main__ - [stage2] Epoch 15 Step 1050/1887 | loss=0.2777 infonce=0.1517 dist=0.3150 | lr=1.61e-05
+2026-03-16 11:48:45 - INFO - __main__ - [stage2] Epoch 15 Step 1100/1887 | loss=0.2777 infonce=0.1517 dist=0.3149 | lr=1.60e-05
+2026-03-16 11:49:18 - INFO - __main__ - [stage2] Epoch 15 Step 1150/1887 | loss=0.2781 infonce=0.1521 dist=0.3150 | lr=1.60e-05
+2026-03-16 11:49:52 - INFO - __main__ - [stage2] Epoch 15 Step 1200/1887 | loss=0.2788 infonce=0.1528 dist=0.3149 | lr=1.60e-05
+2026-03-16 11:50:25 - INFO - __main__ - [stage2] Epoch 15 Step 1250/1887 | loss=0.2786 infonce=0.1527 dist=0.3148 | lr=1.59e-05
+2026-03-16 11:50:59 - INFO - __main__ - [stage2] Epoch 15 Step 1300/1887 | loss=0.2791 infonce=0.1532 dist=0.3148 | lr=1.59e-05
+2026-03-16 11:51:32 - INFO - __main__ - [stage2] Epoch 15 Step 1350/1887 | loss=0.2792 infonce=0.1532 dist=0.3149 | lr=1.59e-05
+2026-03-16 11:52:05 - INFO - __main__ - [stage2] Epoch 15 Step 1400/1887 | loss=0.2792 infonce=0.1533 dist=0.3149 | lr=1.59e-05
+2026-03-16 11:52:37 - INFO - __main__ - [stage2] Epoch 15 Step 1450/1887 | loss=0.2794 infonce=0.1534 dist=0.3149 | lr=1.58e-05
+2026-03-16 11:53:10 - INFO - __main__ - [stage2] Epoch 15 Step 1500/1887 | loss=0.2792 infonce=0.1532 dist=0.3149 | lr=1.58e-05
+2026-03-16 11:53:43 - INFO - __main__ - [stage2] Epoch 15 Step 1550/1887 | loss=0.2797 infonce=0.1537 dist=0.3151 | lr=1.58e-05
+2026-03-16 11:54:17 - INFO - __main__ - [stage2] Epoch 15 Step 1600/1887 | loss=0.2796 infonce=0.1535 dist=0.3152 | lr=1.57e-05
+2026-03-16 11:54:51 - INFO - __main__ - [stage2] Epoch 15 Step 1650/1887 | loss=0.2795 infonce=0.1534 dist=0.3152 | lr=1.57e-05
+2026-03-16 11:55:24 - INFO - __main__ - [stage2] Epoch 15 Step 1700/1887 | loss=0.2798 infonce=0.1537 dist=0.3151 | lr=1.57e-05
+2026-03-16 11:55:58 - INFO - __main__ - [stage2] Epoch 15 Step 1750/1887 | loss=0.2802 infonce=0.1541 dist=0.3151 | lr=1.56e-05
+2026-03-16 11:56:31 - INFO - __main__ - [stage2] Epoch 15 Step 1800/1887 | loss=0.2805 infonce=0.1545 dist=0.3152 | lr=1.56e-05
+2026-03-16 11:57:04 - INFO - __main__ - [stage2] Epoch 15 Step 1850/1887 | loss=0.2802 infonce=0.1542 dist=0.3150 | lr=1.56e-05
+2026-03-16 11:57:31 - INFO - __main__ - [stage2] Epoch 15 finished | avg_loss=0.2800 accuracy=0.9662 | time=1264.1s | nan_batches=0
+2026-03-16 12:00:02 - INFO - __main__ - [stage2] Epoch 15 validation: nll_loss=0.8852 accuracy=0.7824
+2026-03-16 12:00:05 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_15.pt (epoch=15, step=2826)
+2026-03-16 12:00:05 - INFO - __main__ - [stage2] No improvement. patience=4 (early stopping disabled)
+2026-03-16 12:00:43 - INFO - __main__ - [stage2] Epoch 16 Step 50/1887 | loss=0.2341 infonce=0.1141 dist=0.2999 | lr=1.55e-05
+2026-03-16 12:01:15 - INFO - __main__ - [stage2] Epoch 16 Step 100/1887 | loss=0.2421 infonce=0.1212 dist=0.3021 | lr=1.55e-05
+2026-03-16 12:01:49 - INFO - __main__ - [stage2] Epoch 16 Step 150/1887 | loss=0.2412 infonce=0.1204 dist=0.3020 | lr=1.55e-05
+2026-03-16 12:02:22 - INFO - __main__ - [stage2] Epoch 16 Step 200/1887 | loss=0.2398 infonce=0.1193 dist=0.3012 | lr=1.54e-05
+2026-03-16 12:02:55 - INFO - __main__ - [stage2] Epoch 16 Step 250/1887 | loss=0.2384 infonce=0.1180 dist=0.3009 | lr=1.54e-05
+2026-03-16 12:03:29 - INFO - __main__ - [stage2] Epoch 16 Step 300/1887 | loss=0.2392 infonce=0.1185 dist=0.3018 | lr=1.54e-05
+2026-03-16 12:04:02 - INFO - __main__ - [stage2] Epoch 16 Step 350/1887 | loss=0.2402 infonce=0.1194 dist=0.3021 | lr=1.54e-05
+2026-03-16 12:04:35 - INFO - __main__ - [stage2] Epoch 16 Step 400/1887 | loss=0.2401 infonce=0.1192 dist=0.3023 | lr=1.53e-05
+2026-03-16 12:05:08 - INFO - __main__ - [stage2] Epoch 16 Step 450/1887 | loss=0.2414 infonce=0.1203 dist=0.3027 | lr=1.53e-05
+2026-03-16 12:05:42 - INFO - __main__ - [stage2] Epoch 16 Step 500/1887 | loss=0.2415 infonce=0.1205 dist=0.3026 | lr=1.53e-05
+2026-03-16 12:06:15 - INFO - __main__ - [stage2] Epoch 16 Step 550/1887 | loss=0.2411 infonce=0.1203 dist=0.3021 | lr=1.52e-05
+2026-03-16 12:06:48 - INFO - __main__ - [stage2] Epoch 16 Step 600/1887 | loss=0.2413 infonce=0.1204 dist=0.3022 | lr=1.52e-05
+2026-03-16 12:07:21 - INFO - __main__ - [stage2] Epoch 16 Step 650/1887 | loss=0.2417 infonce=0.1210 dist=0.3017 | lr=1.52e-05
+2026-03-16 12:07:55 - INFO - __main__ - [stage2] Epoch 16 Step 700/1887 | loss=0.2418 infonce=0.1211 dist=0.3019 | lr=1.52e-05
+2026-03-16 12:08:28 - INFO - __main__ - [stage2] Epoch 16 Step 750/1887 | loss=0.2417 infonce=0.1210 dist=0.3017 | lr=1.51e-05
+2026-03-16 12:09:01 - INFO - __main__ - [stage2] Epoch 16 Step 800/1887 | loss=0.2419 infonce=0.1212 dist=0.3016 | lr=1.51e-05
+2026-03-16 12:09:35 - INFO - __main__ - [stage2] Epoch 16 Step 850/1887 | loss=0.2411 infonce=0.1205 dist=0.3016 | lr=1.51e-05
+2026-03-16 12:10:08 - INFO - __main__ - [stage2] Epoch 16 Step 900/1887 | loss=0.2407 infonce=0.1200 dist=0.3018 | lr=1.50e-05
+2026-03-16 12:10:40 - INFO - __main__ - [stage2] Epoch 16 Step 950/1887 | loss=0.2403 infonce=0.1197 dist=0.3015 | lr=1.50e-05
+2026-03-16 12:11:14 - INFO - __main__ - [stage2] Epoch 16 Step 1000/1887 | loss=0.2399 infonce=0.1195 dist=0.3011 | lr=1.50e-05
+2026-03-16 12:11:48 - INFO - __main__ - [stage2] Epoch 16 Step 1050/1887 | loss=0.2404 infonce=0.1199 dist=0.3012 | lr=1.49e-05
+2026-03-16 12:12:21 - INFO - __main__ - [stage2] Epoch 16 Step 1100/1887 | loss=0.2406 infonce=0.1201 dist=0.3013 | lr=1.49e-05
+2026-03-16 12:12:55 - INFO - __main__ - [stage2] Epoch 16 Step 1150/1887 | loss=0.2404 infonce=0.1199 dist=0.3012 | lr=1.49e-05
+2026-03-16 12:13:29 - INFO - __main__ - [stage2] Epoch 16 Step 1200/1887 | loss=0.2402 infonce=0.1198 dist=0.3011 | lr=1.49e-05
+2026-03-16 12:14:03 - INFO - __main__ - [stage2] Epoch 16 Step 1250/1887 | loss=0.2404 infonce=0.1200 dist=0.3011 | lr=1.48e-05
+2026-03-16 12:14:36 - INFO - __main__ - [stage2] Epoch 16 Step 1300/1887 | loss=0.2405 infonce=0.1201 dist=0.3011 | lr=1.48e-05
+2026-03-16 12:15:09 - INFO - __main__ - [stage2] Epoch 16 Step 1350/1887 | loss=0.2408 infonce=0.1204 dist=0.3010 | lr=1.48e-05
+2026-03-16 12:15:44 - INFO - __main__ - [stage2] Epoch 16 Step 1400/1887 | loss=0.2409 infonce=0.1205 dist=0.3011 | lr=1.47e-05
+2026-03-16 12:16:17 - INFO - __main__ - [stage2] Epoch 16 Step 1450/1887 | loss=0.2411 infonce=0.1206 dist=0.3011 | lr=1.47e-05
+2026-03-16 12:16:51 - INFO - __main__ - [stage2] Epoch 16 Step 1500/1887 | loss=0.2420 infonce=0.1216 dist=0.3012 | lr=1.47e-05
+2026-03-16 12:17:24 - INFO - __main__ - [stage2] Epoch 16 Step 1550/1887 | loss=0.2416 infonce=0.1212 dist=0.3012 | lr=1.47e-05
+2026-03-16 12:17:58 - INFO - __main__ - [stage2] Epoch 16 Step 1600/1887 | loss=0.2416 infonce=0.1211 dist=0.3010 | lr=1.46e-05
+2026-03-16 12:18:31 - INFO - __main__ - [stage2] Epoch 16 Step 1650/1887 | loss=0.2420 infonce=0.1216 dist=0.3009 | lr=1.46e-05
+2026-03-16 12:19:05 - INFO - __main__ - [stage2] Epoch 16 Step 1700/1887 | loss=0.2419 infonce=0.1215 dist=0.3008 | lr=1.46e-05
+2026-03-16 12:19:39 - INFO - __main__ - [stage2] Epoch 16 Step 1750/1887 | loss=0.2419 infonce=0.1216 dist=0.3007 | lr=1.45e-05
+2026-03-16 12:20:13 - INFO - __main__ - [stage2] Epoch 16 Step 1800/1887 | loss=0.2419 infonce=0.1216 dist=0.3008 | lr=1.45e-05
+2026-03-16 12:20:47 - INFO - __main__ - [stage2] Epoch 16 Step 1850/1887 | loss=0.2421 infonce=0.1218 dist=0.3008 | lr=1.45e-05
+2026-03-16 12:21:14 - INFO - __main__ - [stage2] Epoch 16 finished | avg_loss=0.2424 accuracy=0.9760 | time=1268.6s | nan_batches=0
+2026-03-16 12:23:46 - INFO - __main__ - [stage2] Epoch 16 validation: nll_loss=0.8843 accuracy=0.7803
+2026-03-16 12:23:49 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_16.pt (epoch=16, step=3297)
+2026-03-16 12:23:49 - INFO - __main__ - [stage2] No improvement. patience=5 (early stopping disabled)
+2026-03-16 12:24:27 - INFO - __main__ - [stage2] Epoch 17 Step 50/1887 | loss=0.2211 infonce=0.1057 dist=0.2886 | lr=1.44e-05
+2026-03-16 12:24:59 - INFO - __main__ - [stage2] Epoch 17 Step 100/1887 | loss=0.2203 infonce=0.1048 dist=0.2886 | lr=1.44e-05
+2026-03-16 12:25:33 - INFO - __main__ - [stage2] Epoch 17 Step 150/1887 | loss=0.2245 infonce=0.1095 dist=0.2874 | lr=1.44e-05
+2026-03-16 12:26:06 - INFO - __main__ - [stage2] Epoch 17 Step 200/1887 | loss=0.2219 infonce=0.1068 dist=0.2876 | lr=1.43e-05
+2026-03-16 12:26:39 - INFO - __main__ - [stage2] Epoch 17 Step 250/1887 | loss=0.2204 infonce=0.1051 dist=0.2883 | lr=1.43e-05
+2026-03-16 12:27:13 - INFO - __main__ - [stage2] Epoch 17 Step 300/1887 | loss=0.2194 infonce=0.1040 dist=0.2883 | lr=1.43e-05
+2026-03-16 12:27:46 - INFO - __main__ - [stage2] Epoch 17 Step 350/1887 | loss=0.2177 infonce=0.1026 dist=0.2878 | lr=1.43e-05
+2026-03-16 12:28:19 - INFO - __main__ - [stage2] Epoch 17 Step 400/1887 | loss=0.2176 infonce=0.1026 dist=0.2875 | lr=1.42e-05
+2026-03-16 12:28:53 - INFO - __main__ - [stage2] Epoch 17 Step 450/1887 | loss=0.2184 infonce=0.1032 dist=0.2878 | lr=1.42e-05
+2026-03-16 12:29:27 - INFO - __main__ - [stage2] Epoch 17 Step 500/1887 | loss=0.2187 infonce=0.1036 dist=0.2876 | lr=1.42e-05
+2026-03-16 12:30:00 - INFO - __main__ - [stage2] Epoch 17 Step 550/1887 | loss=0.2181 infonce=0.1029 dist=0.2880 | lr=1.41e-05
+2026-03-16 12:30:33 - INFO - __main__ - [stage2] Epoch 17 Step 600/1887 | loss=0.2176 infonce=0.1024 dist=0.2880 | lr=1.41e-05
+2026-03-16 12:31:06 - INFO - __main__ - [stage2] Epoch 17 Step 650/1887 | loss=0.2172 infonce=0.1021 dist=0.2879 | lr=1.41e-05
+2026-03-16 12:31:40 - INFO - __main__ - [stage2] Epoch 17 Step 700/1887 | loss=0.2161 infonce=0.1010 dist=0.2878 | lr=1.40e-05
+2026-03-16 12:32:12 - INFO - __main__ - [stage2] Epoch 17 Step 750/1887 | loss=0.2161 infonce=0.1010 dist=0.2878 | lr=1.40e-05
+2026-03-16 12:32:46 - INFO - __main__ - [stage2] Epoch 17 Step 800/1887 | loss=0.2166 infonce=0.1015 dist=0.2878 | lr=1.40e-05
+2026-03-16 12:33:18 - INFO - __main__ - [stage2] Epoch 17 Step 850/1887 | loss=0.2172 infonce=0.1020 dist=0.2880 | lr=1.40e-05
+2026-03-16 12:33:52 - INFO - __main__ - [stage2] Epoch 17 Step 900/1887 | loss=0.2172 infonce=0.1020 dist=0.2879 | lr=1.39e-05
+2026-03-16 12:34:25 - INFO - __main__ - [stage2] Epoch 17 Step 950/1887 | loss=0.2173 infonce=0.1021 dist=0.2878 | lr=1.39e-05
+2026-03-16 12:34:59 - INFO - __main__ - [stage2] Epoch 17 Step 1000/1887 | loss=0.2175 infonce=0.1024 dist=0.2878 | lr=1.39e-05
+2026-03-16 12:35:31 - INFO - __main__ - [stage2] Epoch 17 Step 1050/1887 | loss=0.2179 infonce=0.1028 dist=0.2876 | lr=1.38e-05
+2026-03-16 12:36:04 - INFO - __main__ - [stage2] Epoch 17 Step 1100/1887 | loss=0.2181 infonce=0.1031 dist=0.2874 | lr=1.38e-05
+2026-03-16 12:36:37 - INFO - __main__ - [stage2] Epoch 17 Step 1150/1887 | loss=0.2176 infonce=0.1027 dist=0.2872 | lr=1.38e-05
+2026-03-16 12:37:10 - INFO - __main__ - [stage2] Epoch 17 Step 1200/1887 | loss=0.2172 infonce=0.1024 dist=0.2872 | lr=1.37e-05
+2026-03-16 12:37:43 - INFO - __main__ - [stage2] Epoch 17 Step 1250/1887 | loss=0.2171 infonce=0.1022 dist=0.2873 | lr=1.37e-05
+2026-03-16 12:38:17 - INFO - __main__ - [stage2] Epoch 17 Step 1300/1887 | loss=0.2173 infonce=0.1024 dist=0.2873 | lr=1.37e-05
+2026-03-16 12:38:50 - INFO - __main__ - [stage2] Epoch 17 Step 1350/1887 | loss=0.2173 infonce=0.1025 dist=0.2872 | lr=1.37e-05
+2026-03-16 12:39:25 - INFO - __main__ - [stage2] Epoch 17 Step 1400/1887 | loss=0.2175 infonce=0.1026 dist=0.2873 | lr=1.36e-05
+2026-03-16 12:39:58 - INFO - __main__ - [stage2] Epoch 17 Step 1450/1887 | loss=0.2174 infonce=0.1025 dist=0.2871 | lr=1.36e-05
+2026-03-16 12:40:31 - INFO - __main__ - [stage2] Epoch 17 Step 1500/1887 | loss=0.2175 infonce=0.1026 dist=0.2872 | lr=1.36e-05
+2026-03-16 12:41:04 - INFO - __main__ - [stage2] Epoch 17 Step 1550/1887 | loss=0.2173 infonce=0.1025 dist=0.2871 | lr=1.35e-05
+2026-03-16 12:41:37 - INFO - __main__ - [stage2] Epoch 17 Step 1600/1887 | loss=0.2171 infonce=0.1023 dist=0.2870 | lr=1.35e-05
+2026-03-16 12:42:10 - INFO - __main__ - [stage2] Epoch 17 Step 1650/1887 | loss=0.2174 infonce=0.1027 dist=0.2869 | lr=1.35e-05
+2026-03-16 12:42:43 - INFO - __main__ - [stage2] Epoch 17 Step 1700/1887 | loss=0.2175 infonce=0.1028 dist=0.2869 | lr=1.35e-05
+2026-03-16 12:43:17 - INFO - __main__ - [stage2] Epoch 17 Step 1750/1887 | loss=0.2178 infonce=0.1030 dist=0.2868 | lr=1.34e-05
+2026-03-16 12:43:50 - INFO - __main__ - [stage2] Epoch 17 Step 1800/1887 | loss=0.2179 infonce=0.1031 dist=0.2868 | lr=1.34e-05
+2026-03-16 12:44:24 - INFO - __main__ - [stage2] Epoch 17 Step 1850/1887 | loss=0.2177 infonce=0.1031 dist=0.2867 | lr=1.34e-05
+2026-03-16 12:44:50 - INFO - __main__ - [stage2] Epoch 17 finished | avg_loss=0.2177 accuracy=0.9800 | time=1261.4s | nan_batches=0
+2026-03-16 12:47:23 - INFO - __main__ - [stage2] Epoch 17 validation: nll_loss=0.8990 accuracy=0.7827
+2026-03-16 12:47:25 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_17.pt (epoch=17, step=3768)
+2026-03-16 12:47:25 - INFO - __main__ - [stage2] No improvement. patience=6 (early stopping disabled)
+2026-03-16 12:48:05 - INFO - __main__ - [stage2] Epoch 18 Step 50/1887 | loss=0.2005 infonce=0.0887 dist=0.2795 | lr=1.33e-05
+2026-03-16 12:48:39 - INFO - __main__ - [stage2] Epoch 18 Step 100/1887 | loss=0.1944 infonce=0.0834 dist=0.2776 | lr=1.33e-05
+2026-03-16 12:49:13 - INFO - __main__ - [stage2] Epoch 18 Step 150/1887 | loss=0.1951 infonce=0.0848 dist=0.2758 | lr=1.33e-05
+2026-03-16 12:49:46 - INFO - __main__ - [stage2] Epoch 18 Step 200/1887 | loss=0.1952 infonce=0.0848 dist=0.2760 | lr=1.32e-05
+2026-03-16 12:50:19 - INFO - __main__ - [stage2] Epoch 18 Step 250/1887 | loss=0.1963 infonce=0.0859 dist=0.2760 | lr=1.32e-05
+2026-03-16 12:50:52 - INFO - __main__ - [stage2] Epoch 18 Step 300/1887 | loss=0.1978 infonce=0.0875 dist=0.2758 | lr=1.32e-05
+2026-03-16 12:51:25 - INFO - __main__ - [stage2] Epoch 18 Step 350/1887 | loss=0.1973 infonce=0.0874 dist=0.2746 | lr=1.31e-05
+2026-03-16 12:51:59 - INFO - __main__ - [stage2] Epoch 18 Step 400/1887 | loss=0.1972 infonce=0.0872 dist=0.2751 | lr=1.31e-05
+2026-03-16 12:52:32 - INFO - __main__ - [stage2] Epoch 18 Step 450/1887 | loss=0.1967 infonce=0.0868 dist=0.2747 | lr=1.31e-05
+2026-03-16 12:53:05 - INFO - __main__ - [stage2] Epoch 18 Step 500/1887 | loss=0.1968 infonce=0.0870 dist=0.2745 | lr=1.31e-05
+2026-03-16 12:53:39 - INFO - __main__ - [stage2] Epoch 18 Step 550/1887 | loss=0.1964 infonce=0.0866 dist=0.2745 | lr=1.30e-05
+2026-03-16 12:54:13 - INFO - __main__ - [stage2] Epoch 18 Step 600/1887 | loss=0.1968 infonce=0.0871 dist=0.2742 | lr=1.30e-05
+2026-03-16 12:54:46 - INFO - __main__ - [stage2] Epoch 18 Step 650/1887 | loss=0.1965 infonce=0.0868 dist=0.2742 | lr=1.30e-05
+2026-03-16 12:55:19 - INFO - __main__ - [stage2] Epoch 18 Step 700/1887 | loss=0.1958 infonce=0.0862 dist=0.2741 | lr=1.29e-05
+2026-03-16 12:55:51 - INFO - __main__ - [stage2] Epoch 18 Step 750/1887 | loss=0.1958 infonce=0.0861 dist=0.2742 | lr=1.29e-05
+2026-03-16 12:56:24 - INFO - __main__ - [stage2] Epoch 18 Step 800/1887 | loss=0.1956 infonce=0.0860 dist=0.2741 | lr=1.29e-05
+2026-03-16 12:56:58 - INFO - __main__ - [stage2] Epoch 18 Step 850/1887 | loss=0.1952 infonce=0.0855 dist=0.2741 | lr=1.28e-05
+2026-03-16 12:57:31 - INFO - __main__ - [stage2] Epoch 18 Step 900/1887 | loss=0.1954 infonce=0.0857 dist=0.2742 | lr=1.28e-05
+2026-03-16 12:58:05 - INFO - __main__ - [stage2] Epoch 18 Step 950/1887 | loss=0.1958 infonce=0.0862 dist=0.2742 | lr=1.28e-05
+2026-03-16 12:58:38 - INFO - __main__ - [stage2] Epoch 18 Step 1000/1887 | loss=0.1956 infonce=0.0859 dist=0.2741 | lr=1.28e-05
+2026-03-16 12:59:10 - INFO - __main__ - [stage2] Epoch 18 Step 1050/1887 | loss=0.1959 infonce=0.0862 dist=0.2742 | lr=1.27e-05
+2026-03-16 12:59:43 - INFO - __main__ - [stage2] Epoch 18 Step 1100/1887 | loss=0.1961 infonce=0.0864 dist=0.2743 | lr=1.27e-05
+2026-03-16 13:00:16 - INFO - __main__ - [stage2] Epoch 18 Step 1150/1887 | loss=0.1961 infonce=0.0864 dist=0.2743 | lr=1.27e-05
+2026-03-16 13:00:49 - INFO - __main__ - [stage2] Epoch 18 Step 1200/1887 | loss=0.1961 infonce=0.0864 dist=0.2745 | lr=1.26e-05
+2026-03-16 13:01:23 - INFO - __main__ - [stage2] Epoch 18 Step 1250/1887 | loss=0.1966 infonce=0.0868 dist=0.2744 | lr=1.26e-05
+2026-03-16 13:01:56 - INFO - __main__ - [stage2] Epoch 18 Step 1300/1887 | loss=0.1965 infonce=0.0867 dist=0.2745 | lr=1.26e-05
+2026-03-16 13:02:30 - INFO - __main__ - [stage2] Epoch 18 Step 1350/1887 | loss=0.1964 infonce=0.0866 dist=0.2744 | lr=1.26e-05
+2026-03-16 13:03:04 - INFO - __main__ - [stage2] Epoch 18 Step 1400/1887 | loss=0.1967 infonce=0.0870 dist=0.2743 | lr=1.25e-05
+2026-03-16 13:03:38 - INFO - __main__ - [stage2] Epoch 18 Step 1450/1887 | loss=0.1971 infonce=0.0874 dist=0.2744 | lr=1.25e-05
+2026-03-16 13:04:11 - INFO - __main__ - [stage2] Epoch 18 Step 1500/1887 | loss=0.1972 infonce=0.0876 dist=0.2742 | lr=1.25e-05
+2026-03-16 13:04:44 - INFO - __main__ - [stage2] Epoch 18 Step 1550/1887 | loss=0.1970 infonce=0.0873 dist=0.2742 | lr=1.24e-05
+2026-03-16 13:05:18 - INFO - __main__ - [stage2] Epoch 18 Step 1600/1887 | loss=0.1972 infonce=0.0876 dist=0.2741 | lr=1.24e-05
+2026-03-16 13:05:51 - INFO - __main__ - [stage2] Epoch 18 Step 1650/1887 | loss=0.1976 infonce=0.0879 dist=0.2741 | lr=1.24e-05
+2026-03-16 13:06:24 - INFO - __main__ - [stage2] Epoch 18 Step 1700/1887 | loss=0.1975 infonce=0.0879 dist=0.2742 | lr=1.23e-05
+2026-03-16 13:06:57 - INFO - __main__ - [stage2] Epoch 18 Step 1750/1887 | loss=0.1975 infonce=0.0878 dist=0.2742 | lr=1.23e-05
+2026-03-16 13:07:30 - INFO - __main__ - [stage2] Epoch 18 Step 1800/1887 | loss=0.1975 infonce=0.0879 dist=0.2741 | lr=1.23e-05
+2026-03-16 13:08:03 - INFO - __main__ - [stage2] Epoch 18 Step 1850/1887 | loss=0.1976 infonce=0.0880 dist=0.2741 | lr=1.23e-05
+2026-03-16 13:08:30 - INFO - __main__ - [stage2] Epoch 18 finished | avg_loss=0.1978 accuracy=0.9834 | time=1265.0s | nan_batches=0
+2026-03-16 13:11:03 - INFO - __main__ - [stage2] Epoch 18 validation: nll_loss=0.9322 accuracy=0.7772
+2026-03-16 13:11:07 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_18.pt (epoch=18, step=4239)
+2026-03-16 13:11:07 - INFO - __main__ - [stage2] No improvement. patience=7 (early stopping disabled)
+2026-03-16 13:11:44 - INFO - __main__ - [stage2] Epoch 19 Step 50/1887 | loss=0.1868 infonce=0.0809 dist=0.2647 | lr=1.22e-05
+2026-03-16 13:12:18 - INFO - __main__ - [stage2] Epoch 19 Step 100/1887 | loss=0.1784 infonce=0.0728 dist=0.2638 | lr=1.22e-05
+2026-03-16 13:12:50 - INFO - __main__ - [stage2] Epoch 19 Step 150/1887 | loss=0.1801 infonce=0.0745 dist=0.2640 | lr=1.22e-05
+2026-03-16 13:13:23 - INFO - __main__ - [stage2] Epoch 19 Step 200/1887 | loss=0.1804 infonce=0.0746 dist=0.2645 | lr=1.21e-05
+2026-03-16 13:13:57 - INFO - __main__ - [stage2] Epoch 19 Step 250/1887 | loss=0.1803 infonce=0.0746 dist=0.2642 | lr=1.21e-05
+2026-03-16 13:14:30 - INFO - __main__ - [stage2] Epoch 19 Step 300/1887 | loss=0.1800 infonce=0.0743 dist=0.2644 | lr=1.21e-05
+2026-03-16 13:15:03 - INFO - __main__ - [stage2] Epoch 19 Step 350/1887 | loss=0.1797 infonce=0.0741 dist=0.2641 | lr=1.20e-05
+2026-03-16 13:15:37 - INFO - __main__ - [stage2] Epoch 19 Step 400/1887 | loss=0.1795 infonce=0.0739 dist=0.2640 | lr=1.20e-05
+2026-03-16 13:16:11 - INFO - __main__ - [stage2] Epoch 19 Step 450/1887 | loss=0.1798 infonce=0.0741 dist=0.2643 | lr=1.20e-05
+2026-03-16 13:16:44 - INFO - __main__ - [stage2] Epoch 19 Step 500/1887 | loss=0.1806 infonce=0.0749 dist=0.2643 | lr=1.19e-05
+2026-03-16 13:17:17 - INFO - __main__ - [stage2] Epoch 19 Step 550/1887 | loss=0.1807 infonce=0.0749 dist=0.2645 | lr=1.19e-05
+2026-03-16 13:17:50 - INFO - __main__ - [stage2] Epoch 19 Step 600/1887 | loss=0.1804 infonce=0.0746 dist=0.2644 | lr=1.19e-05
+2026-03-16 13:18:23 - INFO - __main__ - [stage2] Epoch 19 Step 650/1887 | loss=0.1796 infonce=0.0740 dist=0.2640 | lr=1.19e-05
+2026-03-16 13:18:57 - INFO - __main__ - [stage2] Epoch 19 Step 700/1887 | loss=0.1801 infonce=0.0745 dist=0.2641 | lr=1.18e-05
+2026-03-16 13:19:30 - INFO - __main__ - [stage2] Epoch 19 Step 750/1887 | loss=0.1803 infonce=0.0745 dist=0.2643 | lr=1.18e-05
+2026-03-16 13:20:05 - INFO - __main__ - [stage2] Epoch 19 Step 800/1887 | loss=0.1807 infonce=0.0750 dist=0.2642 | lr=1.18e-05
+2026-03-16 13:20:39 - INFO - __main__ - [stage2] Epoch 19 Step 850/1887 | loss=0.1807 infonce=0.0750 dist=0.2642 | lr=1.17e-05
+2026-03-16 13:21:12 - INFO - __main__ - [stage2] Epoch 19 Step 900/1887 | loss=0.1801 infonce=0.0745 dist=0.2641 | lr=1.17e-05
+2026-03-16 13:21:45 - INFO - __main__ - [stage2] Epoch 19 Step 950/1887 | loss=0.1798 infonce=0.0743 dist=0.2639 | lr=1.17e-05
+2026-03-16 13:22:18 - INFO - __main__ - [stage2] Epoch 19 Step 1000/1887 | loss=0.1797 infonce=0.0742 dist=0.2637 | lr=1.16e-05
+2026-03-16 13:22:52 - INFO - __main__ - [stage2] Epoch 19 Step 1050/1887 | loss=0.1799 infonce=0.0744 dist=0.2638 | lr=1.16e-05
+2026-03-16 13:23:24 - INFO - __main__ - [stage2] Epoch 19 Step 1100/1887 | loss=0.1792 infonce=0.0738 dist=0.2637 | lr=1.16e-05
+2026-03-16 13:23:58 - INFO - __main__ - [stage2] Epoch 19 Step 1150/1887 | loss=0.1793 infonce=0.0738 dist=0.2638 | lr=1.16e-05
+2026-03-16 13:24:31 - INFO - __main__ - [stage2] Epoch 19 Step 1200/1887 | loss=0.1796 infonce=0.0741 dist=0.2638 | lr=1.15e-05
+2026-03-16 13:25:05 - INFO - __main__ - [stage2] Epoch 19 Step 1250/1887 | loss=0.1794 infonce=0.0740 dist=0.2637 | lr=1.15e-05
+2026-03-16 13:25:38 - INFO - __main__ - [stage2] Epoch 19 Step 1300/1887 | loss=0.1789 infonce=0.0735 dist=0.2636 | lr=1.15e-05
+2026-03-16 13:26:10 - INFO - __main__ - [stage2] Epoch 19 Step 1350/1887 | loss=0.1791 infonce=0.0737 dist=0.2635 | lr=1.14e-05
+2026-03-16 13:26:44 - INFO - __main__ - [stage2] Epoch 19 Step 1400/1887 | loss=0.1794 infonce=0.0741 dist=0.2633 | lr=1.14e-05
+2026-03-16 13:27:17 - INFO - __main__ - [stage2] Epoch 19 Step 1450/1887 | loss=0.1796 infonce=0.0743 dist=0.2633 | lr=1.14e-05
+2026-03-16 13:27:50 - INFO - __main__ - [stage2] Epoch 19 Step 1500/1887 | loss=0.1796 infonce=0.0743 dist=0.2633 | lr=1.14e-05
+2026-03-16 13:28:23 - INFO - __main__ - [stage2] Epoch 19 Step 1550/1887 | loss=0.1796 infonce=0.0743 dist=0.2631 | lr=1.13e-05
+2026-03-16 13:28:57 - INFO - __main__ - [stage2] Epoch 19 Step 1600/1887 | loss=0.1796 infonce=0.0744 dist=0.2629 | lr=1.13e-05
+2026-03-16 13:29:30 - INFO - __main__ - [stage2] Epoch 19 Step 1650/1887 | loss=0.1796 infonce=0.0745 dist=0.2628 | lr=1.13e-05
+2026-03-16 13:30:02 - INFO - __main__ - [stage2] Epoch 19 Step 1700/1887 | loss=0.1796 infonce=0.0746 dist=0.2626 | lr=1.12e-05
+2026-03-16 13:30:35 - INFO - __main__ - [stage2] Epoch 19 Step 1750/1887 | loss=0.1796 infonce=0.0746 dist=0.2627 | lr=1.12e-05
+2026-03-16 13:31:08 - INFO - __main__ - [stage2] Epoch 19 Step 1800/1887 | loss=0.1800 infonce=0.0750 dist=0.2625 | lr=1.12e-05
+2026-03-16 13:31:41 - INFO - __main__ - [stage2] Epoch 19 Step 1850/1887 | loss=0.1801 infonce=0.0751 dist=0.2626 | lr=1.11e-05
+2026-03-16 13:32:07 - INFO - __main__ - [stage2] Epoch 19 finished | avg_loss=0.1804 accuracy=0.9868 | time=1260.9s | nan_batches=0
+2026-03-16 13:34:40 - INFO - __main__ - [stage2] Epoch 19 validation: nll_loss=0.9524 accuracy=0.7707
+2026-03-16 13:34:42 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_19.pt (epoch=19, step=4710)
+2026-03-16 13:34:42 - INFO - __main__ - [stage2] No improvement. patience=8 (early stopping disabled)
+2026-03-16 13:35:19 - INFO - __main__ - [stage2] Epoch 20 Step 50/1887 | loss=0.1746 infonce=0.0714 dist=0.2580 | lr=1.11e-05
+2026-03-16 13:35:53 - INFO - __main__ - [stage2] Epoch 20 Step 100/1887 | loss=0.1689 infonce=0.0661 dist=0.2569 | lr=1.11e-05
+2026-03-16 13:36:26 - INFO - __main__ - [stage2] Epoch 20 Step 150/1887 | loss=0.1664 infonce=0.0642 dist=0.2554 | lr=1.10e-05
+2026-03-16 13:37:01 - INFO - __main__ - [stage2] Epoch 20 Step 200/1887 | loss=0.1651 infonce=0.0631 dist=0.2549 | lr=1.10e-05
+2026-03-16 13:37:33 - INFO - __main__ - [stage2] Epoch 20 Step 250/1887 | loss=0.1678 infonce=0.0661 dist=0.2542 | lr=1.10e-05
+2026-03-16 13:38:06 - INFO - __main__ - [stage2] Epoch 20 Step 300/1887 | loss=0.1673 infonce=0.0658 dist=0.2537 | lr=1.10e-05
+2026-03-16 13:38:40 - INFO - __main__ - [stage2] Epoch 20 Step 350/1887 | loss=0.1669 infonce=0.0655 dist=0.2535 | lr=1.09e-05
+2026-03-16 13:39:13 - INFO - __main__ - [stage2] Epoch 20 Step 400/1887 | loss=0.1661 infonce=0.0648 dist=0.2534 | lr=1.09e-05
+2026-03-16 13:39:46 - INFO - __main__ - [stage2] Epoch 20 Step 450/1887 | loss=0.1666 infonce=0.0652 dist=0.2534 | lr=1.09e-05
+2026-03-16 13:40:20 - INFO - __main__ - [stage2] Epoch 20 Step 500/1887 | loss=0.1661 infonce=0.0648 dist=0.2531 | lr=1.08e-05
+2026-03-16 13:40:53 - INFO - __main__ - [stage2] Epoch 20 Step 550/1887 | loss=0.1656 infonce=0.0644 dist=0.2531 | lr=1.08e-05
+2026-03-16 13:41:27 - INFO - __main__ - [stage2] Epoch 20 Step 600/1887 | loss=0.1659 infonce=0.0647 dist=0.2530 | lr=1.08e-05
+2026-03-16 13:42:00 - INFO - __main__ - [stage2] Epoch 20 Step 650/1887 | loss=0.1659 infonce=0.0646 dist=0.2532 | lr=1.07e-05
+2026-03-16 13:42:33 - INFO - __main__ - [stage2] Epoch 20 Step 700/1887 | loss=0.1662 infonce=0.0650 dist=0.2530 | lr=1.07e-05
+2026-03-16 13:43:06 - INFO - __main__ - [stage2] Epoch 20 Step 750/1887 | loss=0.1661 infonce=0.0649 dist=0.2529 | lr=1.07e-05
+2026-03-16 13:43:40 - INFO - __main__ - [stage2] Epoch 20 Step 800/1887 | loss=0.1657 infonce=0.0646 dist=0.2527 | lr=1.07e-05
+2026-03-16 13:44:14 - INFO - __main__ - [stage2] Epoch 20 Step 850/1887 | loss=0.1656 infonce=0.0645 dist=0.2527 | lr=1.06e-05
+2026-03-16 13:44:47 - INFO - __main__ - [stage2] Epoch 20 Step 900/1887 | loss=0.1658 infonce=0.0648 dist=0.2526 | lr=1.06e-05
+2026-03-16 13:45:20 - INFO - __main__ - [stage2] Epoch 20 Step 950/1887 | loss=0.1664 infonce=0.0654 dist=0.2525 | lr=1.06e-05
+2026-03-16 13:45:52 - INFO - __main__ - [stage2] Epoch 20 Step 1000/1887 | loss=0.1665 infonce=0.0655 dist=0.2524 | lr=1.05e-05
+2026-03-16 13:46:26 - INFO - __main__ - [stage2] Epoch 20 Step 1050/1887 | loss=0.1664 infonce=0.0654 dist=0.2524 | lr=1.05e-05
+2026-03-16 13:46:59 - INFO - __main__ - [stage2] Epoch 20 Step 1100/1887 | loss=0.1660 infonce=0.0650 dist=0.2525 | lr=1.05e-05
+2026-03-16 13:47:32 - INFO - __main__ - [stage2] Epoch 20 Step 1150/1887 | loss=0.1659 infonce=0.0650 dist=0.2523 | lr=1.05e-05
+2026-03-16 13:48:05 - INFO - __main__ - [stage2] Epoch 20 Step 1200/1887 | loss=0.1659 infonce=0.0651 dist=0.2521 | lr=1.04e-05
+2026-03-16 13:48:39 - INFO - __main__ - [stage2] Epoch 20 Step 1250/1887 | loss=0.1659 infonce=0.0651 dist=0.2520 | lr=1.04e-05
+2026-03-16 13:49:13 - INFO - __main__ - [stage2] Epoch 20 Step 1300/1887 | loss=0.1663 infonce=0.0655 dist=0.2521 | lr=1.04e-05
+2026-03-16 13:49:46 - INFO - __main__ - [stage2] Epoch 20 Step 1350/1887 | loss=0.1662 infonce=0.0654 dist=0.2522 | lr=1.03e-05
+2026-03-16 13:50:21 - INFO - __main__ - [stage2] Epoch 20 Step 1400/1887 | loss=0.1665 infonce=0.0656 dist=0.2521 | lr=1.03e-05
+2026-03-16 13:50:55 - INFO - __main__ - [stage2] Epoch 20 Step 1450/1887 | loss=0.1665 infonce=0.0657 dist=0.2522 | lr=1.03e-05
+2026-03-16 13:51:28 - INFO - __main__ - [stage2] Epoch 20 Step 1500/1887 | loss=0.1666 infonce=0.0657 dist=0.2522 | lr=1.02e-05
+2026-03-16 13:52:01 - INFO - __main__ - [stage2] Epoch 20 Step 1550/1887 | loss=0.1667 infonce=0.0659 dist=0.2521 | lr=1.02e-05
+2026-03-16 13:52:35 - INFO - __main__ - [stage2] Epoch 20 Step 1600/1887 | loss=0.1668 infonce=0.0660 dist=0.2521 | lr=1.02e-05
+2026-03-16 13:53:08 - INFO - __main__ - [stage2] Epoch 20 Step 1650/1887 | loss=0.1666 infonce=0.0658 dist=0.2520 | lr=1.02e-05
+2026-03-16 13:53:41 - INFO - __main__ - [stage2] Epoch 20 Step 1700/1887 | loss=0.1667 infonce=0.0659 dist=0.2520 | lr=1.01e-05
+2026-03-16 13:54:14 - INFO - __main__ - [stage2] Epoch 20 Step 1750/1887 | loss=0.1665 infonce=0.0657 dist=0.2519 | lr=1.01e-05
+2026-03-16 13:54:47 - INFO - __main__ - [stage2] Epoch 20 Step 1800/1887 | loss=0.1667 infonce=0.0660 dist=0.2518 | lr=1.01e-05
+2026-03-16 13:55:21 - INFO - __main__ - [stage2] Epoch 20 Step 1850/1887 | loss=0.1665 infonce=0.0658 dist=0.2517 | lr=1.00e-05
+2026-03-16 13:55:48 - INFO - __main__ - [stage2] Epoch 20 finished | avg_loss=0.1665 accuracy=0.9891 | time=1265.8s | nan_batches=0
+2026-03-16 13:58:20 - INFO - __main__ - [stage2] Epoch 20 validation: nll_loss=0.9406 accuracy=0.7737
+2026-03-16 13:58:24 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_20.pt (epoch=20, step=5181)
+2026-03-16 13:58:24 - INFO - __main__ - [stage2] No improvement. patience=9 (early stopping disabled)
+2026-03-16 13:59:01 - INFO - __main__ - [stage2] Epoch 21 Step 50/1887 | loss=0.1639 infonce=0.0670 dist=0.2422 | lr=9.99e-06
+2026-03-16 13:59:34 - INFO - __main__ - [stage2] Epoch 21 Step 100/1887 | loss=0.1596 infonce=0.0624 dist=0.2431 | lr=9.96e-06
+2026-03-16 14:00:07 - INFO - __main__ - [stage2] Epoch 21 Step 150/1887 | loss=0.1577 infonce=0.0603 dist=0.2435 | lr=9.93e-06
+2026-03-16 14:00:41 - INFO - __main__ - [stage2] Epoch 21 Step 200/1887 | loss=0.1568 infonce=0.0598 dist=0.2426 | lr=9.90e-06
+2026-03-16 14:01:13 - INFO - __main__ - [stage2] Epoch 21 Step 250/1887 | loss=0.1562 infonce=0.0593 dist=0.2423 | lr=9.87e-06
+2026-03-16 14:01:46 - INFO - __main__ - [stage2] Epoch 21 Step 300/1887 | loss=0.1576 infonce=0.0606 dist=0.2425 | lr=9.84e-06
+2026-03-16 14:02:20 - INFO - __main__ - [stage2] Epoch 21 Step 350/1887 | loss=0.1567 infonce=0.0597 dist=0.2426 | lr=9.81e-06
+2026-03-16 14:02:53 - INFO - __main__ - [stage2] Epoch 21 Step 400/1887 | loss=0.1570 infonce=0.0601 dist=0.2422 | lr=9.78e-06
+2026-03-16 14:03:26 - INFO - __main__ - [stage2] Epoch 21 Step 450/1887 | loss=0.1588 infonce=0.0618 dist=0.2425 | lr=9.76e-06
+2026-03-16 14:04:00 - INFO - __main__ - [stage2] Epoch 21 Step 500/1887 | loss=0.1586 infonce=0.0617 dist=0.2424 | lr=9.72e-06
+2026-03-16 14:04:34 - INFO - __main__ - [stage2] Epoch 21 Step 550/1887 | loss=0.1589 infonce=0.0619 dist=0.2424 | lr=9.70e-06
+2026-03-16 14:05:07 - INFO - __main__ - [stage2] Epoch 21 Step 600/1887 | loss=0.1591 infonce=0.0622 dist=0.2424 | lr=9.67e-06
+2026-03-16 14:05:40 - INFO - __main__ - [stage2] Epoch 21 Step 650/1887 | loss=0.1593 infonce=0.0622 dist=0.2427 | lr=9.64e-06
+2026-03-16 14:06:13 - INFO - __main__ - [stage2] Epoch 21 Step 700/1887 | loss=0.1584 infonce=0.0614 dist=0.2426 | lr=9.61e-06
+2026-03-16 14:06:47 - INFO - __main__ - [stage2] Epoch 21 Step 750/1887 | loss=0.1597 infonce=0.0626 dist=0.2427 | lr=9.58e-06
+2026-03-16 14:07:20 - INFO - __main__ - [stage2] Epoch 21 Step 800/1887 | loss=0.1593 infonce=0.0622 dist=0.2429 | lr=9.55e-06
+2026-03-16 14:07:54 - INFO - __main__ - [stage2] Epoch 21 Step 850/1887 | loss=0.1587 infonce=0.0616 dist=0.2428 | lr=9.52e-06
+2026-03-16 14:08:27 - INFO - __main__ - [stage2] Epoch 21 Step 900/1887 | loss=0.1590 infonce=0.0619 dist=0.2428 | lr=9.49e-06
+2026-03-16 14:09:01 - INFO - __main__ - [stage2] Epoch 21 Step 950/1887 | loss=0.1584 infonce=0.0613 dist=0.2427 | lr=9.46e-06
+2026-03-16 14:09:34 - INFO - __main__ - [stage2] Epoch 21 Step 1000/1887 | loss=0.1583 infonce=0.0614 dist=0.2425 | lr=9.43e-06
+2026-03-16 14:10:06 - INFO - __main__ - [stage2] Epoch 21 Step 1050/1887 | loss=0.1582 infonce=0.0612 dist=0.2426 | lr=9.40e-06
+2026-03-16 14:10:40 - INFO - __main__ - [stage2] Epoch 21 Step 1100/1887 | loss=0.1580 infonce=0.0611 dist=0.2425 | lr=9.37e-06
+2026-03-16 14:11:13 - INFO - __main__ - [stage2] Epoch 21 Step 1150/1887 | loss=0.1579 infonce=0.0609 dist=0.2426 | lr=9.34e-06
+2026-03-16 14:11:46 - INFO - __main__ - [stage2] Epoch 21 Step 1200/1887 | loss=0.1580 infonce=0.0610 dist=0.2425 | lr=9.31e-06
+2026-03-16 14:12:18 - INFO - __main__ - [stage2] Epoch 21 Step 1250/1887 | loss=0.1580 infonce=0.0610 dist=0.2425 | lr=9.28e-06
+2026-03-16 14:12:52 - INFO - __main__ - [stage2] Epoch 21 Step 1300/1887 | loss=0.1581 infonce=0.0612 dist=0.2425 | lr=9.25e-06
+2026-03-16 14:13:25 - INFO - __main__ - [stage2] Epoch 21 Step 1350/1887 | loss=0.1586 infonce=0.0615 dist=0.2427 | lr=9.23e-06
+2026-03-16 14:13:58 - INFO - __main__ - [stage2] Epoch 21 Step 1400/1887 | loss=0.1583 infonce=0.0612 dist=0.2427 | lr=9.19e-06
+2026-03-16 14:14:32 - INFO - __main__ - [stage2] Epoch 21 Step 1450/1887 | loss=0.1581 infonce=0.0610 dist=0.2426 | lr=9.17e-06
+2026-03-16 14:15:04 - INFO - __main__ - [stage2] Epoch 21 Step 1500/1887 | loss=0.1579 infonce=0.0609 dist=0.2425 | lr=9.14e-06
+2026-03-16 14:15:38 - INFO - __main__ - [stage2] Epoch 21 Step 1550/1887 | loss=0.1579 infonce=0.0609 dist=0.2425 | lr=9.11e-06
+2026-03-16 14:16:12 - INFO - __main__ - [stage2] Epoch 21 Step 1600/1887 | loss=0.1581 infonce=0.0611 dist=0.2426 | lr=9.08e-06
+2026-03-16 14:16:46 - INFO - __main__ - [stage2] Epoch 21 Step 1650/1887 | loss=0.1583 infonce=0.0613 dist=0.2425 | lr=9.05e-06
+2026-03-16 14:17:19 - INFO - __main__ - [stage2] Epoch 21 Step 1700/1887 | loss=0.1584 infonce=0.0613 dist=0.2426 | lr=9.02e-06
+2026-03-16 14:17:52 - INFO - __main__ - [stage2] Epoch 21 Step 1750/1887 | loss=0.1583 infonce=0.0612 dist=0.2427 | lr=8.99e-06
+2026-03-16 14:18:25 - INFO - __main__ - [stage2] Epoch 21 Step 1800/1887 | loss=0.1584 infonce=0.0614 dist=0.2427 | lr=8.96e-06
+2026-03-16 14:18:59 - INFO - __main__ - [stage2] Epoch 21 Step 1850/1887 | loss=0.1586 infonce=0.0615 dist=0.2427 | lr=8.93e-06
+2026-03-16 14:19:25 - INFO - __main__ - [stage2] Epoch 21 finished | avg_loss=0.1585 accuracy=0.9893 | time=1261.3s | nan_batches=0
+2026-03-16 14:21:59 - INFO - __main__ - [stage2] Epoch 21 validation: nll_loss=0.9833 accuracy=0.7652
+2026-03-16 14:22:03 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_21.pt (epoch=21, step=5652)
+2026-03-16 14:22:03 - INFO - __main__ - [stage2] No improvement. patience=10 (early stopping disabled)
+2026-03-16 14:22:41 - INFO - __main__ - [stage2] Epoch 22 Step 50/1887 | loss=0.1527 infonce=0.0568 dist=0.2398 | lr=8.88e-06
+2026-03-16 14:23:14 - INFO - __main__ - [stage2] Epoch 22 Step 100/1887 | loss=0.1486 infonce=0.0543 dist=0.2357 | lr=8.85e-06
+2026-03-16 14:23:48 - INFO - __main__ - [stage2] Epoch 22 Step 150/1887 | loss=0.1461 infonce=0.0516 dist=0.2363 | lr=8.82e-06
+2026-03-16 14:24:21 - INFO - __main__ - [stage2] Epoch 22 Step 200/1887 | loss=0.1467 infonce=0.0523 dist=0.2360 | lr=8.79e-06
+2026-03-16 14:24:55 - INFO - __main__ - [stage2] Epoch 22 Step 250/1887 | loss=0.1475 infonce=0.0532 dist=0.2356 | lr=8.76e-06
+2026-03-16 14:25:28 - INFO - __main__ - [stage2] Epoch 22 Step 300/1887 | loss=0.1489 infonce=0.0548 dist=0.2353 | lr=8.73e-06
+2026-03-16 14:26:01 - INFO - __main__ - [stage2] Epoch 22 Step 350/1887 | loss=0.1484 infonce=0.0543 dist=0.2354 | lr=8.70e-06
+2026-03-16 14:26:35 - INFO - __main__ - [stage2] Epoch 22 Step 400/1887 | loss=0.1479 infonce=0.0538 dist=0.2353 | lr=8.67e-06
+2026-03-16 14:27:09 - INFO - __main__ - [stage2] Epoch 22 Step 450/1887 | loss=0.1477 infonce=0.0536 dist=0.2353 | lr=8.65e-06
+2026-03-16 14:27:42 - INFO - __main__ - [stage2] Epoch 22 Step 500/1887 | loss=0.1482 infonce=0.0543 dist=0.2348 | lr=8.62e-06
+2026-03-16 14:28:15 - INFO - __main__ - [stage2] Epoch 22 Step 550/1887 | loss=0.1484 infonce=0.0543 dist=0.2352 | lr=8.59e-06
+2026-03-16 14:28:49 - INFO - __main__ - [stage2] Epoch 22 Step 600/1887 | loss=0.1482 infonce=0.0541 dist=0.2352 | lr=8.56e-06
+2026-03-16 14:29:23 - INFO - __main__ - [stage2] Epoch 22 Step 650/1887 | loss=0.1488 infonce=0.0548 dist=0.2350 | lr=8.53e-06
+2026-03-16 14:29:56 - INFO - __main__ - [stage2] Epoch 22 Step 700/1887 | loss=0.1497 infonce=0.0556 dist=0.2351 | lr=8.50e-06
+2026-03-16 14:30:30 - INFO - __main__ - [stage2] Epoch 22 Step 750/1887 | loss=0.1498 infonce=0.0559 dist=0.2349 | lr=8.47e-06
+2026-03-16 14:31:03 - INFO - __main__ - [stage2] Epoch 22 Step 800/1887 | loss=0.1500 infonce=0.0560 dist=0.2350 | lr=8.44e-06
+2026-03-16 14:31:37 - INFO - __main__ - [stage2] Epoch 22 Step 850/1887 | loss=0.1501 infonce=0.0561 dist=0.2351 | lr=8.41e-06
+2026-03-16 14:32:10 - INFO - __main__ - [stage2] Epoch 22 Step 900/1887 | loss=0.1501 infonce=0.0561 dist=0.2350 | lr=8.38e-06
+2026-03-16 14:32:43 - INFO - __main__ - [stage2] Epoch 22 Step 950/1887 | loss=0.1504 infonce=0.0565 dist=0.2349 | lr=8.35e-06
+2026-03-16 14:33:17 - INFO - __main__ - [stage2] Epoch 22 Step 1000/1887 | loss=0.1501 infonce=0.0562 dist=0.2346 | lr=8.32e-06
+2026-03-16 14:33:51 - INFO - __main__ - [stage2] Epoch 22 Step 1050/1887 | loss=0.1499 infonce=0.0561 dist=0.2345 | lr=8.29e-06
+2026-03-16 14:34:25 - INFO - __main__ - [stage2] Epoch 22 Step 1100/1887 | loss=0.1500 infonce=0.0562 dist=0.2345 | lr=8.26e-06
+2026-03-16 14:34:59 - INFO - __main__ - [stage2] Epoch 22 Step 1150/1887 | loss=0.1502 infonce=0.0563 dist=0.2346 | lr=8.23e-06
+2026-03-16 14:35:32 - INFO - __main__ - [stage2] Epoch 22 Step 1200/1887 | loss=0.1501 infonce=0.0563 dist=0.2345 | lr=8.20e-06
+2026-03-16 14:36:05 - INFO - __main__ - [stage2] Epoch 22 Step 1250/1887 | loss=0.1497 infonce=0.0559 dist=0.2344 | lr=8.17e-06
+2026-03-16 14:36:39 - INFO - __main__ - [stage2] Epoch 22 Step 1300/1887 | loss=0.1497 infonce=0.0560 dist=0.2344 | lr=8.14e-06
+2026-03-16 14:37:14 - INFO - __main__ - [stage2] Epoch 22 Step 1350/1887 | loss=0.1498 infonce=0.0561 dist=0.2343 | lr=8.12e-06
+2026-03-16 14:37:46 - INFO - __main__ - [stage2] Epoch 22 Step 1400/1887 | loss=0.1497 infonce=0.0560 dist=0.2342 | lr=8.09e-06
+2026-03-16 14:38:20 - INFO - __main__ - [stage2] Epoch 22 Step 1450/1887 | loss=0.1496 infonce=0.0559 dist=0.2342 | lr=8.06e-06
+2026-03-16 14:38:52 - INFO - __main__ - [stage2] Epoch 22 Step 1500/1887 | loss=0.1495 infonce=0.0559 dist=0.2342 | lr=8.03e-06
+2026-03-16 14:39:25 - INFO - __main__ - [stage2] Epoch 22 Step 1550/1887 | loss=0.1496 infonce=0.0559 dist=0.2342 | lr=8.00e-06
+2026-03-16 14:39:59 - INFO - __main__ - [stage2] Epoch 22 Step 1600/1887 | loss=0.1498 infonce=0.0561 dist=0.2343 | lr=7.97e-06
+2026-03-16 14:40:32 - INFO - __main__ - [stage2] Epoch 22 Step 1650/1887 | loss=0.1498 infonce=0.0560 dist=0.2344 | lr=7.94e-06
+2026-03-16 14:41:05 - INFO - __main__ - [stage2] Epoch 22 Step 1700/1887 | loss=0.1495 infonce=0.0558 dist=0.2344 | lr=7.91e-06
+2026-03-16 14:41:38 - INFO - __main__ - [stage2] Epoch 22 Step 1750/1887 | loss=0.1497 infonce=0.0560 dist=0.2343 | lr=7.88e-06
+2026-03-16 14:42:12 - INFO - __main__ - [stage2] Epoch 22 Step 1800/1887 | loss=0.1496 infonce=0.0559 dist=0.2343 | lr=7.85e-06
+2026-03-16 14:42:46 - INFO - __main__ - [stage2] Epoch 22 Step 1850/1887 | loss=0.1496 infonce=0.0559 dist=0.2343 | lr=7.82e-06
+2026-03-16 14:43:13 - INFO - __main__ - [stage2] Epoch 22 finished | avg_loss=0.1496 accuracy=0.9912 | time=1270.2s | nan_batches=0
+2026-03-16 14:45:44 - INFO - __main__ - [stage2] Epoch 22 validation: nll_loss=1.0155 accuracy=0.7614
+2026-03-16 14:45:47 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_22.pt (epoch=22, step=6123)
+2026-03-16 14:45:47 - INFO - __main__ - [stage2] No improvement. patience=11 (early stopping disabled)
+2026-03-16 14:46:24 - INFO - __main__ - [stage2] Epoch 23 Step 50/1887 | loss=0.1507 infonce=0.0581 dist=0.2314 | lr=7.77e-06
+2026-03-16 14:46:58 - INFO - __main__ - [stage2] Epoch 23 Step 100/1887 | loss=0.1471 infonce=0.0546 dist=0.2312 | lr=7.74e-06
+2026-03-16 14:47:32 - INFO - __main__ - [stage2] Epoch 23 Step 150/1887 | loss=0.1445 infonce=0.0524 dist=0.2303 | lr=7.71e-06
+2026-03-16 14:48:05 - INFO - __main__ - [stage2] Epoch 23 Step 200/1887 | loss=0.1437 infonce=0.0520 dist=0.2293 | lr=7.68e-06
+2026-03-16 14:48:39 - INFO - __main__ - [stage2] Epoch 23 Step 250/1887 | loss=0.1419 infonce=0.0502 dist=0.2293 | lr=7.65e-06
+2026-03-16 14:49:11 - INFO - __main__ - [stage2] Epoch 23 Step 300/1887 | loss=0.1441 infonce=0.0525 dist=0.2289 | lr=7.62e-06
+2026-03-16 14:49:44 - INFO - __main__ - [stage2] Epoch 23 Step 350/1887 | loss=0.1450 infonce=0.0534 dist=0.2291 | lr=7.60e-06
+2026-03-16 14:50:17 - INFO - __main__ - [stage2] Epoch 23 Step 400/1887 | loss=0.1452 infonce=0.0537 dist=0.2286 | lr=7.56e-06
+2026-03-16 14:50:50 - INFO - __main__ - [stage2] Epoch 23 Step 450/1887 | loss=0.1449 infonce=0.0534 dist=0.2286 | lr=7.54e-06
+2026-03-16 14:51:22 - INFO - __main__ - [stage2] Epoch 23 Step 500/1887 | loss=0.1446 infonce=0.0532 dist=0.2285 | lr=7.51e-06
+2026-03-16 14:51:55 - INFO - __main__ - [stage2] Epoch 23 Step 550/1887 | loss=0.1447 infonce=0.0533 dist=0.2284 | lr=7.48e-06
+2026-03-16 14:52:28 - INFO - __main__ - [stage2] Epoch 23 Step 600/1887 | loss=0.1443 infonce=0.0530 dist=0.2284 | lr=7.45e-06
+2026-03-16 14:53:01 - INFO - __main__ - [stage2] Epoch 23 Step 650/1887 | loss=0.1442 infonce=0.0529 dist=0.2282 | lr=7.42e-06
+2026-03-16 14:53:37 - INFO - __main__ - [stage2] Epoch 23 Step 700/1887 | loss=0.1435 infonce=0.0522 dist=0.2282 | lr=7.39e-06
+2026-03-16 14:54:10 - INFO - __main__ - [stage2] Epoch 23 Step 750/1887 | loss=0.1440 infonce=0.0527 dist=0.2282 | lr=7.36e-06
+2026-03-16 14:54:45 - INFO - __main__ - [stage2] Epoch 23 Step 800/1887 | loss=0.1439 infonce=0.0526 dist=0.2284 | lr=7.33e-06
+2026-03-16 14:55:18 - INFO - __main__ - [stage2] Epoch 23 Step 850/1887 | loss=0.1434 infonce=0.0522 dist=0.2282 | lr=7.30e-06
+2026-03-16 14:55:52 - INFO - __main__ - [stage2] Epoch 23 Step 900/1887 | loss=0.1433 infonce=0.0521 dist=0.2281 | lr=7.27e-06
+2026-03-16 14:56:26 - INFO - __main__ - [stage2] Epoch 23 Step 950/1887 | loss=0.1432 infonce=0.0520 dist=0.2280 | lr=7.24e-06
+2026-03-16 14:56:59 - INFO - __main__ - [stage2] Epoch 23 Step 1000/1887 | loss=0.1435 infonce=0.0523 dist=0.2280 | lr=7.21e-06
+2026-03-16 14:57:33 - INFO - __main__ - [stage2] Epoch 23 Step 1050/1887 | loss=0.1435 infonce=0.0524 dist=0.2279 | lr=7.18e-06
+2026-03-16 14:58:06 - INFO - __main__ - [stage2] Epoch 23 Step 1100/1887 | loss=0.1437 infonce=0.0525 dist=0.2279 | lr=7.15e-06
+2026-03-16 14:58:39 - INFO - __main__ - [stage2] Epoch 23 Step 1150/1887 | loss=0.1440 infonce=0.0529 dist=0.2279 | lr=7.12e-06
+2026-03-16 14:59:12 - INFO - __main__ - [stage2] Epoch 23 Step 1200/1887 | loss=0.1439 infonce=0.0527 dist=0.2280 | lr=7.09e-06
+2026-03-16 14:59:45 - INFO - __main__ - [stage2] Epoch 23 Step 1250/1887 | loss=0.1437 infonce=0.0524 dist=0.2281 | lr=7.07e-06
+2026-03-16 15:00:19 - INFO - __main__ - [stage2] Epoch 23 Step 1300/1887 | loss=0.1441 infonce=0.0529 dist=0.2280 | lr=7.03e-06
+2026-03-16 15:00:52 - INFO - __main__ - [stage2] Epoch 23 Step 1350/1887 | loss=0.1439 infonce=0.0527 dist=0.2280 | lr=7.01e-06
+2026-03-16 15:01:25 - INFO - __main__ - [stage2] Epoch 23 Step 1400/1887 | loss=0.1439 infonce=0.0527 dist=0.2279 | lr=6.98e-06
+2026-03-16 15:01:58 - INFO - __main__ - [stage2] Epoch 23 Step 1450/1887 | loss=0.1439 infonce=0.0528 dist=0.2278 | lr=6.95e-06
+2026-03-16 15:02:31 - INFO - __main__ - [stage2] Epoch 23 Step 1500/1887 | loss=0.1442 infonce=0.0530 dist=0.2278 | lr=6.92e-06
+2026-03-16 15:03:05 - INFO - __main__ - [stage2] Epoch 23 Step 1550/1887 | loss=0.1439 infonce=0.0528 dist=0.2277 | lr=6.89e-06
+2026-03-16 15:03:39 - INFO - __main__ - [stage2] Epoch 23 Step 1600/1887 | loss=0.1437 infonce=0.0526 dist=0.2276 | lr=6.86e-06
+2026-03-16 15:04:13 - INFO - __main__ - [stage2] Epoch 23 Step 1650/1887 | loss=0.1437 infonce=0.0526 dist=0.2276 | lr=6.83e-06
+2026-03-16 15:04:47 - INFO - __main__ - [stage2] Epoch 23 Step 1700/1887 | loss=0.1437 infonce=0.0527 dist=0.2276 | lr=6.80e-06
+2026-03-16 15:05:19 - INFO - __main__ - [stage2] Epoch 23 Step 1750/1887 | loss=0.1437 infonce=0.0526 dist=0.2276 | lr=6.77e-06
+2026-03-16 15:05:53 - INFO - __main__ - [stage2] Epoch 23 Step 1800/1887 | loss=0.1436 infonce=0.0526 dist=0.2276 | lr=6.74e-06
+2026-03-16 15:06:25 - INFO - __main__ - [stage2] Epoch 23 Step 1850/1887 | loss=0.1436 infonce=0.0525 dist=0.2276 | lr=6.71e-06
+2026-03-16 15:06:53 - INFO - __main__ - [stage2] Epoch 23 finished | avg_loss=0.1436 accuracy=0.9911 | time=1266.0s | nan_batches=0
+2026-03-16 15:09:26 - INFO - __main__ - [stage2] Epoch 23 validation: nll_loss=0.9911 accuracy=0.7646
+2026-03-16 15:09:30 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_23.pt (epoch=23, step=6594)
+2026-03-16 15:09:30 - INFO - __main__ - [stage2] No improvement. patience=12 (early stopping disabled)
+2026-03-16 15:10:09 - INFO - __main__ - [stage2] Epoch 24 Step 50/1887 | loss=0.1435 infonce=0.0531 dist=0.2261 | lr=6.66e-06
+2026-03-16 15:10:43 - INFO - __main__ - [stage2] Epoch 24 Step 100/1887 | loss=0.1430 infonce=0.0525 dist=0.2261 | lr=6.63e-06
+2026-03-16 15:11:17 - INFO - __main__ - [stage2] Epoch 24 Step 150/1887 | loss=0.1424 infonce=0.0521 dist=0.2259 | lr=6.60e-06
+2026-03-16 15:11:52 - INFO - __main__ - [stage2] Epoch 24 Step 200/1887 | loss=0.1398 infonce=0.0500 dist=0.2246 | lr=6.57e-06
+2026-03-16 15:12:26 - INFO - __main__ - [stage2] Epoch 24 Step 250/1887 | loss=0.1390 infonce=0.0493 dist=0.2243 | lr=6.54e-06
+2026-03-16 15:13:00 - INFO - __main__ - [stage2] Epoch 24 Step 300/1887 | loss=0.1391 infonce=0.0496 dist=0.2238 | lr=6.51e-06
+2026-03-16 15:13:33 - INFO - __main__ - [stage2] Epoch 24 Step 350/1887 | loss=0.1389 infonce=0.0494 dist=0.2236 | lr=6.49e-06
+2026-03-16 15:14:06 - INFO - __main__ - [stage2] Epoch 24 Step 400/1887 | loss=0.1391 infonce=0.0496 dist=0.2237 | lr=6.46e-06
+2026-03-16 15:14:39 - INFO - __main__ - [stage2] Epoch 24 Step 450/1887 | loss=0.1390 infonce=0.0496 dist=0.2237 | lr=6.43e-06
+2026-03-16 15:15:13 - INFO - __main__ - [stage2] Epoch 24 Step 500/1887 | loss=0.1387 infonce=0.0494 dist=0.2234 | lr=6.40e-06
+2026-03-16 15:15:45 - INFO - __main__ - [stage2] Epoch 24 Step 550/1887 | loss=0.1385 infonce=0.0492 dist=0.2234 | lr=6.37e-06
+2026-03-16 15:16:19 - INFO - __main__ - [stage2] Epoch 24 Step 600/1887 | loss=0.1385 infonce=0.0491 dist=0.2235 | lr=6.34e-06
+2026-03-16 15:16:53 - INFO - __main__ - [stage2] Epoch 24 Step 650/1887 | loss=0.1384 infonce=0.0490 dist=0.2233 | lr=6.31e-06
+2026-03-16 15:17:27 - INFO - __main__ - [stage2] Epoch 24 Step 700/1887 | loss=0.1390 infonce=0.0497 dist=0.2232 | lr=6.28e-06
+2026-03-16 15:18:01 - INFO - __main__ - [stage2] Epoch 24 Step 750/1887 | loss=0.1389 infonce=0.0497 dist=0.2230 | lr=6.25e-06
+2026-03-16 15:18:34 - INFO - __main__ - [stage2] Epoch 24 Step 800/1887 | loss=0.1386 infonce=0.0494 dist=0.2229 | lr=6.22e-06
+2026-03-16 15:19:08 - INFO - __main__ - [stage2] Epoch 24 Step 850/1887 | loss=0.1383 infonce=0.0492 dist=0.2227 | lr=6.19e-06
+2026-03-16 15:19:42 - INFO - __main__ - [stage2] Epoch 24 Step 900/1887 | loss=0.1388 infonce=0.0498 dist=0.2227 | lr=6.16e-06
+2026-03-16 15:20:15 - INFO - __main__ - [stage2] Epoch 24 Step 950/1887 | loss=0.1387 infonce=0.0498 dist=0.2224 | lr=6.13e-06
+2026-03-16 15:20:50 - INFO - __main__ - [stage2] Epoch 24 Step 1000/1887 | loss=0.1388 infonce=0.0498 dist=0.2223 | lr=6.10e-06
+2026-03-16 15:21:24 - INFO - __main__ - [stage2] Epoch 24 Step 1050/1887 | loss=0.1384 infonce=0.0496 dist=0.2222 | lr=6.07e-06
+2026-03-16 15:21:58 - INFO - __main__ - [stage2] Epoch 24 Step 1100/1887 | loss=0.1384 infonce=0.0496 dist=0.2220 | lr=6.04e-06
+2026-03-16 15:22:31 - INFO - __main__ - [stage2] Epoch 24 Step 1150/1887 | loss=0.1382 infonce=0.0494 dist=0.2220 | lr=6.02e-06
+2026-03-16 15:23:06 - INFO - __main__ - [stage2] Epoch 24 Step 1200/1887 | loss=0.1381 infonce=0.0493 dist=0.2220 | lr=5.98e-06
+2026-03-16 15:23:40 - INFO - __main__ - [stage2] Epoch 24 Step 1250/1887 | loss=0.1381 infonce=0.0494 dist=0.2218 | lr=5.96e-06
+2026-03-16 15:24:14 - INFO - __main__ - [stage2] Epoch 24 Step 1300/1887 | loss=0.1380 infonce=0.0493 dist=0.2216 | lr=5.93e-06
+2026-03-16 15:24:51 - INFO - __main__ - [stage2] Epoch 24 Step 1350/1887 | loss=0.1382 infonce=0.0496 dist=0.2215 | lr=5.90e-06
+2026-03-16 15:25:24 - INFO - __main__ - [stage2] Epoch 24 Step 1400/1887 | loss=0.1382 infonce=0.0496 dist=0.2214 | lr=5.87e-06
+2026-03-16 15:25:58 - INFO - __main__ - [stage2] Epoch 24 Step 1450/1887 | loss=0.1381 infonce=0.0496 dist=0.2213 | lr=5.84e-06
+2026-03-16 15:26:31 - INFO - __main__ - [stage2] Epoch 24 Step 1500/1887 | loss=0.1379 infonce=0.0493 dist=0.2214 | lr=5.81e-06
+2026-03-16 15:27:05 - INFO - __main__ - [stage2] Epoch 24 Step 1550/1887 | loss=0.1379 infonce=0.0493 dist=0.2214 | lr=5.78e-06
+2026-03-16 15:27:38 - INFO - __main__ - [stage2] Epoch 24 Step 1600/1887 | loss=0.1378 infonce=0.0493 dist=0.2213 | lr=5.75e-06
+2026-03-16 15:28:12 - INFO - __main__ - [stage2] Epoch 24 Step 1650/1887 | loss=0.1377 infonce=0.0491 dist=0.2214 | lr=5.72e-06
+2026-03-16 15:28:46 - INFO - __main__ - [stage2] Epoch 24 Step 1700/1887 | loss=0.1377 infonce=0.0492 dist=0.2213 | lr=5.69e-06
+2026-03-16 15:29:19 - INFO - __main__ - [stage2] Epoch 24 Step 1750/1887 | loss=0.1376 infonce=0.0491 dist=0.2212 | lr=5.66e-06
+2026-03-16 15:29:53 - INFO - __main__ - [stage2] Epoch 24 Step 1800/1887 | loss=0.1376 infonce=0.0491 dist=0.2212 | lr=5.63e-06
+2026-03-16 15:30:26 - INFO - __main__ - [stage2] Epoch 24 Step 1850/1887 | loss=0.1374 infonce=0.0489 dist=0.2212 | lr=5.60e-06
+2026-03-16 15:30:54 - INFO - __main__ - [stage2] Epoch 24 finished | avg_loss=0.1373 accuracy=0.9923 | time=1284.5s | nan_batches=0
+2026-03-16 15:33:25 - INFO - __main__ - [stage2] Epoch 24 validation: nll_loss=1.0294 accuracy=0.7546
+2026-03-16 15:33:28 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_24.pt (epoch=24, step=7065)
+2026-03-16 15:33:28 - INFO - __main__ - [stage2] No improvement. patience=13 (early stopping disabled)
+2026-03-16 15:34:06 - INFO - __main__ - [stage2] Epoch 25 Step 50/1887 | loss=0.1299 infonce=0.0443 dist=0.2141 | lr=5.55e-06
+2026-03-16 15:34:40 - INFO - __main__ - [stage2] Epoch 25 Step 100/1887 | loss=0.1315 infonce=0.0454 dist=0.2154 | lr=5.52e-06
+2026-03-16 15:35:13 - INFO - __main__ - [stage2] Epoch 25 Step 150/1887 | loss=0.1304 infonce=0.0442 dist=0.2156 | lr=5.49e-06
+2026-03-16 15:35:47 - INFO - __main__ - [stage2] Epoch 25 Step 200/1887 | loss=0.1330 infonce=0.0466 dist=0.2159 | lr=5.46e-06
+2026-03-16 15:36:21 - INFO - __main__ - [stage2] Epoch 25 Step 250/1887 | loss=0.1312 infonce=0.0450 dist=0.2155 | lr=5.44e-06
+2026-03-16 15:36:55 - INFO - __main__ - [stage2] Epoch 25 Step 300/1887 | loss=0.1320 infonce=0.0456 dist=0.2159 | lr=5.41e-06
+2026-03-16 15:37:29 - INFO - __main__ - [stage2] Epoch 25 Step 350/1887 | loss=0.1320 infonce=0.0457 dist=0.2157 | lr=5.38e-06
+2026-03-16 15:38:03 - INFO - __main__ - [stage2] Epoch 25 Step 400/1887 | loss=0.1328 infonce=0.0464 dist=0.2159 | lr=5.35e-06
+2026-03-16 15:38:37 - INFO - __main__ - [stage2] Epoch 25 Step 450/1887 | loss=0.1324 infonce=0.0462 dist=0.2154 | lr=5.32e-06
+2026-03-16 15:39:10 - INFO - __main__ - [stage2] Epoch 25 Step 500/1887 | loss=0.1317 infonce=0.0455 dist=0.2154 | lr=5.29e-06
+2026-03-16 15:39:45 - INFO - __main__ - [stage2] Epoch 25 Step 550/1887 | loss=0.1314 infonce=0.0452 dist=0.2155 | lr=5.26e-06
+2026-03-16 15:40:19 - INFO - __main__ - [stage2] Epoch 25 Step 600/1887 | loss=0.1312 infonce=0.0451 dist=0.2155 | lr=5.23e-06
+2026-03-16 15:40:51 - INFO - __main__ - [stage2] Epoch 25 Step 650/1887 | loss=0.1311 infonce=0.0449 dist=0.2155 | lr=5.20e-06
+2026-03-16 15:41:25 - INFO - __main__ - [stage2] Epoch 25 Step 700/1887 | loss=0.1311 infonce=0.0448 dist=0.2156 | lr=5.17e-06
+2026-03-16 15:41:59 - INFO - __main__ - [stage2] Epoch 25 Step 750/1887 | loss=0.1315 infonce=0.0453 dist=0.2155 | lr=5.14e-06
+2026-03-16 15:42:33 - INFO - __main__ - [stage2] Epoch 25 Step 800/1887 | loss=0.1315 infonce=0.0453 dist=0.2154 | lr=5.11e-06
+2026-03-16 15:43:06 - INFO - __main__ - [stage2] Epoch 25 Step 850/1887 | loss=0.1313 infonce=0.0451 dist=0.2154 | lr=5.08e-06
+2026-03-16 15:43:40 - INFO - __main__ - [stage2] Epoch 25 Step 900/1887 | loss=0.1313 infonce=0.0451 dist=0.2156 | lr=5.05e-06
+2026-03-16 15:44:13 - INFO - __main__ - [stage2] Epoch 25 Step 950/1887 | loss=0.1314 infonce=0.0452 dist=0.2155 | lr=5.02e-06
+2026-03-16 15:44:47 - INFO - __main__ - [stage2] Epoch 25 Step 1000/1887 | loss=0.1311 infonce=0.0449 dist=0.2156 | lr=4.99e-06
+2026-03-16 15:45:21 - INFO - __main__ - [stage2] Epoch 25 Step 1050/1887 | loss=0.1310 infonce=0.0447 dist=0.2156 | lr=4.96e-06
+2026-03-16 15:45:56 - INFO - __main__ - [stage2] Epoch 25 Step 1100/1887 | loss=0.1309 infonce=0.0446 dist=0.2156 | lr=4.93e-06
+2026-03-16 15:46:29 - INFO - __main__ - [stage2] Epoch 25 Step 1150/1887 | loss=0.1307 infonce=0.0445 dist=0.2156 | lr=4.91e-06
+2026-03-16 15:47:03 - INFO - __main__ - [stage2] Epoch 25 Step 1200/1887 | loss=0.1310 infonce=0.0447 dist=0.2157 | lr=4.88e-06
+2026-03-16 15:47:35 - INFO - __main__ - [stage2] Epoch 25 Step 1250/1887 | loss=0.1311 infonce=0.0448 dist=0.2156 | lr=4.85e-06
+2026-03-16 15:48:09 - INFO - __main__ - [stage2] Epoch 25 Step 1300/1887 | loss=0.1311 infonce=0.0449 dist=0.2156 | lr=4.82e-06
+2026-03-16 15:48:43 - INFO - __main__ - [stage2] Epoch 25 Step 1350/1887 | loss=0.1310 infonce=0.0448 dist=0.2156 | lr=4.79e-06
+2026-03-16 15:49:17 - INFO - __main__ - [stage2] Epoch 25 Step 1400/1887 | loss=0.1314 infonce=0.0451 dist=0.2156 | lr=4.76e-06
+2026-03-16 15:49:50 - INFO - __main__ - [stage2] Epoch 25 Step 1450/1887 | loss=0.1312 infonce=0.0450 dist=0.2155 | lr=4.73e-06
+2026-03-16 15:50:23 - INFO - __main__ - [stage2] Epoch 25 Step 1500/1887 | loss=0.1315 infonce=0.0453 dist=0.2155 | lr=4.70e-06
+2026-03-16 15:50:56 - INFO - __main__ - [stage2] Epoch 25 Step 1550/1887 | loss=0.1315 infonce=0.0453 dist=0.2155 | lr=4.67e-06
+2026-03-16 15:51:29 - INFO - __main__ - [stage2] Epoch 25 Step 1600/1887 | loss=0.1316 infonce=0.0454 dist=0.2155 | lr=4.64e-06
+2026-03-16 15:52:03 - INFO - __main__ - [stage2] Epoch 25 Step 1650/1887 | loss=0.1317 infonce=0.0455 dist=0.2155 | lr=4.61e-06
+2026-03-16 15:52:36 - INFO - __main__ - [stage2] Epoch 25 Step 1700/1887 | loss=0.1319 infonce=0.0457 dist=0.2155 | lr=4.58e-06
+2026-03-16 15:53:11 - INFO - __main__ - [stage2] Epoch 25 Step 1750/1887 | loss=0.1319 infonce=0.0457 dist=0.2155 | lr=4.55e-06
+2026-03-16 15:53:44 - INFO - __main__ - [stage2] Epoch 25 Step 1800/1887 | loss=0.1319 infonce=0.0457 dist=0.2155 | lr=4.52e-06
+2026-03-16 15:54:19 - INFO - __main__ - [stage2] Epoch 25 Step 1850/1887 | loss=0.1318 infonce=0.0456 dist=0.2155 | lr=4.49e-06
+2026-03-16 15:54:46 - INFO - __main__ - [stage2] Epoch 25 finished | avg_loss=0.1317 accuracy=0.9929 | time=1277.7s | nan_batches=0
+2026-03-16 15:57:17 - INFO - __main__ - [stage2] Epoch 25 validation: nll_loss=1.0346 accuracy=0.7598
+2026-03-16 15:57:20 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_25.pt (epoch=25, step=7536)
+2026-03-16 15:57:20 - INFO - __main__ - [stage2] No improvement. patience=14 (early stopping disabled)
+2026-03-16 15:58:02 - INFO - __main__ - [stage2] Epoch 26 Step 50/1887 | loss=0.1314 infonce=0.0462 dist=0.2129 | lr=4.44e-06
+2026-03-16 15:58:35 - INFO - __main__ - [stage2] Epoch 26 Step 100/1887 | loss=0.1298 infonce=0.0453 dist=0.2112 | lr=4.41e-06
+2026-03-16 15:59:08 - INFO - __main__ - [stage2] Epoch 26 Step 150/1887 | loss=0.1289 infonce=0.0442 dist=0.2117 | lr=4.39e-06
+2026-03-16 15:59:42 - INFO - __main__ - [stage2] Epoch 26 Step 200/1887 | loss=0.1270 infonce=0.0425 dist=0.2114 | lr=4.35e-06
+2026-03-16 16:00:16 - INFO - __main__ - [stage2] Epoch 26 Step 250/1887 | loss=0.1267 infonce=0.0421 dist=0.2115 | lr=4.33e-06
+2026-03-16 16:00:50 - INFO - __main__ - [stage2] Epoch 26 Step 300/1887 | loss=0.1259 infonce=0.0414 dist=0.2112 | lr=4.30e-06
+2026-03-16 16:01:23 - INFO - __main__ - [stage2] Epoch 26 Step 350/1887 | loss=0.1246 infonce=0.0402 dist=0.2110 | lr=4.27e-06
+2026-03-16 16:01:57 - INFO - __main__ - [stage2] Epoch 26 Step 400/1887 | loss=0.1246 infonce=0.0401 dist=0.2114 | lr=4.24e-06
+2026-03-16 16:02:30 - INFO - __main__ - [stage2] Epoch 26 Step 450/1887 | loss=0.1246 infonce=0.0402 dist=0.2110 | lr=4.21e-06
+2026-03-16 16:03:04 - INFO - __main__ - [stage2] Epoch 26 Step 500/1887 | loss=0.1246 infonce=0.0401 dist=0.2112 | lr=4.18e-06
+2026-03-16 16:03:37 - INFO - __main__ - [stage2] Epoch 26 Step 550/1887 | loss=0.1244 infonce=0.0400 dist=0.2111 | lr=4.15e-06
+2026-03-16 16:04:10 - INFO - __main__ - [stage2] Epoch 26 Step 600/1887 | loss=0.1245 infonce=0.0401 dist=0.2112 | lr=4.12e-06
+2026-03-16 16:04:44 - INFO - __main__ - [stage2] Epoch 26 Step 650/1887 | loss=0.1244 infonce=0.0400 dist=0.2111 | lr=4.09e-06
+2026-03-16 16:05:17 - INFO - __main__ - [stage2] Epoch 26 Step 700/1887 | loss=0.1250 infonce=0.0407 dist=0.2109 | lr=4.06e-06
+2026-03-16 16:05:51 - INFO - __main__ - [stage2] Epoch 26 Step 750/1887 | loss=0.1255 infonce=0.0412 dist=0.2109 | lr=4.03e-06
+2026-03-16 16:06:24 - INFO - __main__ - [stage2] Epoch 26 Step 800/1887 | loss=0.1259 infonce=0.0416 dist=0.2108 | lr=4.00e-06
+2026-03-16 16:06:58 - INFO - __main__ - [stage2] Epoch 26 Step 850/1887 | loss=0.1267 infonce=0.0425 dist=0.2105 | lr=3.97e-06
+2026-03-16 16:07:32 - INFO - __main__ - [stage2] Epoch 26 Step 900/1887 | loss=0.1273 infonce=0.0431 dist=0.2106 | lr=3.94e-06
+2026-03-16 16:08:06 - INFO - __main__ - [stage2] Epoch 26 Step 950/1887 | loss=0.1278 infonce=0.0436 dist=0.2106 | lr=3.91e-06
+2026-03-16 16:08:40 - INFO - __main__ - [stage2] Epoch 26 Step 1000/1887 | loss=0.1278 infonce=0.0436 dist=0.2105 | lr=3.88e-06
+2026-03-16 16:09:13 - INFO - __main__ - [stage2] Epoch 26 Step 1050/1887 | loss=0.1274 infonce=0.0432 dist=0.2107 | lr=3.86e-06
+2026-03-16 16:09:47 - INFO - __main__ - [stage2] Epoch 26 Step 1100/1887 | loss=0.1278 infonce=0.0435 dist=0.2107 | lr=3.82e-06
+2026-03-16 16:10:21 - INFO - __main__ - [stage2] Epoch 26 Step 1150/1887 | loss=0.1280 infonce=0.0436 dist=0.2109 | lr=3.80e-06
+2026-03-16 16:10:55 - INFO - __main__ - [stage2] Epoch 26 Step 1200/1887 | loss=0.1278 infonce=0.0434 dist=0.2109 | lr=3.77e-06
+2026-03-16 16:11:29 - INFO - __main__ - [stage2] Epoch 26 Step 1250/1887 | loss=0.1277 infonce=0.0434 dist=0.2109 | lr=3.74e-06
+2026-03-16 16:12:03 - INFO - __main__ - [stage2] Epoch 26 Step 1300/1887 | loss=0.1280 infonce=0.0437 dist=0.2108 | lr=3.71e-06
+2026-03-16 16:12:36 - INFO - __main__ - [stage2] Epoch 26 Step 1350/1887 | loss=0.1279 infonce=0.0435 dist=0.2109 | lr=3.68e-06
+2026-03-16 16:13:10 - INFO - __main__ - [stage2] Epoch 26 Step 1400/1887 | loss=0.1281 infonce=0.0437 dist=0.2109 | lr=3.65e-06
+2026-03-16 16:13:43 - INFO - __main__ - [stage2] Epoch 26 Step 1450/1887 | loss=0.1279 infonce=0.0435 dist=0.2109 | lr=3.62e-06
+2026-03-16 16:14:17 - INFO - __main__ - [stage2] Epoch 26 Step 1500/1887 | loss=0.1281 infonce=0.0438 dist=0.2108 | lr=3.59e-06
+2026-03-16 16:14:51 - INFO - __main__ - [stage2] Epoch 26 Step 1550/1887 | loss=0.1283 infonce=0.0440 dist=0.2109 | lr=3.56e-06
+2026-03-16 16:15:24 - INFO - __main__ - [stage2] Epoch 26 Step 1600/1887 | loss=0.1284 infonce=0.0440 dist=0.2110 | lr=3.53e-06
+2026-03-16 16:15:58 - INFO - __main__ - [stage2] Epoch 26 Step 1650/1887 | loss=0.1286 infonce=0.0442 dist=0.2109 | lr=3.50e-06
+2026-03-16 16:16:31 - INFO - __main__ - [stage2] Epoch 26 Step 1700/1887 | loss=0.1285 infonce=0.0441 dist=0.2110 | lr=3.47e-06
+2026-03-16 16:17:05 - INFO - __main__ - [stage2] Epoch 26 Step 1750/1887 | loss=0.1284 infonce=0.0440 dist=0.2109 | lr=3.44e-06
+2026-03-16 16:17:38 - INFO - __main__ - [stage2] Epoch 26 Step 1800/1887 | loss=0.1282 infonce=0.0438 dist=0.2109 | lr=3.41e-06
+2026-03-16 16:18:11 - INFO - __main__ - [stage2] Epoch 26 Step 1850/1887 | loss=0.1281 infonce=0.0438 dist=0.2109 | lr=3.38e-06
+2026-03-16 16:18:39 - INFO - __main__ - [stage2] Epoch 26 finished | avg_loss=0.1281 accuracy=0.9932 | time=1278.8s | nan_batches=0
+2026-03-16 16:21:12 - INFO - __main__ - [stage2] Epoch 26 validation: nll_loss=1.0485 accuracy=0.7558
+2026-03-16 16:21:16 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_26.pt (epoch=26, step=8007)
+2026-03-16 16:21:16 - INFO - __main__ - [stage2] No improvement. patience=15 (early stopping disabled)
+2026-03-16 16:21:55 - INFO - __main__ - [stage2] Epoch 27 Step 50/1887 | loss=0.1215 infonce=0.0392 dist=0.2058 | lr=3.33e-06
+2026-03-16 16:22:29 - INFO - __main__ - [stage2] Epoch 27 Step 100/1887 | loss=0.1246 infonce=0.0417 dist=0.2071 | lr=3.30e-06
+2026-03-16 16:23:03 - INFO - __main__ - [stage2] Epoch 27 Step 150/1887 | loss=0.1249 infonce=0.0419 dist=0.2074 | lr=3.28e-06
+2026-03-16 16:23:37 - INFO - __main__ - [stage2] Epoch 27 Step 200/1887 | loss=0.1255 infonce=0.0425 dist=0.2077 | lr=3.25e-06
+2026-03-16 16:24:10 - INFO - __main__ - [stage2] Epoch 27 Step 250/1887 | loss=0.1245 infonce=0.0413 dist=0.2080 | lr=3.22e-06
+2026-03-16 16:24:43 - INFO - __main__ - [stage2] Epoch 27 Step 300/1887 | loss=0.1256 infonce=0.0422 dist=0.2084 | lr=3.19e-06
+2026-03-16 16:25:17 - INFO - __main__ - [stage2] Epoch 27 Step 350/1887 | loss=0.1256 infonce=0.0422 dist=0.2084 | lr=3.16e-06
+2026-03-16 16:25:51 - INFO - __main__ - [stage2] Epoch 27 Step 400/1887 | loss=0.1248 infonce=0.0415 dist=0.2083 | lr=3.13e-06
+2026-03-16 16:26:24 - INFO - __main__ - [stage2] Epoch 27 Step 450/1887 | loss=0.1249 infonce=0.0416 dist=0.2083 | lr=3.10e-06
+2026-03-16 16:26:58 - INFO - __main__ - [stage2] Epoch 27 Step 500/1887 | loss=0.1247 infonce=0.0413 dist=0.2084 | lr=3.07e-06
+2026-03-16 16:27:31 - INFO - __main__ - [stage2] Epoch 27 Step 550/1887 | loss=0.1244 infonce=0.0410 dist=0.2085 | lr=3.04e-06
+2026-03-16 16:28:05 - INFO - __main__ - [stage2] Epoch 27 Step 600/1887 | loss=0.1239 infonce=0.0405 dist=0.2085 | lr=3.01e-06
+2026-03-16 16:28:38 - INFO - __main__ - [stage2] Epoch 27 Step 650/1887 | loss=0.1239 infonce=0.0405 dist=0.2085 | lr=2.98e-06
+2026-03-16 16:29:13 - INFO - __main__ - [stage2] Epoch 27 Step 700/1887 | loss=0.1243 infonce=0.0411 dist=0.2080 | lr=2.95e-06
+2026-03-16 16:29:47 - INFO - __main__ - [stage2] Epoch 27 Step 750/1887 | loss=0.1241 infonce=0.0409 dist=0.2080 | lr=2.92e-06
+2026-03-16 16:30:21 - INFO - __main__ - [stage2] Epoch 27 Step 800/1887 | loss=0.1241 infonce=0.0409 dist=0.2080 | lr=2.89e-06
+2026-03-16 16:30:55 - INFO - __main__ - [stage2] Epoch 27 Step 850/1887 | loss=0.1237 infonce=0.0406 dist=0.2078 | lr=2.86e-06
+2026-03-16 16:31:29 - INFO - __main__ - [stage2] Epoch 27 Step 900/1887 | loss=0.1239 infonce=0.0408 dist=0.2078 | lr=2.83e-06
+2026-03-16 16:32:02 - INFO - __main__ - [stage2] Epoch 27 Step 950/1887 | loss=0.1238 infonce=0.0407 dist=0.2076 | lr=2.80e-06
+2026-03-16 16:32:35 - INFO - __main__ - [stage2] Epoch 27 Step 1000/1887 | loss=0.1242 infonce=0.0412 dist=0.2075 | lr=2.77e-06
+2026-03-16 16:33:08 - INFO - __main__ - [stage2] Epoch 27 Step 1050/1887 | loss=0.1241 infonce=0.0411 dist=0.2075 | lr=2.75e-06
+2026-03-16 16:33:42 - INFO - __main__ - [stage2] Epoch 27 Step 1100/1887 | loss=0.1243 infonce=0.0413 dist=0.2074 | lr=2.72e-06
+2026-03-16 16:34:16 - INFO - __main__ - [stage2] Epoch 27 Step 1150/1887 | loss=0.1243 infonce=0.0414 dist=0.2073 | lr=2.69e-06
+2026-03-16 16:34:49 - INFO - __main__ - [stage2] Epoch 27 Step 1200/1887 | loss=0.1244 infonce=0.0415 dist=0.2074 | lr=2.66e-06
+2026-03-16 16:35:22 - INFO - __main__ - [stage2] Epoch 27 Step 1250/1887 | loss=0.1246 infonce=0.0417 dist=0.2074 | lr=2.63e-06
+2026-03-16 16:35:56 - INFO - __main__ - [stage2] Epoch 27 Step 1300/1887 | loss=0.1246 infonce=0.0416 dist=0.2074 | lr=2.60e-06
+2026-03-16 16:36:29 - INFO - __main__ - [stage2] Epoch 27 Step 1350/1887 | loss=0.1247 infonce=0.0417 dist=0.2073 | lr=2.57e-06
+2026-03-16 16:37:03 - INFO - __main__ - [stage2] Epoch 27 Step 1400/1887 | loss=0.1249 infonce=0.0420 dist=0.2073 | lr=2.54e-06
+2026-03-16 16:37:36 - INFO - __main__ - [stage2] Epoch 27 Step 1450/1887 | loss=0.1249 infonce=0.0420 dist=0.2073 | lr=2.51e-06
+2026-03-16 16:38:08 - INFO - __main__ - [stage2] Epoch 27 Step 1500/1887 | loss=0.1251 infonce=0.0422 dist=0.2073 | lr=2.48e-06
+2026-03-16 16:38:41 - INFO - __main__ - [stage2] Epoch 27 Step 1550/1887 | loss=0.1250 infonce=0.0421 dist=0.2072 | lr=2.45e-06
+2026-03-16 16:39:15 - INFO - __main__ - [stage2] Epoch 27 Step 1600/1887 | loss=0.1251 infonce=0.0422 dist=0.2072 | lr=2.42e-06
+2026-03-16 16:39:49 - INFO - __main__ - [stage2] Epoch 27 Step 1650/1887 | loss=0.1253 infonce=0.0424 dist=0.2072 | lr=2.39e-06
+2026-03-16 16:40:23 - INFO - __main__ - [stage2] Epoch 27 Step 1700/1887 | loss=0.1252 infonce=0.0423 dist=0.2073 | lr=2.36e-06
+2026-03-16 16:40:56 - INFO - __main__ - [stage2] Epoch 27 Step 1750/1887 | loss=0.1252 infonce=0.0423 dist=0.2073 | lr=2.33e-06
+2026-03-16 16:41:29 - INFO - __main__ - [stage2] Epoch 27 Step 1800/1887 | loss=0.1256 infonce=0.0427 dist=0.2073 | lr=2.30e-06
+2026-03-16 16:42:03 - INFO - __main__ - [stage2] Epoch 27 Step 1850/1887 | loss=0.1254 infonce=0.0425 dist=0.2073 | lr=2.28e-06
+2026-03-16 16:42:31 - INFO - __main__ - [stage2] Epoch 27 finished | avg_loss=0.1254 accuracy=0.9929 | time=1274.3s | nan_batches=0
+2026-03-16 16:45:04 - INFO - __main__ - [stage2] Epoch 27 validation: nll_loss=1.0388 accuracy=0.7575
+2026-03-16 16:45:07 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_27.pt (epoch=27, step=8478)
+2026-03-16 16:45:07 - INFO - __main__ - [stage2] No improvement. patience=16 (early stopping disabled)
+2026-03-16 16:45:45 - INFO - __main__ - [stage2] Epoch 28 Step 50/1887 | loss=0.1301 infonce=0.0471 dist=0.2076 | lr=2.23e-06
+2026-03-16 16:46:18 - INFO - __main__ - [stage2] Epoch 28 Step 100/1887 | loss=0.1303 infonce=0.0475 dist=0.2070 | lr=2.20e-06
+2026-03-16 16:46:51 - INFO - __main__ - [stage2] Epoch 28 Step 150/1887 | loss=0.1274 infonce=0.0448 dist=0.2064 | lr=2.17e-06
+2026-03-16 16:47:24 - INFO - __main__ - [stage2] Epoch 28 Step 200/1887 | loss=0.1271 infonce=0.0445 dist=0.2065 | lr=2.14e-06
+2026-03-16 16:47:57 - INFO - __main__ - [stage2] Epoch 28 Step 250/1887 | loss=0.1252 infonce=0.0427 dist=0.2063 | lr=2.11e-06
+2026-03-16 16:48:31 - INFO - __main__ - [stage2] Epoch 28 Step 300/1887 | loss=0.1254 infonce=0.0430 dist=0.2058 | lr=2.08e-06
+2026-03-16 16:49:06 - INFO - __main__ - [stage2] Epoch 28 Step 350/1887 | loss=0.1246 infonce=0.0424 dist=0.2054 | lr=2.05e-06
+2026-03-16 16:49:40 - INFO - __main__ - [stage2] Epoch 28 Step 400/1887 | loss=0.1242 infonce=0.0422 dist=0.2051 | lr=2.02e-06
+2026-03-16 16:50:14 - INFO - __main__ - [stage2] Epoch 28 Step 450/1887 | loss=0.1247 infonce=0.0427 dist=0.2051 | lr=1.99e-06
+2026-03-16 16:50:47 - INFO - __main__ - [stage2] Epoch 28 Step 500/1887 | loss=0.1253 infonce=0.0433 dist=0.2050 | lr=1.96e-06
+2026-03-16 16:51:20 - INFO - __main__ - [stage2] Epoch 28 Step 550/1887 | loss=0.1249 infonce=0.0429 dist=0.2050 | lr=1.93e-06
+2026-03-16 16:51:54 - INFO - __main__ - [stage2] Epoch 28 Step 600/1887 | loss=0.1245 infonce=0.0425 dist=0.2049 | lr=1.90e-06
+2026-03-16 16:52:29 - INFO - __main__ - [stage2] Epoch 28 Step 650/1887 | loss=0.1240 infonce=0.0420 dist=0.2049 | lr=1.87e-06
+2026-03-16 16:53:02 - INFO - __main__ - [stage2] Epoch 28 Step 700/1887 | loss=0.1237 infonce=0.0418 dist=0.2048 | lr=1.84e-06
+2026-03-16 16:53:37 - INFO - __main__ - [stage2] Epoch 28 Step 750/1887 | loss=0.1238 infonce=0.0418 dist=0.2049 | lr=1.81e-06
+2026-03-16 16:54:10 - INFO - __main__ - [stage2] Epoch 28 Step 800/1887 | loss=0.1233 infonce=0.0413 dist=0.2049 | lr=1.78e-06
+2026-03-16 16:54:44 - INFO - __main__ - [stage2] Epoch 28 Step 850/1887 | loss=0.1231 infonce=0.0411 dist=0.2049 | lr=1.75e-06
+2026-03-16 16:55:17 - INFO - __main__ - [stage2] Epoch 28 Step 900/1887 | loss=0.1227 infonce=0.0408 dist=0.2048 | lr=1.72e-06
+2026-03-16 16:55:51 - INFO - __main__ - [stage2] Epoch 28 Step 950/1887 | loss=0.1228 infonce=0.0409 dist=0.2047 | lr=1.70e-06
+2026-03-16 16:56:25 - INFO - __main__ - [stage2] Epoch 28 Step 1000/1887 | loss=0.1228 infonce=0.0410 dist=0.2047 | lr=1.67e-06
+2026-03-16 16:56:58 - INFO - __main__ - [stage2] Epoch 28 Step 1050/1887 | loss=0.1232 infonce=0.0414 dist=0.2046 | lr=1.64e-06
+2026-03-16 16:57:32 - INFO - __main__ - [stage2] Epoch 28 Step 1100/1887 | loss=0.1231 infonce=0.0413 dist=0.2046 | lr=1.61e-06
+2026-03-16 16:58:06 - INFO - __main__ - [stage2] Epoch 28 Step 1150/1887 | loss=0.1232 infonce=0.0414 dist=0.2047 | lr=1.58e-06
+2026-03-16 16:58:40 - INFO - __main__ - [stage2] Epoch 28 Step 1200/1887 | loss=0.1233 infonce=0.0414 dist=0.2047 | lr=1.55e-06
+2026-03-16 16:59:14 - INFO - __main__ - [stage2] Epoch 28 Step 1250/1887 | loss=0.1232 infonce=0.0414 dist=0.2047 | lr=1.52e-06
+2026-03-16 16:59:49 - INFO - __main__ - [stage2] Epoch 28 Step 1300/1887 | loss=0.1231 infonce=0.0412 dist=0.2046 | lr=1.49e-06
+2026-03-16 17:00:22 - INFO - __main__ - [stage2] Epoch 28 Step 1350/1887 | loss=0.1231 infonce=0.0413 dist=0.2046 | lr=1.46e-06
+2026-03-16 17:00:56 - INFO - __main__ - [stage2] Epoch 28 Step 1400/1887 | loss=0.1232 infonce=0.0414 dist=0.2047 | lr=1.43e-06
+2026-03-16 17:01:30 - INFO - __main__ - [stage2] Epoch 28 Step 1450/1887 | loss=0.1230 infonce=0.0411 dist=0.2047 | lr=1.40e-06
+2026-03-16 17:02:03 - INFO - __main__ - [stage2] Epoch 28 Step 1500/1887 | loss=0.1229 infonce=0.0410 dist=0.2047 | lr=1.37e-06
+2026-03-16 17:02:36 - INFO - __main__ - [stage2] Epoch 28 Step 1550/1887 | loss=0.1232 infonce=0.0413 dist=0.2047 | lr=1.34e-06
+2026-03-16 17:03:09 - INFO - __main__ - [stage2] Epoch 28 Step 1600/1887 | loss=0.1231 infonce=0.0412 dist=0.2046 | lr=1.31e-06
+2026-03-16 17:03:43 - INFO - __main__ - [stage2] Epoch 28 Step 1650/1887 | loss=0.1229 infonce=0.0411 dist=0.2046 | lr=1.28e-06
+2026-03-16 17:04:17 - INFO - __main__ - [stage2] Epoch 28 Step 1700/1887 | loss=0.1229 infonce=0.0411 dist=0.2045 | lr=1.25e-06
+2026-03-16 17:04:51 - INFO - __main__ - [stage2] Epoch 28 Step 1750/1887 | loss=0.1230 infonce=0.0412 dist=0.2044 | lr=1.22e-06
+2026-03-16 17:05:24 - INFO - __main__ - [stage2] Epoch 28 Step 1800/1887 | loss=0.1229 infonce=0.0412 dist=0.2044 | lr=1.19e-06
+2026-03-16 17:05:58 - INFO - __main__ - [stage2] Epoch 28 Step 1850/1887 | loss=0.1230 infonce=0.0413 dist=0.2043 | lr=1.17e-06
+2026-03-16 17:06:25 - INFO - __main__ - [stage2] Epoch 28 finished | avg_loss=0.1229 accuracy=0.9932 | time=1277.3s | nan_batches=0
+2026-03-16 17:08:56 - INFO - __main__ - [stage2] Epoch 28 validation: nll_loss=1.0558 accuracy=0.7544
+2026-03-16 17:08:59 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_28.pt (epoch=28, step=8949)
+2026-03-16 17:08:59 - INFO - __main__ - [stage2] No improvement. patience=17 (early stopping disabled)
+2026-03-16 17:09:36 - INFO - __main__ - [stage2] Epoch 29 Step 50/1887 | loss=0.1314 infonce=0.0496 dist=0.2045 | lr=1.12e-06
+2026-03-16 17:10:10 - INFO - __main__ - [stage2] Epoch 29 Step 100/1887 | loss=0.1281 infonce=0.0467 dist=0.2035 | lr=1.09e-06
+2026-03-16 17:10:44 - INFO - __main__ - [stage2] Epoch 29 Step 150/1887 | loss=0.1262 infonce=0.0450 dist=0.2031 | lr=1.06e-06
+2026-03-16 17:11:17 - INFO - __main__ - [stage2] Epoch 29 Step 200/1887 | loss=0.1266 infonce=0.0455 dist=0.2028 | lr=1.03e-06
+2026-03-16 17:11:49 - INFO - __main__ - [stage2] Epoch 29 Step 250/1887 | loss=0.1251 infonce=0.0437 dist=0.2034 | lr=9.99e-07
+2026-03-16 17:12:23 - INFO - __main__ - [stage2] Epoch 29 Step 300/1887 | loss=0.1249 infonce=0.0437 dist=0.2031 | lr=9.68e-07
+2026-03-16 17:12:57 - INFO - __main__ - [stage2] Epoch 29 Step 350/1887 | loss=0.1245 infonce=0.0433 dist=0.2030 | lr=9.40e-07
+2026-03-16 17:13:30 - INFO - __main__ - [stage2] Epoch 29 Step 400/1887 | loss=0.1243 infonce=0.0433 dist=0.2026 | lr=9.09e-07
+2026-03-16 17:14:04 - INFO - __main__ - [stage2] Epoch 29 Step 450/1887 | loss=0.1238 infonce=0.0428 dist=0.2026 | lr=8.81e-07
+2026-03-16 17:14:37 - INFO - __main__ - [stage2] Epoch 29 Step 500/1887 | loss=0.1239 infonce=0.0429 dist=0.2025 | lr=8.50e-07
+2026-03-16 17:15:10 - INFO - __main__ - [stage2] Epoch 29 Step 550/1887 | loss=0.1232 infonce=0.0422 dist=0.2025 | lr=8.22e-07
+2026-03-16 17:15:43 - INFO - __main__ - [stage2] Epoch 29 Step 600/1887 | loss=0.1229 infonce=0.0419 dist=0.2025 | lr=7.91e-07
+2026-03-16 17:16:16 - INFO - __main__ - [stage2] Epoch 29 Step 650/1887 | loss=0.1227 infonce=0.0416 dist=0.2026 | lr=7.63e-07
+2026-03-16 17:16:50 - INFO - __main__ - [stage2] Epoch 29 Step 700/1887 | loss=0.1226 infonce=0.0415 dist=0.2027 | lr=7.32e-07
+2026-03-16 17:17:23 - INFO - __main__ - [stage2] Epoch 29 Step 750/1887 | loss=0.1231 infonce=0.0421 dist=0.2027 | lr=7.04e-07
+2026-03-16 17:17:57 - INFO - __main__ - [stage2] Epoch 29 Step 800/1887 | loss=0.1228 infonce=0.0417 dist=0.2026 | lr=6.74e-07
+2026-03-16 17:18:30 - INFO - __main__ - [stage2] Epoch 29 Step 850/1887 | loss=0.1225 infonce=0.0414 dist=0.2027 | lr=6.45e-07
+2026-03-16 17:19:04 - INFO - __main__ - [stage2] Epoch 29 Step 900/1887 | loss=0.1222 infonce=0.0412 dist=0.2026 | lr=6.15e-07
+2026-03-16 17:19:38 - INFO - __main__ - [stage2] Epoch 29 Step 950/1887 | loss=0.1221 infonce=0.0411 dist=0.2025 | lr=5.86e-07
+2026-03-16 17:20:12 - INFO - __main__ - [stage2] Epoch 29 Step 1000/1887 | loss=0.1222 infonce=0.0412 dist=0.2025 | lr=5.56e-07
+2026-03-16 17:20:45 - INFO - __main__ - [stage2] Epoch 29 Step 1050/1887 | loss=0.1223 infonce=0.0413 dist=0.2025 | lr=5.28e-07
+2026-03-16 17:21:18 - INFO - __main__ - [stage2] Epoch 29 Step 1100/1887 | loss=0.1221 infonce=0.0412 dist=0.2024 | lr=4.97e-07
+2026-03-16 17:21:52 - INFO - __main__ - [stage2] Epoch 29 Step 1150/1887 | loss=0.1221 infonce=0.0411 dist=0.2024 | lr=4.69e-07
+2026-03-16 17:22:26 - INFO - __main__ - [stage2] Epoch 29 Step 1200/1887 | loss=0.1220 infonce=0.0411 dist=0.2024 | lr=4.38e-07
+2026-03-16 17:23:00 - INFO - __main__ - [stage2] Epoch 29 Step 1250/1887 | loss=0.1222 infonce=0.0413 dist=0.2024 | lr=4.10e-07
+2026-03-16 17:23:33 - INFO - __main__ - [stage2] Epoch 29 Step 1300/1887 | loss=0.1224 infonce=0.0414 dist=0.2025 | lr=3.79e-07
+2026-03-16 17:24:07 - INFO - __main__ - [stage2] Epoch 29 Step 1350/1887 | loss=0.1222 infonce=0.0412 dist=0.2026 | lr=3.51e-07
+2026-03-16 17:24:42 - INFO - __main__ - [stage2] Epoch 29 Step 1400/1887 | loss=0.1218 infonce=0.0408 dist=0.2025 | lr=3.20e-07
+2026-03-16 17:25:16 - INFO - __main__ - [stage2] Epoch 29 Step 1450/1887 | loss=0.1217 infonce=0.0406 dist=0.2025 | lr=2.92e-07
+2026-03-16 17:25:50 - INFO - __main__ - [stage2] Epoch 29 Step 1500/1887 | loss=0.1218 infonce=0.0408 dist=0.2025 | lr=2.61e-07
+2026-03-16 17:26:23 - INFO - __main__ - [stage2] Epoch 29 Step 1550/1887 | loss=0.1217 infonce=0.0407 dist=0.2025 | lr=2.33e-07
+2026-03-16 17:26:57 - INFO - __main__ - [stage2] Epoch 29 Step 1600/1887 | loss=0.1214 infonce=0.0404 dist=0.2025 | lr=2.03e-07
+2026-03-16 17:27:31 - INFO - __main__ - [stage2] Epoch 29 Step 1650/1887 | loss=0.1214 infonce=0.0404 dist=0.2025 | lr=1.74e-07
+2026-03-16 17:28:05 - INFO - __main__ - [stage2] Epoch 29 Step 1700/1887 | loss=0.1215 infonce=0.0405 dist=0.2025 | lr=1.44e-07
+2026-03-16 17:28:38 - INFO - __main__ - [stage2] Epoch 29 Step 1750/1887 | loss=0.1213 infonce=0.0403 dist=0.2024 | lr=1.15e-07
+2026-03-16 17:29:11 - INFO - __main__ - [stage2] Epoch 29 Step 1800/1887 | loss=0.1215 infonce=0.0405 dist=0.2025 | lr=8.48e-08
+2026-03-16 17:29:45 - INFO - __main__ - [stage2] Epoch 29 Step 1850/1887 | loss=0.1215 infonce=0.0405 dist=0.2024 | lr=5.65e-08
+2026-03-16 17:30:13 - INFO - __main__ - [stage2] Epoch 29 finished | avg_loss=0.1214 accuracy=0.9936 | time=1274.0s | nan_batches=0
+2026-03-16 17:32:43 - INFO - __main__ - [stage2] Epoch 29 validation: nll_loss=1.0582 accuracy=0.7555
+2026-03-16 17:32:48 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_29.pt (epoch=29, step=9420)
+2026-03-16 17:32:48 - INFO - __main__ - [stage2] No improvement. patience=18 (early stopping disabled)
+2026-03-16 17:32:48 - INFO - __main__ - Stage 2 complete. Best NLL loss: 0.8361
+2026-03-16 17:32:48 - INFO - __main__ - Loading best Stage 2 model from ./checkpoints/trivia/best_model_stage2
+2026-03-16 17:32:51 - INFO - __main__ - No mined data path provided or file not found. Skipping Stage 3.
+2026-03-16 17:32:51 - INFO - __main__ - To run Stage 3, first run mine_hard_negatives.py, then re-run with --mined_data_path
+2026-03-16 17:32:51 - INFO - __main__ - ============================================================
+2026-03-16 17:32:51 - INFO - __main__ - Stage 1+2 complete. Best model: ./checkpoints/trivia/best_model_stage2
+2026-03-16 17:32:51 - INFO - __main__ - To complete training, run mine_hard_negatives.py then re-run with --resume_stage 3
+2026-03-16 17:32:51 - INFO - __main__ - ============================================================

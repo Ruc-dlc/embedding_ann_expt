@@ -1,0 +1,18 @@
+{
+  "model_type": "dacl-dr",
+  "dataset": "trivia",
+  "num_samples": 6760,
+  "positive_cosine_mean": 0.7885578274726868,
+  "positive_cosine_var": 0.012466883286833763,
+  "negative_cosine_mean": 0.21780744194984436,
+  "negative_cosine_var": 0.010079634375870228,
+  "alignment": 0.4228844940662384,
+  "uniformity": -3.0273079872131348,
+  "positive_cosine_distribution": {
+    "min": 0.19238337874412537,
+    "max": 0.9606770277023315,
+    "p25": 0.7314787656068802,
+    "p50": 0.813354104757309,
+    "p75": 0.8727838844060898
+  }
+}

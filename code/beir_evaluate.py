@@ -2,10 +2,10 @@
 BEIR Zero-shot 评测脚本
 
 对 5 个 BEIR 数据集做 zero-shot 密集检索评测，报告 NDCG@10 和 Recall@100。
-使用 FAISS Flat 精确搜索（不涉及 ANN 索引）。
+使用 FAISS Flat 精确搜索（大规模语料库自动启用 GPU 索引）。
 
 支持模型：
-  - dacl-dr: 我们训练的 BiEncoder (query_encoder + doc_encoder)
+  - dacl-dr: 我们自身训练好的双塔编码器 BiEncoder (query_encoder + doc_encoder)
   - dpr: facebook/dpr-*-single-nq-base (DPRQuestionEncoder + DPRContextEncoder)
   - ance: castorini/ance-dpr-*-multi (同 DPR 架构)
   - contriever: facebook/contriever-msmarco (共享 encoder, mean pooling)
@@ -56,9 +56,6 @@ BEIR Zero-shot 评测脚本
   # 汇总所有结果
   python beir_evaluate.py --summarize --output_dir ./results/beir
 
-参考：
-  - experiments.md 第七节 (实验5: BEIR Zero-shot 泛化评测)
-  - BEIR.md (操作手册)
 """
 
 import argparse
@@ -81,10 +78,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
-# ---------------------------------------------------------------------------
-# 数据加载（不依赖 beir 库，直接读取 BEIR 标准 JSONL 格式）
-# ---------------------------------------------------------------------------
 
 def load_beir_dataset(data_folder):
     """加载 BEIR 数据集。
@@ -191,7 +184,6 @@ class DACLDREncoder(BaseEncoder):
             attention_mask = enc["attention_mask"].to(self.device)
             with torch.cuda.amp.autocast():
                 emb = self.model.encode_query(input_ids, attention_mask)
-            # DACL-DR 内部已 L2 归一化，但为保险再做一次
             emb = torch.nn.functional.normalize(emb, p=2, dim=-1)
             all_embs.append(emb.cpu().numpy())
         return np.concatenate(all_embs, axis=0)
@@ -419,15 +411,21 @@ def retrieve_with_faiss(query_embs, corpus_embs, corpus_ids, top_k=100):
         top_k: 检索的 top-K 数量
 
     Returns:
-        results: dict[str, dict[str, float]] — 可直接用于评测的格式
-                 （实际上 query_id 对应的是整数索引的字符串，需要外部映射）
+        results: dict[int, dict[str, float]] — {query_idx: {doc_id: score}}
     """
     dim = corpus_embs.shape[1]
     logger.info("Building FAISS Flat index: %d vectors, dim=%d", len(corpus_ids), dim)
 
     # 构建 Inner Product 索引（向量已 L2 归一化）
-    index = faiss.IndexFlatIP(dim)
-    # 分批添加（避免一次性 add 太大的矩阵）
+    # 优先使用 GPU 索引加速大规模搜索
+    cpu_index = faiss.IndexFlatIP(dim)
+    if torch.cuda.is_available() and len(corpus_ids) > 100000:
+        res = faiss.StandardGpuResources()
+        index = faiss.index_cpu_to_gpu(res, 0, cpu_index)
+        logger.info("Using GPU FAISS index")
+    else:
+        index = cpu_index
+    # 分批添加
     add_batch_size = 500000
     for start in range(0, len(corpus_ids), add_batch_size):
         end = min(start + add_batch_size, len(corpus_ids))
@@ -629,7 +627,7 @@ def get_args():
     parser.add_argument("--ctx_encoder_path", type=str, default=None,
                         help="DPR/ANCE 的 context encoder 目录")
 
-    # 模型别名（用于结果文件名）
+    # 模型别名
     parser.add_argument("--model_name", type=str, default=None,
                         help="结果文件中的模型名称（默认自动推断）")
 
@@ -711,3 +709,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

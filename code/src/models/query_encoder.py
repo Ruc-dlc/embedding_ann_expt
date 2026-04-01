@@ -3,7 +3,6 @@ Query编码器
 
 本模块实现Query专用的编码器，将查询文本转换为稠密向量表示。
 
-论文章节：第4章 4.1节 - Query编码
 """
 
 import torch
@@ -129,7 +128,6 @@ class QueryEncoderWithPrefix(QueryEncoder):
         """
         初始化前缀token IDs
         """
-        # TODO: 实现前缀初始化
         pass
     
     def forward(
@@ -147,5 +145,4 @@ class QueryEncoderWithPrefix(QueryEncoder):
         Returns:
             Query向量 [batch_size, output_dim]
         """
-        # TODO: 实现带前缀的编码
         return super().forward(input_ids, attention_mask, **kwargs)

@@ -2,18 +2,18 @@
 Embedding 空间分析与可视化脚本
 
 功能：
-  1. Embedding 空间统计指标（experiments.md 第 7.3 节）
+  1. Embedding 空间统计指标，正样本平均值、方差、负样本平均值、方差、对齐值、均匀值，后者采用顶会论文给的指标定义计算公式
      - Positive Cosine Mean / Var
      - Negative Cosine Mean / Var
-     - Alignment: E[||q - d+||^2]
-     - Uniformity: log E[exp(-2||x - y||^2)]
+     - Alignment: E[||q - d+||^2]    描述查询与正样本之间的距离，越低越好，表示查询与样本之间足够靠近，利好 ANN 场景下的查询
+     - Uniformity: log E[exp(-2||x - y||^2)]    描述查询与正负样本，整个向量空间在超球面上的向量分布是否足够分散，越低越好，效率越高
 
-  2. t-SNE 可视化（experiments.md 第 8.1 节）
-     - 从 dev 集采样 query-positive 对
+  2. t-SNE 可视化
+     - 由于复杂度为O(n2)，故从 nq dev 集采样 query-positive 500对
      - t-SNE 降维至 2D
-     - 输出散点图（query vs doc 不同颜色/标记，正样本对连线）
+     - 输出散点图（query vs doc 不同颜色/标记，正样本对连线，用于描述正样本间的距离）
 
-  3. 正样本对余弦相似度分布直方图（experiments.md 第 8.4 节）
+  3. 正样本对余弦相似度分布直方图，论文核心结论，DACL-DR可以进一步使得正样本对之间相似度靠近，因此利好后续 ANN 场景下的索引构建与查询过程
 
 用法：
   # 计算统计指标
@@ -27,7 +27,7 @@ Embedding 空间分析与可视化脚本
     --model_type dacl-dr --model_path ./checkpoints/nq/best_model_nq \
     --dataset nq --data_dir ./data_set \
     --output_dir ./results/figures \
-    --n_samples 500
+    --n_samples 500  指定采用500对
 
   # 同时计算 w=0 baseline 的对比
   python analyze_embeddings.py tsne \
@@ -35,8 +35,6 @@ Embedding 空间分析与可视化脚本
     --dataset nq --data_dir ./data_set \
     --output_dir ./results/figures --label "w=0"
 
-参考：
-  - experiments.md 第 7.3 节、第 8.1 节、第 8.4 节
 """
 
 import argparse
@@ -286,7 +284,7 @@ def compute_uniformity(embs, n_pairs=50000, seed=42):
     sq_dist = np.sum(diff ** 2, axis=1)  # [n_pairs]
 
     # log E[exp(-2 * ||x-y||^2)]
-    # 使用 log-mean-exp 技巧避免数值溢出
+    # 使用 log-mean-exp 避免数值溢出
     vals = -2.0 * sq_dist
     max_val = np.max(vals)
     uniformity = max_val + np.log(np.mean(np.exp(vals - max_val)))
@@ -392,13 +390,24 @@ def run_tsne(args):
     # 加载 dev 数据
     questions, pos_titles, pos_texts = load_dev_data(args.dataset, args.data_dir)
 
-    # 随机采样 n_samples 对
+    # 随机采样 n_samples 对（保存索引以保证跨模型公平性，即所有模型用来编码的查询与样本对均一致）
     n = len(questions)
-    if args.n_samples < n:
+    indices_path = os.path.join(args.output_dir, "sampled_indices_%s_%d_seed%d.npy" % (
+        args.dataset, args.n_samples, args.seed))
+    if os.path.exists(indices_path):
+        indices = np.load(indices_path)
+        logger.info("Loaded existing sample indices from %s", indices_path)
+    elif args.n_samples < n:
         indices = np.random.choice(n, size=args.n_samples, replace=False)
-        questions = [questions[i] for i in indices]
-        pos_titles = [pos_titles[i] for i in indices]
-        pos_texts = [pos_texts[i] for i in indices]
+        os.makedirs(args.output_dir, exist_ok=True)
+        np.save(indices_path, indices)
+        logger.info("Saved sample indices to %s", indices_path)
+    else:
+        indices = np.arange(n)
+
+    questions = [questions[i] for i in indices]
+    pos_titles = [pos_titles[i] for i in indices]
+    pos_texts = [pos_texts[i] for i in indices]
     n_samples = len(questions)
     logger.info("Using %d query-positive pairs for t-SNE", n_samples)
 
@@ -419,7 +428,7 @@ def run_tsne(args):
         n_components=2,
         perplexity=args.perplexity,
         random_state=args.seed,
-        n_iter=1000,
+        max_iter=1000,
     )
     coords = tsne.fit_transform(combined)  # [2N, 2]
 
@@ -442,7 +451,7 @@ def run_tsne(args):
     ax.scatter(d_coords[:, 0], d_coords[:, 1],
                c="#E74C3C", marker="^", s=15, alpha=0.6, label="Document", zorder=3)
 
-    # 画正样本对连线（使用灰色细线，避免遮挡）
+    # 画正样本对连线
     for i in range(n_samples):
         ax.plot([q_coords[i, 0], d_coords[i, 0]],
                 [q_coords[i, 1], d_coords[i, 1]],
@@ -454,8 +463,8 @@ def run_tsne(args):
     ax.set_yticks([])
 
     safe_label = label.replace(" ", "_").replace("=", "").replace("(", "").replace(")", "")
-    fig_path = os.path.join(args.output_dir, "tsne_%s.png" % safe_label)
-    fig.savefig(fig_path, dpi=150, bbox_inches="tight")
+    fig_path = os.path.join(args.output_dir, "tsne_%s.pdf" % safe_label)
+    fig.savefig(fig_path, dpi=300, bbox_inches="tight")
     plt.close(fig)
     logger.info("t-SNE scatter saved to %s", fig_path)
 
@@ -469,8 +478,8 @@ def run_tsne(args):
                 label="Mean=%.1f" % np.mean(pair_dists))
     ax2.legend(fontsize=11)
 
-    hist_path = os.path.join(args.output_dir, "pair_dist_%s.png" % safe_label)
-    fig2.savefig(hist_path, dpi=150, bbox_inches="tight")
+    hist_path = os.path.join(args.output_dir, "pair_dist_%s.pdf" % safe_label)
+    fig2.savefig(hist_path, dpi=300, bbox_inches="tight")
     plt.close(fig2)
     logger.info("Pair distance histogram saved to %s", hist_path)
 
@@ -485,8 +494,8 @@ def run_tsne(args):
                 label="Mean=%.4f" % np.mean(pos_cos))
     ax3.legend(fontsize=11)
 
-    cos_path = os.path.join(args.output_dir, "pos_cosine_%s.png" % safe_label)
-    fig3.savefig(cos_path, dpi=150, bbox_inches="tight")
+    cos_path = os.path.join(args.output_dir, "pos_cosine_%s.pdf" % safe_label)
+    fig3.savefig(cos_path, dpi=300, bbox_inches="tight")
     plt.close(fig3)
     logger.info("Positive cosine histogram saved to %s", cos_path)
 
@@ -511,3 +520,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

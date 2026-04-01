@@ -1,0 +1,18 @@
+{
+  "model_type": "contriever",
+  "dataset": "trivia",
+  "num_samples": 6760,
+  "positive_cosine_mean": 0.5011705160140991,
+  "positive_cosine_var": 0.006232123821973801,
+  "negative_cosine_mean": 0.22000715136528015,
+  "negative_cosine_var": 0.0015953101683408022,
+  "alignment": 0.9976588487625122,
+  "uniformity": -2.8615074157714844,
+  "positive_cosine_distribution": {
+    "min": 0.1693567931652069,
+    "max": 0.8253878951072693,
+    "p25": 0.4513741061091423,
+    "p50": 0.5049647390842438,
+    "p75": 0.5542023628950119
+  }
+}

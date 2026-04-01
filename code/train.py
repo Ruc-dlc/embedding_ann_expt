@@ -1,21 +1,16 @@
 """
-DACL-DR 三阶段训练 Pipeline
+DACL-DR 两阶段训练 Pipeline
 
 Stage 1 (epoch 0-9):   In-Batch Negatives, B×B
 Stage 2 (epoch 10-29):  BM25 Hard Negatives, B×8B
-Stage 3 (epoch 30-39):  Model Hard Negatives, B×8B, early stopping patience=5
 
 验证策略：
   Stage 1-2: dev NLL loss 选最优 checkpoint
-  Stage 3:   dev Average Rank 选最优 checkpoint + 早停
 
 用法：
   python train.py --dataset nq --output_dir ./checkpoints/nq
   python train.py --dataset trivia --output_dir ./checkpoints/trivia
 
-参考：
-  - DPR/train_dense_encoder.py
-  - experiments.md 第四节
 """
 
 import argparse
@@ -58,8 +53,6 @@ def get_args():
                         help="数据集名称")
     parser.add_argument("--data_dir", type=str, default="./data_set",
                         help="数据集根目录")
-    parser.add_argument("--mined_data_path", type=str, default=None,
-                        help="Stage 3 mined hard negatives JSON 路径（为 None 则跳过 Stage 3）")
 
     # 模型
     parser.add_argument("--model_name", type=str, default="./bert-base-uncase-backbone",
@@ -88,12 +81,6 @@ def get_args():
     # 阶段 epoch 配置
     parser.add_argument("--stage1_epochs", type=int, default=10)
     parser.add_argument("--stage2_epochs", type=int, default=20)
-    parser.add_argument("--stage3_max_epochs", type=int, default=10)
-    parser.add_argument("--early_stopping_patience", type=int, default=5)
-
-    # Average Rank 验证配置
-    parser.add_argument("--val_av_rank_max_qs", type=int, default=2000,
-                        help="Average Rank 验证时最多使用的 query 数")
 
     # 输出
     parser.add_argument("--output_dir", type=str, required=True)
@@ -102,8 +89,8 @@ def get_args():
     # 断点续训
     parser.add_argument("--resume_checkpoint", type=str, default=None,
                         help="从指定 checkpoint 恢复训练（模型权重路径，如 best_model_stage1 目录）")
-    parser.add_argument("--resume_stage", type=int, default=1, choices=[1, 2, 3],
-                        help="从第几个 stage 开始（1=Stage1, 2=Stage2, 3=Stage3），需配合 --resume_checkpoint")
+    parser.add_argument("--resume_stage", type=int, default=1, choices=[1, 2],
+                        help="从第几个 stage 开始（1=Stage1, 2=Stage2），需配合 --resume_checkpoint")
 
     # DataLoader
     parser.add_argument("--num_workers", type=int, default=4)
@@ -199,99 +186,6 @@ def validate_nll(model, loss_fn, dev_loader, device):
     return avg_loss, accuracy
 
 
-@torch.no_grad()
-def validate_average_rank(model, dev_dataset, tokenizer, args, device):
-    """Stage 3 验证：计算 dev 集上每个 query 的 gold passage 的 average rank。
-
-    逻辑（参考 DPR validate_average_rank）：
-    1. 对 dev 集中每个样本，编码 query 和其所有 context（1 pos + hard_neg）
-    2. 汇总所有 query vector 和 ctx vector
-    3. 计算全局 Q×C 相似度矩阵
-    4. 对每个 query 找其 positive 在排序列表中的排名
-    5. 取平均
-    """
-    model.eval()
-
-    collator = BiEncoderCollator(
-        tokenizer=tokenizer,
-        max_query_length=args.max_query_length,
-        max_passage_length=args.max_passage_length,
-        stage="hard_neg",
-        num_hard_negatives=args.num_hard_negatives,
-    )
-
-    # 限制验证 query 数量
-    max_qs = min(args.val_av_rank_max_qs, len(dev_dataset))
-    indices = list(range(max_qs))
-
-    all_q_embs = []
-    all_ctx_embs = []
-    positive_idx_per_question = []
-    total_ctxs = 0
-
-    # 逐个处理（避免构造巨大的全局矩阵时 OOM）
-    eval_batch_size = 32
-    for start in range(0, max_qs, eval_batch_size):
-        end = min(start + eval_batch_size, max_qs)
-        samples = [dev_dataset[i] for i in indices[start:end]]
-        batch = collator(samples)
-
-        query_input_ids = batch["query_input_ids"].to(device)
-        query_attention_mask = batch["query_attention_mask"].to(device)
-        ctx_input_ids = batch["ctx_input_ids"].to(device)
-        ctx_attention_mask = batch["ctx_attention_mask"].to(device)
-        pos_indices = batch["positive_indices"]  # relative to this batch's ctx
-
-        q_emb = model.encode_query(query_input_ids, query_attention_mask)
-        # 分块编码 passages（32*8=256 条，安全起见仍分块）
-        ctx_chunk_size = query_input_ids.size(0)  # = eval_batch_size
-        if ctx_input_ids.size(0) <= ctx_chunk_size:
-            ctx_emb = model.encode_document(ctx_input_ids, ctx_attention_mask)
-        else:
-            ctx_emb_chunks = []
-            for ci in range(0, ctx_input_ids.size(0), ctx_chunk_size):
-                chunk_ids = ctx_input_ids[ci:ci + ctx_chunk_size]
-                chunk_mask = ctx_attention_mask[ci:ci + ctx_chunk_size]
-                ctx_emb_chunks.append(model.encode_document(chunk_ids, chunk_mask))
-            ctx_emb = torch.cat(ctx_emb_chunks, dim=0)
-
-        all_q_embs.append(q_emb.cpu())
-        all_ctx_embs.append(ctx_emb.cpu())
-
-        # 调整 positive indices 为全局偏移
-        for idx in pos_indices.tolist():
-            positive_idx_per_question.append(total_ctxs + idx)
-        total_ctxs += ctx_emb.size(0)
-
-    all_q_embs = torch.cat(all_q_embs, dim=0)      # [Q, D]
-    all_ctx_embs = torch.cat(all_ctx_embs, dim=0)   # [C, D]
-
-    logger.info(
-        "Average Rank validation: q_vectors=%d, ctx_vectors=%d",
-        all_q_embs.size(0), all_ctx_embs.size(0),
-    )
-
-    # 计算全局相似度矩阵 [Q, C]
-    scores = torch.matmul(all_q_embs, all_ctx_embs.t())
-
-    # 对每个 query，找 positive 的排名
-    _, sorted_indices = scores.sort(dim=1, descending=True)
-
-    total_rank = 0
-    for i, gold_idx in enumerate(positive_idx_per_question):
-        rank = (sorted_indices[i] == gold_idx).nonzero(as_tuple=False)
-        if rank.numel() > 0:
-            total_rank += rank.item()
-        else:
-            # 异常情况，positive 未出现（不应发生）
-            total_rank += all_ctx_embs.size(0)
-
-    q_num = all_q_embs.size(0)
-    avg_rank = total_rank / max(q_num, 1)
-    logger.info("Average Rank: %.2f (total questions=%d)", avg_rank, q_num)
-    return avg_rank
-
-
 # ============================================================
 # Checkpoint 保存/加载
 # ============================================================
@@ -350,19 +244,14 @@ def train_stage(
     stage_name, start_epoch, num_epochs,
     args, device,
     gradient_accumulation_steps=None,
-    # Stage 3 专用
-    use_average_rank=False,
-    dev_dataset=None,
-    tokenizer=None,
 ):
     """执行单个训练阶段。
 
     Args:
-        stage_name: "stage1", "stage2", "stage3"
+        stage_name: "stage1", "stage2"
         start_epoch: 全局起始 epoch
         num_epochs: 本阶段 epoch 数
         gradient_accumulation_steps: 本阶段的梯度累积步数（默认用 args.gradient_accumulation_steps）
-        use_average_rank: True 则用 Average Rank 验证 + 早停
     """
     if gradient_accumulation_steps is None:
         gradient_accumulation_steps = args.gradient_accumulation_steps
@@ -497,18 +386,13 @@ def train_stage(
         )
 
         # 验证
-        if use_average_rank:
-            metric = validate_average_rank(model, dev_dataset, tokenizer, args, device)
-            metric_name = "avg_rank"
-            is_better = (best_metric is None) or (metric < best_metric)
-        else:
-            metric, val_acc = validate_nll(model, loss_fn, dev_loader, device)
-            metric_name = "nll_loss"
-            is_better = (best_metric is None) or (metric < best_metric)
-            logger.info(
-                "[%s] Epoch %d validation: %s=%.4f accuracy=%.4f",
-                stage_name, epoch, metric_name, metric, val_acc,
-            )
+        metric, val_acc = validate_nll(model, loss_fn, dev_loader, device)
+        metric_name = "nll_loss"
+        is_better = (best_metric is None) or (metric < best_metric)
+        logger.info(
+            "[%s] Epoch %d validation: %s=%.4f accuracy=%.4f",
+            stage_name, epoch, metric_name, metric, val_acc,
+        )
 
         # 保存 epoch checkpoint
         save_checkpoint(
@@ -531,24 +415,10 @@ def train_stage(
             )
         else:
             patience_counter += 1
-            if use_average_rank:
-                logger.info(
-                    "[%s] No improvement. patience=%d/%d",
-                    stage_name, patience_counter, args.early_stopping_patience,
-                )
-            else:
-                logger.info(
-                    "[%s] No improvement. patience=%d (early stopping disabled)",
-                    stage_name, patience_counter,
-                )
-
-        # 早停（仅 Stage 3）
-        if use_average_rank and patience_counter >= args.early_stopping_patience:
             logger.info(
-                "[%s] Early stopping triggered at epoch %d (patience=%d)",
-                stage_name, epoch, args.early_stopping_patience,
+                "[%s] No improvement. patience=%d (early stopping disabled)",
+                stage_name, patience_counter,
             )
-            break
 
     return best_metric
 
@@ -751,94 +621,19 @@ def main():
         logger.info("Skipping Stage 2 (resume_stage=%d)", resume_stage)
 
     # ====================
-    # Stage 3: Model Hard Negatives (可选)
+    # 保存最终模型
     # ====================
-    stage3_ran = False
-    if args.mined_data_path and os.path.exists(args.mined_data_path):
-        stage3_ran = True
-        logger.info("=" * 60)
-        logger.info("Stage 3: Model Hard Negatives (epochs %d-%d, early stopping patience=%d)",
-                    args.stage1_epochs + args.stage2_epochs,
-                    args.stage1_epochs + args.stage2_epochs + args.stage3_max_epochs - 1,
-                    args.early_stopping_patience)
-        logger.info("=" * 60)
-
-        train_ds_s3 = DPRDataset(
-            args.mined_data_path, stage="hard_neg", num_hard_negatives=args.num_hard_negatives,
-        )
-        # Stage 3 dev 集用于 Average Rank 验证
-        dev_ds_s3 = DPRDataset(dev_path, stage="hard_neg", num_hard_negatives=args.num_hard_negatives)
-
-        collator_s3 = BiEncoderCollator(
-            tokenizer=tokenizer,
-            max_query_length=args.max_query_length,
-            max_passage_length=args.max_passage_length,
-            stage="hard_neg",
-            num_hard_negatives=args.num_hard_negatives,
-        )
-
-        train_loader_s3 = DataLoader(
-            train_ds_s3, batch_size=args.stage2_batch_size, shuffle=True,
-            collate_fn=collator_s3, num_workers=args.num_workers,
-            pin_memory=True, drop_last=True,
-        )
-
-        # Stage 3 重新初始化 Optimizer + Scheduler
-        total_steps_s3 = len(train_loader_s3) * args.stage3_max_epochs // args.stage2_gradient_accumulation_steps
-        warmup_steps_s3 = int(total_steps_s3 * args.warmup_ratio)
-
-        optimizer = torch.optim.AdamW(
-            model.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay,
-        )
-        scheduler = get_linear_schedule_with_warmup(
-            optimizer, num_warmup_steps=warmup_steps_s3, num_training_steps=total_steps_s3,
-        )
-        scaler = GradScaler() if args.fp16 else None  # 重置 GradScaler
-
-        logger.info("Stage 3: batch_size=%d, grad_accum=%d, total_steps=%d, warmup_steps=%d",
-                     args.stage2_batch_size, args.stage2_gradient_accumulation_steps,
-                     total_steps_s3, warmup_steps_s3)
-
-        best_s3 = train_stage(
-            model, optimizer, scheduler, scaler, loss_fn,
-            train_loader_s3, None,  # dev_loader 不用于 NLL，用 validate_average_rank
-            "stage3",
-            start_epoch=args.stage1_epochs + args.stage2_epochs,
-            num_epochs=args.stage3_max_epochs,
-            args=args, device=device,
-            gradient_accumulation_steps=args.stage2_gradient_accumulation_steps,
-            use_average_rank=True,
-            dev_dataset=dev_ds_s3,
-            tokenizer=tokenizer,
-        )
-        logger.info("Stage 3 complete. Best Average Rank: %.2f", best_s3 if best_s3 else float("inf"))
-
-        # 加载 Stage 3 最优模型作为最终模型
-        best_s3_dir = os.path.join(args.output_dir, "best_model_stage3")
-        if os.path.exists(best_s3_dir):
-            logger.info("Loading best Stage 3 model from %s", best_s3_dir)
-            model = BiEncoder.from_pretrained(best_s3_dir)
-            model.to(device)
-        else:
-            logger.warning("best_model_stage3 not found, using last epoch model as final")
-    else:
-        logger.info("No mined data path provided or file not found. Skipping Stage 3.")
-        logger.info("To run Stage 3, first run mine_hard_negatives.py, then re-run with --mined_data_path")
-
-    # 最终保存：仅在 Stage 3 实际运行后才保存 best_model_{dataset}
-    # 避免 Stage 1+2 训练时误创建最终模型目录，导致后续 Stage 3 被断点续跑跳过
-    if stage3_ran:
-        final_dir = os.path.join(args.output_dir, "best_model_%s" % args.dataset)
-        model.save_pretrained(final_dir)
-        logger.info("=" * 60)
-        logger.info("Training complete. Final model saved to %s", final_dir)
-        logger.info("=" * 60)
-    else:
-        logger.info("=" * 60)
-        logger.info("Stage 1+2 complete. Best model: %s",
-                     os.path.join(args.output_dir, "best_model_stage2"))
-        logger.info("To complete training, run mine_hard_negatives.py then re-run with --resume_stage 3")
-        logger.info("=" * 60)
+    # Stage 2 完成后，将 best_model_stage2 的权重另存为 best_model_{dataset}，
+    # 供后续编码和评估脚本统一使用。
+    best_s2_dir = os.path.join(args.output_dir, "best_model_stage2")
+    if os.path.exists(best_s2_dir):
+        model = BiEncoder.from_pretrained(best_s2_dir)
+        model.to(device)
+    final_dir = os.path.join(args.output_dir, "best_model_%s" % args.dataset)
+    model.save_pretrained(final_dir)
+    logger.info("=" * 60)
+    logger.info("Training complete. Final model saved to %s", final_dir)
+    logger.info("=" * 60)
 
 
 if __name__ == "__main__":

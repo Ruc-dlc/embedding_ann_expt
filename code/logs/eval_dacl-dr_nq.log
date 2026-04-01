@@ -1,0 +1,47 @@
+2026-03-16 01:54:00 - INFO - __main__ - Device: cuda
+2026-03-16 01:54:02 - INFO - __main__ - Loaded 21015324 passage IDs
+2026-03-16 01:54:02 - INFO - __main__ - Loaded 3610 test queries from ./data_set/NQ/nq-test.csv
+2026-03-16 01:54:02 - INFO - __main__ - Loading corpus text from ./data_set/psgs_w100.tsv ...
+2026-03-16 01:54:23 - INFO - __main__ -   Loaded 4999999 passages...
+2026-03-16 01:54:43 - INFO - __main__ -   Loaded 9999999 passages...
+2026-03-16 01:55:04 - INFO - __main__ -   Loaded 14999999 passages...
+2026-03-16 01:55:25 - INFO - __main__ -   Loaded 19999999 passages...
+2026-03-16 01:55:29 - INFO - __main__ - Corpus text loaded: 21015324 passages
+2026-03-16 01:55:29 - INFO - __main__ - Encoding test queries with dacl-dr encoder...
+2026-03-16 01:55:38 - INFO - __main__ - Encoded 3610 queries -> shape (3610, 768)
+2026-03-16 01:55:38 - INFO - __main__ - ==================================================
+2026-03-16 01:55:38 - INFO - __main__ - Evaluating Flat index...
+2026-03-16 07:56:04 - INFO - __main__ - Flat Top-K Accuracy: {10: 0.23351800554016622, 20: 0.2836565096952909, 50: 0.3637119113573407, 100: 0.4155124653739612}
+2026-03-16 07:56:07 - INFO - __main__ - ==================================================
+2026-03-16 07:56:07 - INFO - __main__ - Evaluating HNSW index: ./embeddings/dacl-dr-nq/indexes/hnsw_M32.index
+2026-03-16 07:58:43 - INFO - __main__ -   efSearch=8: Top-100=0.3443, Recall@100=0.3401, Latency=1.18ms, QPS=851, NDis=519
+2026-03-16 07:59:55 - INFO - __main__ -   efSearch=16: Top-100=0.3651, Recall@100=0.4858, Latency=1.52ms, QPS=657, NDis=722
+2026-03-16 08:01:05 - INFO - __main__ -   efSearch=32: Top-100=0.3817, Recall@100=0.6633, Latency=1.50ms, QPS=667, NDis=1064
+2026-03-16 08:02:17 - INFO - __main__ -   efSearch=64: Top-100=0.3958, Recall@100=0.8245, Latency=1.84ms, QPS=544, NDis=1779
+2026-03-16 08:03:29 - INFO - __main__ -   efSearch=128: Top-100=0.4066, Recall@100=0.9173, Latency=2.28ms, QPS=438, NDis=2964
+2026-03-16 08:04:42 - INFO - __main__ -   efSearch=256: Top-100=0.4133, Recall@100=0.9674, Latency=3.16ms, QPS=317, NDis=5072
+2026-03-16 08:06:04 - INFO - __main__ -   efSearch=512: Top-100=0.4139, Recall@100=0.9873, Latency=4.87ms, QPS=205, NDis=8599
+2026-03-16 08:06:08 - INFO - __main__ - ==================================================
+2026-03-16 08:06:08 - INFO - __main__ - Evaluating ivf index: ./embeddings/dacl-dr-nq/indexes/ivf_nlist4096.index
+2026-03-16 08:08:44 - INFO - __main__ -   nprobe=1: Top-100=0.3479, Recall@100=0.4316, Latency=1.62ms, QPS=618
+2026-03-16 08:10:06 - INFO - __main__ -   nprobe=4: Top-100=0.3906, Recall@100=0.7445, Latency=4.49ms, QPS=223
+2026-03-16 08:11:42 - INFO - __main__ -   nprobe=8: Top-100=0.4017, Recall@100=0.8487, Latency=8.95ms, QPS=112
+2026-03-16 08:13:52 - INFO - __main__ -   nprobe=16: Top-100=0.4080, Recall@100=0.9181, Latency=18.02ms, QPS=56
+2026-03-16 08:17:00 - INFO - __main__ -   nprobe=32: Top-100=0.4119, Recall@100=0.9607, Latency=34.15ms, QPS=29
+2026-03-16 08:22:12 - INFO - __main__ -   nprobe=64: Top-100=0.4127, Recall@100=0.9851, Latency=68.61ms, QPS=15
+2026-03-16 08:31:24 - INFO - __main__ -   nprobe=128: Top-100=0.4144, Recall@100=0.9973, Latency=135.27ms, QPS=7
+2026-03-16 08:48:47 - INFO - __main__ -   nprobe=256: Top-100=0.4155, Recall@100=0.9999, Latency=270.83ms, QPS=4
+2026-03-16 08:48:48 - INFO - __main__ - ==================================================
+2026-03-16 08:48:48 - INFO - __main__ - Evaluating ivf_pq index: ./embeddings/dacl-dr-nq/indexes/ivf_pq_nlist4096_m48.index
+2026-03-16 08:49:59 - INFO - __main__ -   nprobe=1: Top-100=0.3385, Recall@100=0.3228, Latency=0.63ms, QPS=1595
+2026-03-16 08:51:07 - INFO - __main__ -   nprobe=4: Top-100=0.3634, Recall@100=0.4102, Latency=0.95ms, QPS=1057
+2026-03-16 08:52:15 - INFO - __main__ -   nprobe=8: Top-100=0.3648, Recall@100=0.4186, Latency=1.15ms, QPS=866
+2026-03-16 08:53:24 - INFO - __main__ -   nprobe=16: Top-100=0.3657, Recall@100=0.4205, Latency=1.77ms, QPS=565
+2026-03-16 08:54:39 - INFO - __main__ -   nprobe=32: Top-100=0.3657, Recall@100=0.4208, Latency=3.02ms, QPS=331
+2026-03-16 08:56:07 - INFO - __main__ -   nprobe=64: Top-100=0.3657, Recall@100=0.4208, Latency=5.55ms, QPS=180
+2026-03-16 08:57:51 - INFO - __main__ -   nprobe=128: Top-100=0.3657, Recall@100=0.4208, Latency=11.39ms, QPS=88
+2026-03-16 09:00:14 - INFO - __main__ -   nprobe=256: Top-100=0.3657, Recall@100=0.4208, Latency=21.52ms, QPS=46
+2026-03-16 09:00:15 - INFO - __main__ - Results saved to ./results/nq/dacl-dr_nq.json
+2026-03-16 09:00:15 - INFO - __main__ - ==================================================
+2026-03-16 09:00:15 - INFO - __main__ - Evaluation summary for dacl-dr on nq:
+2026-03-16 09:00:15 - INFO - __main__ -   Flat: Top-100=0.4155, Latency=5953.65ms

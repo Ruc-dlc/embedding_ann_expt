@@ -2,8 +2,6 @@
 池化层（CLS、Mean、Max等）
 
 本模块实现多种池化策略，将Transformer输出的token序列聚合为固定维度的向量。
-
-论文章节：第4章 4.1节 - 向量表示
 """
 
 import torch

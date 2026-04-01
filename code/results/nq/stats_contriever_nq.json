@@ -1,0 +1,18 @@
+{
+  "model_type": "contriever",
+  "dataset": "nq",
+  "num_samples": 6515,
+  "positive_cosine_mean": 0.5276877284049988,
+  "positive_cosine_var": 0.008105115965008736,
+  "negative_cosine_mean": 0.22908727824687958,
+  "negative_cosine_var": 0.0020239136647433043,
+  "alignment": 0.9446244239807129,
+  "uniformity": -2.9644718170166016,
+  "positive_cosine_distribution": {
+    "min": 0.19061022996902466,
+    "max": 0.8287878036499023,
+    "p25": 0.4699425995349884,
+    "p50": 0.5307527780532837,
+    "p75": 0.5887712240219116
+  }
+}

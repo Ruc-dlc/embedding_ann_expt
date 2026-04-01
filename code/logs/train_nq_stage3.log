@@ -1,0 +1,302 @@
+2026-03-15 15:14:32 - INFO - __main__ - Device: cuda
+2026-03-15 15:14:32 - INFO - __main__ - Args: {
+  "dataset": "nq",
+  "data_dir": "./data_set",
+  "mined_data_path": "./data_set/NQ/nq-train-mined.json",
+  "model_name": "./bert-base-uncase-backbone",
+  "pooling_type": "cls",
+  "shared_encoder": false,
+  "normalize": true,
+  "batch_size": 128,
+  "learning_rate": 2e-05,
+  "warmup_ratio": 0.1,
+  "weight_decay": 0.0,
+  "max_grad_norm": 2.0,
+  "fp16": true,
+  "temperature": 0.05,
+  "distance_weight": 0.4,
+  "num_hard_negatives": 7,
+  "seed": 42,
+  "gradient_accumulation_steps": 1,
+  "max_query_length": 256,
+  "max_passage_length": 256,
+  "stage1_epochs": 10,
+  "stage2_epochs": 20,
+  "stage3_max_epochs": 10,
+  "early_stopping_patience": 5,
+  "val_av_rank_max_qs": 2000,
+  "output_dir": "./checkpoints/nq",
+  "log_steps": 50,
+  "resume_checkpoint": "./checkpoints/nq/best_model_stage2",
+  "resume_stage": 3,
+  "num_workers": 4,
+  "stage2_batch_size": 32,
+  "stage2_gradient_accumulation_steps": 4
+}
+2026-03-15 15:14:32 - INFO - __main__ - Train: ./data_set/NQ/nq-train.json
+2026-03-15 15:14:32 - INFO - __main__ - Dev: ./data_set/NQ/nq-dev.json
+2026-03-15 15:14:34 - INFO - __main__ - Model loaded: ./bert-base-uncase-backbone (shared=False, normalize=True, pooling=cls)
+2026-03-15 15:14:34 - INFO - __main__ - Resuming from checkpoint: ./checkpoints/nq/best_model_stage2 (stage=3)
+2026-03-15 15:14:38 - INFO - __main__ - Loaded model weights from directory: ./checkpoints/nq/best_model_stage2
+2026-03-15 15:14:38 - INFO - __main__ - Skipping Stage 1 (resume_stage=3)
+2026-03-15 15:14:38 - INFO - __main__ - Skipping Stage 2 (resume_stage=3)
+2026-03-15 15:14:38 - INFO - __main__ - ============================================================
+2026-03-15 15:14:38 - INFO - __main__ - Stage 3: Model Hard Negatives (epochs 30-39, early stopping patience=5)
+2026-03-15 15:14:38 - INFO - __main__ - ============================================================
+2026-03-15 15:15:14 - INFO - src.data.dataset - Loaded 58880 samples from ./data_set/NQ/nq-train-mined.json (stage=hard_neg)
+2026-03-15 15:15:18 - INFO - src.data.dataset - Loaded 6515 samples from ./data_set/NQ/nq-dev.json (stage=hard_neg)
+2026-03-15 15:15:18 - INFO - __main__ - Stage 3: batch_size=32, grad_accum=4, total_steps=4600, warmup_steps=460
+2026-03-15 15:15:54 - INFO - __main__ - [stage3] Epoch 30 Step 50/1840 | loss=0.9578 infonce=0.8666 dist=0.2280 | lr=5.22e-07
+2026-03-15 15:16:29 - INFO - __main__ - [stage3] Epoch 30 Step 100/1840 | loss=0.9652 infonce=0.8738 dist=0.2287 | lr=1.09e-06
+2026-03-15 15:17:04 - INFO - __main__ - [stage3] Epoch 30 Step 150/1840 | loss=0.9361 infonce=0.8450 dist=0.2277 | lr=1.61e-06
+2026-03-15 15:17:39 - INFO - __main__ - [stage3] Epoch 30 Step 200/1840 | loss=0.9164 infonce=0.8246 dist=0.2295 | lr=2.17e-06
+2026-03-15 15:18:14 - INFO - __main__ - [stage3] Epoch 30 Step 250/1840 | loss=0.8808 infonce=0.7884 dist=0.2310 | lr=2.70e-06
+2026-03-15 15:18:48 - INFO - __main__ - [stage3] Epoch 30 Step 300/1840 | loss=0.8376 infonce=0.7437 dist=0.2346 | lr=3.26e-06
+2026-03-15 15:19:22 - INFO - __main__ - [stage3] Epoch 30 Step 350/1840 | loss=0.7795 infonce=0.6841 dist=0.2384 | lr=3.78e-06
+2026-03-15 15:19:56 - INFO - __main__ - [stage3] Epoch 30 Step 400/1840 | loss=0.7137 infonce=0.6174 dist=0.2407 | lr=4.35e-06
+2026-03-15 15:20:30 - INFO - __main__ - [stage3] Epoch 30 Step 450/1840 | loss=0.6564 infonce=0.5603 dist=0.2402 | lr=4.87e-06
+2026-03-15 15:21:04 - INFO - __main__ - [stage3] Epoch 30 Step 500/1840 | loss=0.6092 infonce=0.5138 dist=0.2385 | lr=5.43e-06
+2026-03-15 15:21:38 - INFO - __main__ - [stage3] Epoch 30 Step 550/1840 | loss=0.5693 infonce=0.4747 dist=0.2365 | lr=5.96e-06
+2026-03-15 15:22:12 - INFO - __main__ - [stage3] Epoch 30 Step 600/1840 | loss=0.5351 infonce=0.4413 dist=0.2346 | lr=6.52e-06
+2026-03-15 15:22:46 - INFO - __main__ - [stage3] Epoch 30 Step 650/1840 | loss=0.5058 infonce=0.4129 dist=0.2322 | lr=7.04e-06
+2026-03-15 15:23:20 - INFO - __main__ - [stage3] Epoch 30 Step 700/1840 | loss=0.4795 infonce=0.3876 dist=0.2298 | lr=7.61e-06
+2026-03-15 15:23:54 - INFO - __main__ - [stage3] Epoch 30 Step 750/1840 | loss=0.4568 infonce=0.3658 dist=0.2275 | lr=8.13e-06
+2026-03-15 15:24:28 - INFO - __main__ - [stage3] Epoch 30 Step 800/1840 | loss=0.4370 infonce=0.3469 dist=0.2252 | lr=8.70e-06
+2026-03-15 15:25:02 - INFO - __main__ - [stage3] Epoch 30 Step 850/1840 | loss=0.4194 infonce=0.3302 dist=0.2229 | lr=9.22e-06
+2026-03-15 15:25:36 - INFO - __main__ - [stage3] Epoch 30 Step 900/1840 | loss=0.4040 infonce=0.3157 dist=0.2208 | lr=9.78e-06
+2026-03-15 15:26:10 - INFO - __main__ - [stage3] Epoch 30 Step 950/1840 | loss=0.3895 infonce=0.3020 dist=0.2188 | lr=1.03e-05
+2026-03-15 15:26:45 - INFO - __main__ - [stage3] Epoch 30 Step 1000/1840 | loss=0.3764 infonce=0.2897 dist=0.2167 | lr=1.09e-05
+2026-03-15 15:27:19 - INFO - __main__ - [stage3] Epoch 30 Step 1050/1840 | loss=0.3644 infonce=0.2786 dist=0.2146 | lr=1.14e-05
+2026-03-15 15:27:53 - INFO - __main__ - [stage3] Epoch 30 Step 1100/1840 | loss=0.3533 infonce=0.2682 dist=0.2128 | lr=1.20e-05
+2026-03-15 15:28:27 - INFO - __main__ - [stage3] Epoch 30 Step 1150/1840 | loss=0.3437 infonce=0.2594 dist=0.2109 | lr=1.25e-05
+2026-03-15 15:29:02 - INFO - __main__ - [stage3] Epoch 30 Step 1200/1840 | loss=0.3347 infonce=0.2510 dist=0.2093 | lr=1.30e-05
+2026-03-15 15:29:36 - INFO - __main__ - [stage3] Epoch 30 Step 1250/1840 | loss=0.3264 infonce=0.2433 dist=0.2077 | lr=1.36e-05
+2026-03-15 15:30:11 - INFO - __main__ - [stage3] Epoch 30 Step 1300/1840 | loss=0.3186 infonce=0.2361 dist=0.2062 | lr=1.41e-05
+2026-03-15 15:30:44 - INFO - __main__ - [stage3] Epoch 30 Step 1350/1840 | loss=0.3111 infonce=0.2293 dist=0.2046 | lr=1.47e-05
+2026-03-15 15:31:18 - INFO - __main__ - [stage3] Epoch 30 Step 1400/1840 | loss=0.3043 infonce=0.2230 dist=0.2033 | lr=1.52e-05
+2026-03-15 15:31:52 - INFO - __main__ - [stage3] Epoch 30 Step 1450/1840 | loss=0.2980 infonce=0.2172 dist=0.2019 | lr=1.57e-05
+2026-03-15 15:32:25 - INFO - __main__ - [stage3] Epoch 30 Step 1500/1840 | loss=0.2914 infonce=0.2112 dist=0.2006 | lr=1.63e-05
+2026-03-15 15:33:00 - INFO - __main__ - [stage3] Epoch 30 Step 1550/1840 | loss=0.2858 infonce=0.2060 dist=0.1993 | lr=1.68e-05
+2026-03-15 15:33:33 - INFO - __main__ - [stage3] Epoch 30 Step 1600/1840 | loss=0.2804 infonce=0.2012 dist=0.1980 | lr=1.74e-05
+2026-03-15 15:34:09 - INFO - __main__ - [stage3] Epoch 30 Step 1650/1840 | loss=0.2756 infonce=0.1969 dist=0.1967 | lr=1.79e-05
+2026-03-15 15:34:45 - INFO - __main__ - [stage3] Epoch 30 Step 1700/1840 | loss=0.2708 infonce=0.1926 dist=0.1954 | lr=1.85e-05
+2026-03-15 15:35:21 - INFO - __main__ - [stage3] Epoch 30 Step 1750/1840 | loss=0.2662 infonce=0.1884 dist=0.1943 | lr=1.90e-05
+2026-03-15 15:35:56 - INFO - __main__ - [stage3] Epoch 30 Step 1800/1840 | loss=0.2617 infonce=0.1844 dist=0.1932 | lr=1.96e-05
+2026-03-15 15:36:24 - INFO - __main__ - [stage3] Epoch 30 finished | avg_loss=0.2583 accuracy=0.9549 | time=1266.1s | nan_batches=0
+2026-03-15 15:37:18 - INFO - __main__ - Average Rank validation: q_vectors=2000, ctx_vectors=16000
+2026-03-15 15:37:18 - INFO - __main__ - Average Rank: 16.94 (total questions=2000)
+2026-03-15 15:37:21 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_30.pt (epoch=30, step=460)
+2026-03-15 15:37:23 - INFO - __main__ - Saved checkpoint: best_stage3.pt (epoch=30, step=460)
+2026-03-15 15:37:24 - INFO - __main__ - Saved best model to ./checkpoints/nq/best_model_stage3
+2026-03-15 15:37:24 - INFO - __main__ - [stage3] New best avg_rank=16.9420 at epoch 30
+2026-03-15 15:37:59 - INFO - __main__ - [stage3] Epoch 31 Step 50/1840 | loss=0.0980 infonce=0.0387 dist=0.1482 | lr=1.99e-05
+2026-03-15 15:38:33 - INFO - __main__ - [stage3] Epoch 31 Step 100/1840 | loss=0.0973 infonce=0.0380 dist=0.1483 | lr=1.99e-05
+2026-03-15 15:39:08 - INFO - __main__ - [stage3] Epoch 31 Step 150/1840 | loss=0.0978 infonce=0.0385 dist=0.1482 | lr=1.98e-05
+2026-03-15 15:39:42 - INFO - __main__ - [stage3] Epoch 31 Step 200/1840 | loss=0.0973 infonce=0.0384 dist=0.1473 | lr=1.98e-05
+2026-03-15 15:40:16 - INFO - __main__ - [stage3] Epoch 31 Step 250/1840 | loss=0.0958 infonce=0.0372 dist=0.1467 | lr=1.97e-05
+2026-03-15 15:40:50 - INFO - __main__ - [stage3] Epoch 31 Step 300/1840 | loss=0.0947 infonce=0.0361 dist=0.1464 | lr=1.96e-05
+2026-03-15 15:41:25 - INFO - __main__ - [stage3] Epoch 31 Step 350/1840 | loss=0.0948 infonce=0.0364 dist=0.1460 | lr=1.96e-05
+2026-03-15 15:41:59 - INFO - __main__ - [stage3] Epoch 31 Step 400/1840 | loss=0.0952 infonce=0.0370 dist=0.1455 | lr=1.95e-05
+2026-03-15 15:42:34 - INFO - __main__ - [stage3] Epoch 31 Step 450/1840 | loss=0.0959 infonce=0.0376 dist=0.1455 | lr=1.95e-05
+2026-03-15 15:43:08 - INFO - __main__ - [stage3] Epoch 31 Step 500/1840 | loss=0.0953 infonce=0.0371 dist=0.1453 | lr=1.94e-05
+2026-03-15 15:43:42 - INFO - __main__ - [stage3] Epoch 31 Step 550/1840 | loss=0.0947 infonce=0.0367 dist=0.1451 | lr=1.93e-05
+2026-03-15 15:44:16 - INFO - __main__ - [stage3] Epoch 31 Step 600/1840 | loss=0.0945 infonce=0.0367 dist=0.1445 | lr=1.93e-05
+2026-03-15 15:44:50 - INFO - __main__ - [stage3] Epoch 31 Step 650/1840 | loss=0.0942 infonce=0.0365 dist=0.1442 | lr=1.92e-05
+2026-03-15 15:45:25 - INFO - __main__ - [stage3] Epoch 31 Step 700/1840 | loss=0.0940 infonce=0.0365 dist=0.1438 | lr=1.92e-05
+2026-03-15 15:46:00 - INFO - __main__ - [stage3] Epoch 31 Step 750/1840 | loss=0.0936 infonce=0.0361 dist=0.1436 | lr=1.91e-05
+2026-03-15 15:46:34 - INFO - __main__ - [stage3] Epoch 31 Step 800/1840 | loss=0.0935 infonce=0.0361 dist=0.1433 | lr=1.90e-05
+2026-03-15 15:47:09 - INFO - __main__ - [stage3] Epoch 31 Step 850/1840 | loss=0.0930 infonce=0.0358 dist=0.1431 | lr=1.90e-05
+2026-03-15 15:47:43 - INFO - __main__ - [stage3] Epoch 31 Step 900/1840 | loss=0.0925 infonce=0.0354 dist=0.1428 | lr=1.89e-05
+2026-03-15 15:48:17 - INFO - __main__ - [stage3] Epoch 31 Step 950/1840 | loss=0.0922 infonce=0.0352 dist=0.1425 | lr=1.89e-05
+2026-03-15 15:48:52 - INFO - __main__ - [stage3] Epoch 31 Step 1000/1840 | loss=0.0918 infonce=0.0349 dist=0.1421 | lr=1.88e-05
+2026-03-15 15:49:26 - INFO - __main__ - [stage3] Epoch 31 Step 1050/1840 | loss=0.0912 infonce=0.0345 dist=0.1418 | lr=1.87e-05
+2026-03-15 15:50:01 - INFO - __main__ - [stage3] Epoch 31 Step 1100/1840 | loss=0.0914 infonce=0.0348 dist=0.1415 | lr=1.87e-05
+2026-03-15 15:50:35 - INFO - __main__ - [stage3] Epoch 31 Step 1150/1840 | loss=0.0912 infonce=0.0346 dist=0.1414 | lr=1.86e-05
+2026-03-15 15:51:10 - INFO - __main__ - [stage3] Epoch 31 Step 1200/1840 | loss=0.0909 infonce=0.0344 dist=0.1412 | lr=1.86e-05
+2026-03-15 15:51:44 - INFO - __main__ - [stage3] Epoch 31 Step 1250/1840 | loss=0.0907 infonce=0.0343 dist=0.1410 | lr=1.85e-05
+2026-03-15 15:52:18 - INFO - __main__ - [stage3] Epoch 31 Step 1300/1840 | loss=0.0911 infonce=0.0347 dist=0.1408 | lr=1.84e-05
+2026-03-15 15:52:53 - INFO - __main__ - [stage3] Epoch 31 Step 1350/1840 | loss=0.0910 infonce=0.0347 dist=0.1407 | lr=1.84e-05
+2026-03-15 15:53:27 - INFO - __main__ - [stage3] Epoch 31 Step 1400/1840 | loss=0.0908 infonce=0.0346 dist=0.1406 | lr=1.83e-05
+2026-03-15 15:54:00 - INFO - __main__ - [stage3] Epoch 31 Step 1450/1840 | loss=0.0905 infonce=0.0344 dist=0.1404 | lr=1.83e-05
+2026-03-15 15:54:34 - INFO - __main__ - [stage3] Epoch 31 Step 1500/1840 | loss=0.0903 infonce=0.0342 dist=0.1401 | lr=1.82e-05
+2026-03-15 15:55:07 - INFO - __main__ - [stage3] Epoch 31 Step 1550/1840 | loss=0.0901 infonce=0.0342 dist=0.1398 | lr=1.81e-05
+2026-03-15 15:55:42 - INFO - __main__ - [stage3] Epoch 31 Step 1600/1840 | loss=0.0900 infonce=0.0342 dist=0.1396 | lr=1.81e-05
+2026-03-15 15:56:15 - INFO - __main__ - [stage3] Epoch 31 Step 1650/1840 | loss=0.0894 infonce=0.0337 dist=0.1393 | lr=1.80e-05
+2026-03-15 15:56:49 - INFO - __main__ - [stage3] Epoch 31 Step 1700/1840 | loss=0.0893 infonce=0.0337 dist=0.1390 | lr=1.79e-05
+2026-03-15 15:57:24 - INFO - __main__ - [stage3] Epoch 31 Step 1750/1840 | loss=0.0890 infonce=0.0334 dist=0.1388 | lr=1.79e-05
+2026-03-15 15:57:59 - INFO - __main__ - [stage3] Epoch 31 Step 1800/1840 | loss=0.0888 infonce=0.0333 dist=0.1386 | lr=1.78e-05
+2026-03-15 15:58:27 - INFO - __main__ - [stage3] Epoch 31 finished | avg_loss=0.0886 accuracy=0.9927 | time=1262.7s | nan_batches=0
+2026-03-15 15:59:20 - INFO - __main__ - Average Rank validation: q_vectors=2000, ctx_vectors=16000
+2026-03-15 15:59:21 - INFO - __main__ - Average Rank: 21.44 (total questions=2000)
+2026-03-15 15:59:23 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_31.pt (epoch=31, step=920)
+2026-03-15 15:59:23 - INFO - __main__ - [stage3] No improvement. patience=1/5
+2026-03-15 15:59:58 - INFO - __main__ - [stage3] Epoch 32 Step 50/1840 | loss=0.0705 infonce=0.0196 dist=0.1272 | lr=1.77e-05
+2026-03-15 16:00:32 - INFO - __main__ - [stage3] Epoch 32 Step 100/1840 | loss=0.0689 infonce=0.0187 dist=0.1254 | lr=1.77e-05
+2026-03-15 16:01:07 - INFO - __main__ - [stage3] Epoch 32 Step 150/1840 | loss=0.0702 infonce=0.0204 dist=0.1245 | lr=1.76e-05
+2026-03-15 16:01:41 - INFO - __main__ - [stage3] Epoch 32 Step 200/1840 | loss=0.0698 infonce=0.0204 dist=0.1237 | lr=1.75e-05
+2026-03-15 16:02:15 - INFO - __main__ - [stage3] Epoch 32 Step 250/1840 | loss=0.0693 infonce=0.0200 dist=0.1231 | lr=1.75e-05
+2026-03-15 16:02:50 - INFO - __main__ - [stage3] Epoch 32 Step 300/1840 | loss=0.0700 infonce=0.0206 dist=0.1234 | lr=1.74e-05
+2026-03-15 16:03:24 - INFO - __main__ - [stage3] Epoch 32 Step 350/1840 | loss=0.0700 infonce=0.0209 dist=0.1228 | lr=1.74e-05
+2026-03-15 16:03:57 - INFO - __main__ - [stage3] Epoch 32 Step 400/1840 | loss=0.0703 infonce=0.0212 dist=0.1227 | lr=1.73e-05
+2026-03-15 16:04:31 - INFO - __main__ - [stage3] Epoch 32 Step 450/1840 | loss=0.0703 infonce=0.0213 dist=0.1225 | lr=1.72e-05
+2026-03-15 16:05:05 - INFO - __main__ - [stage3] Epoch 32 Step 500/1840 | loss=0.0700 infonce=0.0211 dist=0.1222 | lr=1.72e-05
+2026-03-15 16:05:40 - INFO - __main__ - [stage3] Epoch 32 Step 550/1840 | loss=0.0699 infonce=0.0210 dist=0.1222 | lr=1.71e-05
+2026-03-15 16:06:14 - INFO - __main__ - [stage3] Epoch 32 Step 600/1840 | loss=0.0704 infonce=0.0215 dist=0.1222 | lr=1.71e-05
+2026-03-15 16:06:49 - INFO - __main__ - [stage3] Epoch 32 Step 650/1840 | loss=0.0704 infonce=0.0215 dist=0.1222 | lr=1.70e-05
+2026-03-15 16:07:23 - INFO - __main__ - [stage3] Epoch 32 Step 700/1840 | loss=0.0700 infonce=0.0211 dist=0.1221 | lr=1.69e-05
+2026-03-15 16:07:58 - INFO - __main__ - [stage3] Epoch 32 Step 750/1840 | loss=0.0700 infonce=0.0212 dist=0.1221 | lr=1.69e-05
+2026-03-15 16:08:33 - INFO - __main__ - [stage3] Epoch 32 Step 800/1840 | loss=0.0700 infonce=0.0213 dist=0.1218 | lr=1.68e-05
+2026-03-15 16:09:07 - INFO - __main__ - [stage3] Epoch 32 Step 850/1840 | loss=0.0698 infonce=0.0213 dist=0.1214 | lr=1.68e-05
+2026-03-15 16:09:42 - INFO - __main__ - [stage3] Epoch 32 Step 900/1840 | loss=0.0695 infonce=0.0211 dist=0.1211 | lr=1.67e-05
+2026-03-15 16:10:15 - INFO - __main__ - [stage3] Epoch 32 Step 950/1840 | loss=0.0695 infonce=0.0211 dist=0.1209 | lr=1.66e-05
+2026-03-15 16:10:49 - INFO - __main__ - [stage3] Epoch 32 Step 1000/1840 | loss=0.0695 infonce=0.0212 dist=0.1207 | lr=1.66e-05
+2026-03-15 16:11:23 - INFO - __main__ - [stage3] Epoch 32 Step 1050/1840 | loss=0.0694 infonce=0.0212 dist=0.1205 | lr=1.65e-05
+2026-03-15 16:11:57 - INFO - __main__ - [stage3] Epoch 32 Step 1100/1840 | loss=0.0696 infonce=0.0214 dist=0.1205 | lr=1.64e-05
+2026-03-15 16:12:31 - INFO - __main__ - [stage3] Epoch 32 Step 1150/1840 | loss=0.0696 infonce=0.0215 dist=0.1203 | lr=1.64e-05
+2026-03-15 16:13:05 - INFO - __main__ - [stage3] Epoch 32 Step 1200/1840 | loss=0.0698 infonce=0.0217 dist=0.1203 | lr=1.63e-05
+2026-03-15 16:13:39 - INFO - __main__ - [stage3] Epoch 32 Step 1250/1840 | loss=0.0698 infonce=0.0217 dist=0.1203 | lr=1.63e-05
+2026-03-15 16:14:13 - INFO - __main__ - [stage3] Epoch 32 Step 1300/1840 | loss=0.0699 infonce=0.0218 dist=0.1203 | lr=1.62e-05
+2026-03-15 16:14:48 - INFO - __main__ - [stage3] Epoch 32 Step 1350/1840 | loss=0.0699 infonce=0.0218 dist=0.1202 | lr=1.61e-05
+2026-03-15 16:15:22 - INFO - __main__ - [stage3] Epoch 32 Step 1400/1840 | loss=0.0699 infonce=0.0218 dist=0.1201 | lr=1.61e-05
+2026-03-15 16:15:56 - INFO - __main__ - [stage3] Epoch 32 Step 1450/1840 | loss=0.0699 infonce=0.0219 dist=0.1199 | lr=1.60e-05
+2026-03-15 16:16:30 - INFO - __main__ - [stage3] Epoch 32 Step 1500/1840 | loss=0.0699 infonce=0.0220 dist=0.1198 | lr=1.60e-05
+2026-03-15 16:17:05 - INFO - __main__ - [stage3] Epoch 32 Step 1550/1840 | loss=0.0697 infonce=0.0219 dist=0.1196 | lr=1.59e-05
+2026-03-15 16:17:39 - INFO - __main__ - [stage3] Epoch 32 Step 1600/1840 | loss=0.0697 infonce=0.0219 dist=0.1195 | lr=1.58e-05
+2026-03-15 16:18:13 - INFO - __main__ - [stage3] Epoch 32 Step 1650/1840 | loss=0.0697 infonce=0.0220 dist=0.1193 | lr=1.58e-05
+2026-03-15 16:18:47 - INFO - __main__ - [stage3] Epoch 32 Step 1700/1840 | loss=0.0697 infonce=0.0220 dist=0.1192 | lr=1.57e-05
+2026-03-15 16:19:21 - INFO - __main__ - [stage3] Epoch 32 Step 1750/1840 | loss=0.0696 infonce=0.0220 dist=0.1191 | lr=1.57e-05
+2026-03-15 16:19:56 - INFO - __main__ - [stage3] Epoch 32 Step 1800/1840 | loss=0.0696 infonce=0.0220 dist=0.1190 | lr=1.56e-05
+2026-03-15 16:20:24 - INFO - __main__ - [stage3] Epoch 32 finished | avg_loss=0.0696 accuracy=0.9961 | time=1260.4s | nan_batches=0
+2026-03-15 16:21:17 - INFO - __main__ - Average Rank validation: q_vectors=2000, ctx_vectors=16000
+2026-03-15 16:21:17 - INFO - __main__ - Average Rank: 19.29 (total questions=2000)
+2026-03-15 16:21:20 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_32.pt (epoch=32, step=1380)
+2026-03-15 16:21:20 - INFO - __main__ - [stage3] No improvement. patience=2/5
+2026-03-15 16:21:55 - INFO - __main__ - [stage3] Epoch 33 Step 50/1840 | loss=0.0665 infonce=0.0218 dist=0.1119 | lr=1.55e-05
+2026-03-15 16:22:30 - INFO - __main__ - [stage3] Epoch 33 Step 100/1840 | loss=0.0657 infonce=0.0205 dist=0.1131 | lr=1.54e-05
+2026-03-15 16:23:03 - INFO - __main__ - [stage3] Epoch 33 Step 150/1840 | loss=0.0639 infonce=0.0187 dist=0.1131 | lr=1.54e-05
+2026-03-15 16:23:37 - INFO - __main__ - [stage3] Epoch 33 Step 200/1840 | loss=0.0634 infonce=0.0184 dist=0.1126 | lr=1.53e-05
+2026-03-15 16:24:11 - INFO - __main__ - [stage3] Epoch 33 Step 250/1840 | loss=0.0631 infonce=0.0183 dist=0.1121 | lr=1.53e-05
+2026-03-15 16:24:45 - INFO - __main__ - [stage3] Epoch 33 Step 300/1840 | loss=0.0630 infonce=0.0184 dist=0.1115 | lr=1.52e-05
+2026-03-15 16:25:19 - INFO - __main__ - [stage3] Epoch 33 Step 350/1840 | loss=0.0633 infonce=0.0187 dist=0.1114 | lr=1.51e-05
+2026-03-15 16:25:53 - INFO - __main__ - [stage3] Epoch 33 Step 400/1840 | loss=0.0629 infonce=0.0184 dist=0.1113 | lr=1.51e-05
+2026-03-15 16:26:27 - INFO - __main__ - [stage3] Epoch 33 Step 450/1840 | loss=0.0630 infonce=0.0185 dist=0.1113 | lr=1.50e-05
+2026-03-15 16:27:01 - INFO - __main__ - [stage3] Epoch 33 Step 500/1840 | loss=0.0637 infonce=0.0192 dist=0.1114 | lr=1.50e-05
+2026-03-15 16:27:35 - INFO - __main__ - [stage3] Epoch 33 Step 550/1840 | loss=0.0634 infonce=0.0189 dist=0.1112 | lr=1.49e-05
+2026-03-15 16:28:09 - INFO - __main__ - [stage3] Epoch 33 Step 600/1840 | loss=0.0634 infonce=0.0190 dist=0.1109 | lr=1.48e-05
+2026-03-15 16:28:44 - INFO - __main__ - [stage3] Epoch 33 Step 650/1840 | loss=0.0636 infonce=0.0193 dist=0.1107 | lr=1.48e-05
+2026-03-15 16:29:18 - INFO - __main__ - [stage3] Epoch 33 Step 700/1840 | loss=0.0636 infonce=0.0193 dist=0.1108 | lr=1.47e-05
+2026-03-15 16:29:53 - INFO - __main__ - [stage3] Epoch 33 Step 750/1840 | loss=0.0635 infonce=0.0192 dist=0.1107 | lr=1.47e-05
+2026-03-15 16:30:27 - INFO - __main__ - [stage3] Epoch 33 Step 800/1840 | loss=0.0633 infonce=0.0191 dist=0.1105 | lr=1.46e-05
+2026-03-15 16:31:01 - INFO - __main__ - [stage3] Epoch 33 Step 850/1840 | loss=0.0631 infonce=0.0190 dist=0.1103 | lr=1.45e-05
+2026-03-15 16:31:35 - INFO - __main__ - [stage3] Epoch 33 Step 900/1840 | loss=0.0632 infonce=0.0191 dist=0.1102 | lr=1.45e-05
+2026-03-15 16:32:09 - INFO - __main__ - [stage3] Epoch 33 Step 950/1840 | loss=0.0632 infonce=0.0192 dist=0.1101 | lr=1.44e-05
+2026-03-15 16:32:43 - INFO - __main__ - [stage3] Epoch 33 Step 1000/1840 | loss=0.0633 infonce=0.0193 dist=0.1100 | lr=1.43e-05
+2026-03-15 16:33:18 - INFO - __main__ - [stage3] Epoch 33 Step 1050/1840 | loss=0.0633 infonce=0.0193 dist=0.1099 | lr=1.43e-05
+2026-03-15 16:33:53 - INFO - __main__ - [stage3] Epoch 33 Step 1100/1840 | loss=0.0631 infonce=0.0192 dist=0.1097 | lr=1.42e-05
+2026-03-15 16:34:28 - INFO - __main__ - [stage3] Epoch 33 Step 1150/1840 | loss=0.0630 infonce=0.0192 dist=0.1095 | lr=1.42e-05
+2026-03-15 16:35:02 - INFO - __main__ - [stage3] Epoch 33 Step 1200/1840 | loss=0.0631 infonce=0.0193 dist=0.1094 | lr=1.41e-05
+2026-03-15 16:35:36 - INFO - __main__ - [stage3] Epoch 33 Step 1250/1840 | loss=0.0630 infonce=0.0192 dist=0.1095 | lr=1.40e-05
+2026-03-15 16:36:10 - INFO - __main__ - [stage3] Epoch 33 Step 1300/1840 | loss=0.0632 infonce=0.0194 dist=0.1095 | lr=1.40e-05
+2026-03-15 16:36:44 - INFO - __main__ - [stage3] Epoch 33 Step 1350/1840 | loss=0.0632 infonce=0.0194 dist=0.1096 | lr=1.39e-05
+2026-03-15 16:37:19 - INFO - __main__ - [stage3] Epoch 33 Step 1400/1840 | loss=0.0631 infonce=0.0193 dist=0.1096 | lr=1.39e-05
+2026-03-15 16:37:54 - INFO - __main__ - [stage3] Epoch 33 Step 1450/1840 | loss=0.0631 infonce=0.0193 dist=0.1095 | lr=1.38e-05
+2026-03-15 16:38:28 - INFO - __main__ - [stage3] Epoch 33 Step 1500/1840 | loss=0.0631 infonce=0.0193 dist=0.1096 | lr=1.37e-05
+2026-03-15 16:39:02 - INFO - __main__ - [stage3] Epoch 33 Step 1550/1840 | loss=0.0630 infonce=0.0192 dist=0.1095 | lr=1.37e-05
+2026-03-15 16:39:36 - INFO - __main__ - [stage3] Epoch 33 Step 1600/1840 | loss=0.0630 infonce=0.0192 dist=0.1094 | lr=1.36e-05
+2026-03-15 16:40:10 - INFO - __main__ - [stage3] Epoch 33 Step 1650/1840 | loss=0.0628 infonce=0.0191 dist=0.1093 | lr=1.36e-05
+2026-03-15 16:40:44 - INFO - __main__ - [stage3] Epoch 33 Step 1700/1840 | loss=0.0627 infonce=0.0190 dist=0.1093 | lr=1.35e-05
+2026-03-15 16:41:18 - INFO - __main__ - [stage3] Epoch 33 Step 1750/1840 | loss=0.0626 infonce=0.0189 dist=0.1092 | lr=1.34e-05
+2026-03-15 16:41:53 - INFO - __main__ - [stage3] Epoch 33 Step 1800/1840 | loss=0.0625 infonce=0.0189 dist=0.1092 | lr=1.34e-05
+2026-03-15 16:42:21 - INFO - __main__ - [stage3] Epoch 33 finished | avg_loss=0.0625 accuracy=0.9965 | time=1261.2s | nan_batches=0
+2026-03-15 16:43:14 - INFO - __main__ - Average Rank validation: q_vectors=2000, ctx_vectors=16000
+2026-03-15 16:43:14 - INFO - __main__ - Average Rank: 23.76 (total questions=2000)
+2026-03-15 16:43:17 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_33.pt (epoch=33, step=1840)
+2026-03-15 16:43:17 - INFO - __main__ - [stage3] No improvement. patience=3/5
+2026-03-15 16:43:52 - INFO - __main__ - [stage3] Epoch 34 Step 50/1840 | loss=0.0573 infonce=0.0150 dist=0.1057 | lr=1.33e-05
+2026-03-15 16:44:26 - INFO - __main__ - [stage3] Epoch 34 Step 100/1840 | loss=0.0555 infonce=0.0137 dist=0.1045 | lr=1.32e-05
+2026-03-15 16:44:59 - INFO - __main__ - [stage3] Epoch 34 Step 150/1840 | loss=0.0557 infonce=0.0143 dist=0.1035 | lr=1.32e-05
+2026-03-15 16:45:33 - INFO - __main__ - [stage3] Epoch 34 Step 200/1840 | loss=0.0562 infonce=0.0151 dist=0.1029 | lr=1.31e-05
+2026-03-15 16:46:08 - INFO - __main__ - [stage3] Epoch 34 Step 250/1840 | loss=0.0563 infonce=0.0153 dist=0.1026 | lr=1.30e-05
+2026-03-15 16:46:42 - INFO - __main__ - [stage3] Epoch 34 Step 300/1840 | loss=0.0562 infonce=0.0151 dist=0.1025 | lr=1.30e-05
+2026-03-15 16:47:16 - INFO - __main__ - [stage3] Epoch 34 Step 350/1840 | loss=0.0564 infonce=0.0155 dist=0.1024 | lr=1.29e-05
+2026-03-15 16:47:50 - INFO - __main__ - [stage3] Epoch 34 Step 400/1840 | loss=0.0565 infonce=0.0157 dist=0.1020 | lr=1.29e-05
+2026-03-15 16:48:24 - INFO - __main__ - [stage3] Epoch 34 Step 450/1840 | loss=0.0564 infonce=0.0156 dist=0.1021 | lr=1.28e-05
+2026-03-15 16:48:58 - INFO - __main__ - [stage3] Epoch 34 Step 500/1840 | loss=0.0567 infonce=0.0160 dist=0.1018 | lr=1.27e-05
+2026-03-15 16:49:32 - INFO - __main__ - [stage3] Epoch 34 Step 550/1840 | loss=0.0570 infonce=0.0163 dist=0.1017 | lr=1.27e-05
+2026-03-15 16:50:05 - INFO - __main__ - [stage3] Epoch 34 Step 600/1840 | loss=0.0570 infonce=0.0163 dist=0.1019 | lr=1.26e-05
+2026-03-15 16:50:38 - INFO - __main__ - [stage3] Epoch 34 Step 650/1840 | loss=0.0568 infonce=0.0161 dist=0.1019 | lr=1.26e-05
+2026-03-15 16:51:12 - INFO - __main__ - [stage3] Epoch 34 Step 700/1840 | loss=0.0568 infonce=0.0161 dist=0.1018 | lr=1.25e-05
+2026-03-15 16:51:47 - INFO - __main__ - [stage3] Epoch 34 Step 750/1840 | loss=0.0565 infonce=0.0158 dist=0.1018 | lr=1.24e-05
+2026-03-15 16:52:21 - INFO - __main__ - [stage3] Epoch 34 Step 800/1840 | loss=0.0566 infonce=0.0159 dist=0.1016 | lr=1.24e-05
+2026-03-15 16:52:55 - INFO - __main__ - [stage3] Epoch 34 Step 850/1840 | loss=0.0566 infonce=0.0159 dist=0.1016 | lr=1.23e-05
+2026-03-15 16:53:30 - INFO - __main__ - [stage3] Epoch 34 Step 900/1840 | loss=0.0563 infonce=0.0157 dist=0.1015 | lr=1.22e-05
+2026-03-15 16:54:04 - INFO - __main__ - [stage3] Epoch 34 Step 950/1840 | loss=0.0564 infonce=0.0159 dist=0.1013 | lr=1.22e-05
+2026-03-15 16:54:38 - INFO - __main__ - [stage3] Epoch 34 Step 1000/1840 | loss=0.0562 infonce=0.0157 dist=0.1012 | lr=1.21e-05
+2026-03-15 16:55:13 - INFO - __main__ - [stage3] Epoch 34 Step 1050/1840 | loss=0.0562 infonce=0.0158 dist=0.1012 | lr=1.21e-05
+2026-03-15 16:55:47 - INFO - __main__ - [stage3] Epoch 34 Step 1100/1840 | loss=0.0562 infonce=0.0157 dist=0.1012 | lr=1.20e-05
+2026-03-15 16:56:21 - INFO - __main__ - [stage3] Epoch 34 Step 1150/1840 | loss=0.0560 infonce=0.0156 dist=0.1012 | lr=1.19e-05
+2026-03-15 16:56:55 - INFO - __main__ - [stage3] Epoch 34 Step 1200/1840 | loss=0.0560 infonce=0.0155 dist=0.1013 | lr=1.19e-05
+2026-03-15 16:57:29 - INFO - __main__ - [stage3] Epoch 34 Step 1250/1840 | loss=0.0559 infonce=0.0154 dist=0.1012 | lr=1.18e-05
+2026-03-15 16:58:03 - INFO - __main__ - [stage3] Epoch 34 Step 1300/1840 | loss=0.0558 infonce=0.0153 dist=0.1012 | lr=1.18e-05
+2026-03-15 16:58:37 - INFO - __main__ - [stage3] Epoch 34 Step 1350/1840 | loss=0.0560 infonce=0.0155 dist=0.1011 | lr=1.17e-05
+2026-03-15 16:59:11 - INFO - __main__ - [stage3] Epoch 34 Step 1400/1840 | loss=0.0560 infonce=0.0156 dist=0.1011 | lr=1.16e-05
+2026-03-15 16:59:45 - INFO - __main__ - [stage3] Epoch 34 Step 1450/1840 | loss=0.0561 infonce=0.0157 dist=0.1011 | lr=1.16e-05
+2026-03-15 17:00:19 - INFO - __main__ - [stage3] Epoch 34 Step 1500/1840 | loss=0.0561 infonce=0.0157 dist=0.1011 | lr=1.15e-05
+2026-03-15 17:00:54 - INFO - __main__ - [stage3] Epoch 34 Step 1550/1840 | loss=0.0561 infonce=0.0156 dist=0.1011 | lr=1.15e-05
+2026-03-15 17:01:28 - INFO - __main__ - [stage3] Epoch 34 Step 1600/1840 | loss=0.0560 infonce=0.0156 dist=0.1011 | lr=1.14e-05
+2026-03-15 17:02:02 - INFO - __main__ - [stage3] Epoch 34 Step 1650/1840 | loss=0.0561 infonce=0.0157 dist=0.1010 | lr=1.13e-05
+2026-03-15 17:02:36 - INFO - __main__ - [stage3] Epoch 34 Step 1700/1840 | loss=0.0561 infonce=0.0157 dist=0.1010 | lr=1.13e-05
+2026-03-15 17:03:10 - INFO - __main__ - [stage3] Epoch 34 Step 1750/1840 | loss=0.0561 infonce=0.0158 dist=0.1009 | lr=1.12e-05
+2026-03-15 17:03:43 - INFO - __main__ - [stage3] Epoch 34 Step 1800/1840 | loss=0.0560 infonce=0.0157 dist=0.1009 | lr=1.12e-05
+2026-03-15 17:04:12 - INFO - __main__ - [stage3] Epoch 34 finished | avg_loss=0.0560 accuracy=0.9977 | time=1255.5s | nan_batches=0
+2026-03-15 17:05:04 - INFO - __main__ - Average Rank validation: q_vectors=2000, ctx_vectors=16000
+2026-03-15 17:05:05 - INFO - __main__ - Average Rank: 24.75 (total questions=2000)
+2026-03-15 17:05:07 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_34.pt (epoch=34, step=2300)
+2026-03-15 17:05:07 - INFO - __main__ - [stage3] No improvement. patience=4/5
+2026-03-15 17:05:43 - INFO - __main__ - [stage3] Epoch 35 Step 50/1840 | loss=0.0526 infonce=0.0131 dist=0.0987 | lr=1.11e-05
+2026-03-15 17:06:18 - INFO - __main__ - [stage3] Epoch 35 Step 100/1840 | loss=0.0500 infonce=0.0113 dist=0.0967 | lr=1.10e-05
+2026-03-15 17:06:52 - INFO - __main__ - [stage3] Epoch 35 Step 150/1840 | loss=0.0506 infonce=0.0122 dist=0.0962 | lr=1.09e-05
+2026-03-15 17:07:26 - INFO - __main__ - [stage3] Epoch 35 Step 200/1840 | loss=0.0519 infonce=0.0135 dist=0.0960 | lr=1.09e-05
+2026-03-15 17:08:00 - INFO - __main__ - [stage3] Epoch 35 Step 250/1840 | loss=0.0514 infonce=0.0131 dist=0.0957 | lr=1.08e-05
+2026-03-15 17:08:34 - INFO - __main__ - [stage3] Epoch 35 Step 300/1840 | loss=0.0524 infonce=0.0140 dist=0.0960 | lr=1.07e-05
+2026-03-15 17:09:09 - INFO - __main__ - [stage3] Epoch 35 Step 350/1840 | loss=0.0518 infonce=0.0135 dist=0.0958 | lr=1.07e-05
+2026-03-15 17:09:43 - INFO - __main__ - [stage3] Epoch 35 Step 400/1840 | loss=0.0519 infonce=0.0136 dist=0.0958 | lr=1.06e-05
+2026-03-15 17:10:18 - INFO - __main__ - [stage3] Epoch 35 Step 450/1840 | loss=0.0518 infonce=0.0135 dist=0.0956 | lr=1.06e-05
+2026-03-15 17:10:52 - INFO - __main__ - [stage3] Epoch 35 Step 500/1840 | loss=0.0521 infonce=0.0139 dist=0.0955 | lr=1.05e-05
+2026-03-15 17:11:26 - INFO - __main__ - [stage3] Epoch 35 Step 550/1840 | loss=0.0522 infonce=0.0141 dist=0.0954 | lr=1.04e-05
+2026-03-15 17:12:00 - INFO - __main__ - [stage3] Epoch 35 Step 600/1840 | loss=0.0524 infonce=0.0142 dist=0.0955 | lr=1.04e-05
+2026-03-15 17:12:34 - INFO - __main__ - [stage3] Epoch 35 Step 650/1840 | loss=0.0523 infonce=0.0142 dist=0.0954 | lr=1.03e-05
+2026-03-15 17:13:08 - INFO - __main__ - [stage3] Epoch 35 Step 700/1840 | loss=0.0525 infonce=0.0143 dist=0.0955 | lr=1.03e-05
+2026-03-15 17:13:42 - INFO - __main__ - [stage3] Epoch 35 Step 750/1840 | loss=0.0524 infonce=0.0142 dist=0.0954 | lr=1.02e-05
+2026-03-15 17:14:15 - INFO - __main__ - [stage3] Epoch 35 Step 800/1840 | loss=0.0522 infonce=0.0141 dist=0.0953 | lr=1.01e-05
+2026-03-15 17:14:50 - INFO - __main__ - [stage3] Epoch 35 Step 850/1840 | loss=0.0521 infonce=0.0139 dist=0.0954 | lr=1.01e-05
+2026-03-15 17:15:24 - INFO - __main__ - [stage3] Epoch 35 Step 900/1840 | loss=0.0523 infonce=0.0141 dist=0.0953 | lr=1.00e-05
+2026-03-15 17:15:58 - INFO - __main__ - [stage3] Epoch 35 Step 950/1840 | loss=0.0522 infonce=0.0140 dist=0.0954 | lr=9.97e-06
+2026-03-15 17:16:31 - INFO - __main__ - [stage3] Epoch 35 Step 1000/1840 | loss=0.0521 infonce=0.0139 dist=0.0955 | lr=9.90e-06
+2026-03-15 17:17:05 - INFO - __main__ - [stage3] Epoch 35 Step 1050/1840 | loss=0.0522 infonce=0.0139 dist=0.0956 | lr=9.85e-06
+2026-03-15 17:17:40 - INFO - __main__ - [stage3] Epoch 35 Step 1100/1840 | loss=0.0522 infonce=0.0140 dist=0.0956 | lr=9.78e-06
+2026-03-15 17:18:15 - INFO - __main__ - [stage3] Epoch 35 Step 1150/1840 | loss=0.0524 infonce=0.0142 dist=0.0956 | lr=9.72e-06
+2026-03-15 17:18:49 - INFO - __main__ - [stage3] Epoch 35 Step 1200/1840 | loss=0.0525 infonce=0.0142 dist=0.0957 | lr=9.66e-06
+2026-03-15 17:19:23 - INFO - __main__ - [stage3] Epoch 35 Step 1250/1840 | loss=0.0525 infonce=0.0142 dist=0.0956 | lr=9.60e-06
+2026-03-15 17:19:58 - INFO - __main__ - [stage3] Epoch 35 Step 1300/1840 | loss=0.0525 infonce=0.0143 dist=0.0956 | lr=9.54e-06
+2026-03-15 17:20:32 - INFO - __main__ - [stage3] Epoch 35 Step 1350/1840 | loss=0.0526 infonce=0.0143 dist=0.0955 | lr=9.48e-06
+2026-03-15 17:21:06 - INFO - __main__ - [stage3] Epoch 35 Step 1400/1840 | loss=0.0525 infonce=0.0143 dist=0.0955 | lr=9.42e-06
+2026-03-15 17:21:40 - INFO - __main__ - [stage3] Epoch 35 Step 1450/1840 | loss=0.0526 infonce=0.0144 dist=0.0955 | lr=9.36e-06
+2026-03-15 17:22:13 - INFO - __main__ - [stage3] Epoch 35 Step 1500/1840 | loss=0.0526 infonce=0.0144 dist=0.0955 | lr=9.30e-06
+2026-03-15 17:22:48 - INFO - __main__ - [stage3] Epoch 35 Step 1550/1840 | loss=0.0525 infonce=0.0143 dist=0.0954 | lr=9.24e-06
+2026-03-15 17:23:22 - INFO - __main__ - [stage3] Epoch 35 Step 1600/1840 | loss=0.0525 infonce=0.0143 dist=0.0955 | lr=9.18e-06
+2026-03-15 17:23:56 - INFO - __main__ - [stage3] Epoch 35 Step 1650/1840 | loss=0.0526 infonce=0.0144 dist=0.0954 | lr=9.12e-06
+2026-03-15 17:24:30 - INFO - __main__ - [stage3] Epoch 35 Step 1700/1840 | loss=0.0527 infonce=0.0146 dist=0.0954 | lr=9.06e-06
+2026-03-15 17:25:04 - INFO - __main__ - [stage3] Epoch 35 Step 1750/1840 | loss=0.0527 infonce=0.0146 dist=0.0954 | lr=9.00e-06
+2026-03-15 17:25:38 - INFO - __main__ - [stage3] Epoch 35 Step 1800/1840 | loss=0.0527 infonce=0.0145 dist=0.0954 | lr=8.94e-06
+2026-03-15 17:26:07 - INFO - __main__ - [stage3] Epoch 35 finished | avg_loss=0.0526 accuracy=0.9977 | time=1259.7s | nan_batches=0
+2026-03-15 17:27:00 - INFO - __main__ - Average Rank validation: q_vectors=2000, ctx_vectors=16000
+2026-03-15 17:27:00 - INFO - __main__ - Average Rank: 29.01 (total questions=2000)
+2026-03-15 17:27:03 - INFO - __main__ - Saved checkpoint: checkpoint_epoch_35.pt (epoch=35, step=2760)
+2026-03-15 17:27:03 - INFO - __main__ - [stage3] No improvement. patience=5/5
+2026-03-15 17:27:03 - INFO - __main__ - [stage3] Early stopping triggered at epoch 35 (patience=5)
+2026-03-15 17:27:03 - INFO - __main__ - Stage 3 complete. Best Average Rank: 16.94
+2026-03-15 17:27:03 - INFO - __main__ - Loading best Stage 3 model from ./checkpoints/nq/best_model_stage3
+2026-03-15 17:27:08 - INFO - __main__ - ============================================================
+2026-03-15 17:27:08 - INFO - __main__ - Training complete. Final model saved to ./checkpoints/nq/best_model_nq
+2026-03-15 17:27:08 - INFO - __main__ - ============================================================

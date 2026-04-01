@@ -1,0 +1,18 @@
+{
+  "model_type": "ance",
+  "dataset": "nq",
+  "num_samples": 6515,
+  "positive_cosine_mean": 0.5901083946228027,
+  "positive_cosine_var": 0.004099853336811066,
+  "negative_cosine_mean": 0.23498883843421936,
+  "negative_cosine_var": 0.0039060080889612436,
+  "alignment": 0.8197832107543945,
+  "uniformity": -2.612753391265869,
+  "positive_cosine_distribution": {
+    "min": 0.2558411657810211,
+    "max": 0.7346441745758057,
+    "p25": 0.5552147626876831,
+    "p50": 0.6002926826477051,
+    "p75": 0.6354398131370544
+  }
+}

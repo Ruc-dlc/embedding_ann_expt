@@ -1,8 +1,5 @@
 """
-SimpleTokenizer - 基于正则的规则分词器
-
-移植自 DPR/DrQA 的 SimpleTokenizer，用于 has_answer 的 token 级匹配。
-注意：这不是 BERT tokenizer，仅用于评估阶段的答案匹配判断。
+SimpleTokenizer - 基于正则的规则分词器，用于 has_answer 的 token 级匹配，评估阶段时判断答案是否匹配。
 
 依赖：regex 库（非标准库 re），支持 Unicode property escapes。
 安装：pip install regex>=2023.0.0

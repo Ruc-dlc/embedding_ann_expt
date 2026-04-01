@@ -2,17 +2,15 @@
 结果可视化脚本
 
 从 evaluate.py 产出的 JSON 文件中读取数据，生成对比图表：
-  - Recall-Latency 曲线 (experiments.md 第 8.2 节)
-  - Recall-QPS 曲线 (experiments.md 第 8.2 节)
-  - efSearch / nprobe 敏感度曲线 (experiments.md 第 8.3 节)
+  - Recall-Latency 曲线 
+  - Recall-QPS 曲线 
+  - efSearch / nprobe 敏感度曲线 
 
-用法：
+用法：指定需要纳入的模型产出数据
   python plot_results.py \
     --result_files ./results/dacl-dr_nq.json ./results/dpr_nq.json ./results/ance_nq.json ./results/contriever_nq.json \
     --output_dir ./results/figures
 
-参考：
-  - experiments.md 第 8.2 节、第 8.3 节
 """
 
 import argparse
@@ -267,7 +265,6 @@ def main():
 
     all_results = load_results(args.result_files)
 
-    # 从第一个结果文件中推断 dataset label
     first_result = list(all_results.values())[0]
     dataset_label = args.dataset_label or first_result["dataset"]
 
@@ -287,3 +284,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

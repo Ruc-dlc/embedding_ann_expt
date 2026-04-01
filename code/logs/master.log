@@ -1,0 +1,112 @@
+nohup: 忽略输入
+
+========================================================================
+  DACL-DR Full Experiment Pipeline Starting (Incremental Mode)
+  2026-03-14 14:57:39
+========================================================================
+
+[2026-03-14 14:57:39] Activating conda environment: dacl-dr
+[2026-03-14 14:57:41] Python: /home/fusy/miniconda3/envs/dacl-dr/bin/python, version: Python 3.10.20
+[2026-03-14 14:57:41] Verifying data files...
+[2026-03-14 14:57:41] All data files verified.
+[2026-03-14 14:57:41] Verifying baseline checkpoints...
+[2026-03-14 14:57:41]   OK: ./dpr-backbone/context (4 files)
+[2026-03-14 14:57:41]   OK: ./dpr-backbone/question (4 files)
+[2026-03-14 14:57:41]   OK: ./ance-backbone/context (4 files)
+[2026-03-14 14:57:41]   OK: ./ance-backbone/question (4 files)
+[2026-03-14 14:57:41]   OK: ./contriever-backbone (4 files)
+[2026-03-14 14:57:41] All baseline checkpoints verified.
+[2026-03-14 14:57:41] GPU info:
+NVIDIA RTX A6000, 49140 MiB, 48666 MiB, 535.247.01
+
+========================================================================
+  Phase 1: DACL-DR NQ (train + encode + evaluate NQ-test)
+  2026-03-14 14:57:41
+========================================================================
+
+[2026-03-14 14:57:41] === 训练 DACL-DR: nq (Stage 1+2, w=0.4) ===
+[2026-03-14 14:57:41]   Log: ./logs/train_nq.log
+[2026-03-14 23:21:11] Stage 1+2 训练完成: nq (08h:23m:30s)
+[2026-03-14 23:21:11] === Mining hard negatives: nq ===
+[2026-03-14 23:21:11]   Log: ./logs/mine_hardneg_nq.log
+./run_all_experiments.sh: 第 256 行： 2449640 已杀死               python mine_hard_negatives.py --checkpoint_dir "$OUTPUT/best_model_stage2" --dataset "$DS" --data_dir "$DATA_DIR" --corpus_path "$CORPUS_PATH" --output_path "$MINED_PATH" --top_k 200 --keep_top_n 50 --encode_batch_size 512 --query_batch_size 256 --fp16 > "$MINE_LOG" 2>&1
+nohup: 忽略输入
+
+========================================================================
+  DACL-DR Full Experiment Pipeline Starting (Incremental Mode)
+  2026-03-15 08:50:28
+========================================================================
+
+[2026-03-15 08:50:28] Activating conda environment: dacl-dr
+[2026-03-15 08:50:29] Python: /home/fusy/miniconda3/envs/dacl-dr/bin/python, version: Python 3.10.20
+[2026-03-15 08:50:29] Verifying data files...
+[2026-03-15 08:50:29] All data files verified.
+[2026-03-15 08:50:29] Verifying baseline checkpoints...
+[2026-03-15 08:50:29]   OK: ./dpr-backbone/context (4 files)
+[2026-03-15 08:50:29]   OK: ./dpr-backbone/question (4 files)
+[2026-03-15 08:50:29]   OK: ./ance-backbone/context (4 files)
+[2026-03-15 08:50:29]   OK: ./ance-backbone/question (4 files)
+[2026-03-15 08:50:29]   OK: ./contriever-backbone (4 files)
+[2026-03-15 08:50:29] All baseline checkpoints verified.
+[2026-03-15 08:50:29] GPU info:
+NVIDIA RTX A6000, 49140 MiB, 48666 MiB, 535.247.01
+
+========================================================================
+  Phase 1: DACL-DR NQ (train + encode + evaluate NQ-test)
+  2026-03-15 08:50:29
+========================================================================
+
+[2026-03-15 08:50:29] [SKIP] Stage 1+2 训练 (nq, w=0.4) -- 产出目录已存在: ./checkpoints/nq/best_model_stage2
+[2026-03-15 08:50:30] === Mining hard negatives: nq ===
+[2026-03-15 08:50:30]   Log: ./logs/mine_hardneg_nq.log
+[2026-03-15 15:14:29] Mining 完成: nq (06h:24m:00s)
+[2026-03-15 15:14:29] === 训练 DACL-DR: nq (Stage 3, resume from Stage 2 best) ===
+[2026-03-15 15:14:29]   Log: ./logs/train_nq_stage3.log
+[2026-03-15 17:27:12] Stage 3 训练完成: nq (02h:12m:43s)
+[2026-03-15 17:27:12] === 编码 passages: dacl-dr ===
+[2026-03-15 17:27:12]   model_type=dacl-dr, ctx_encoder=./checkpoints/nq/best_model_nq
+[2026-03-15 17:27:12]   output=./embeddings/dacl-dr-nq
+[2026-03-15 17:27:12]   Log: ./logs/encode_dacl-dr-nq.log
+[2026-03-16 00:14:40] 编码完成: dacl-dr (06h:47m:28s)
+[2026-03-16 00:14:40] === 构建所有索引: dacl-dr ===
+[2026-03-16 00:14:40]   Log: ./logs/build_index_dacl-dr-nq.log
+[2026-03-16 01:53:56] 索引构建完成: dacl-dr (01h:39m:16s)
+[2026-03-16 01:53:56] === 评估: dacl-dr_nq ===
+[2026-03-16 01:53:56]   model_type=dacl-dr, query_encoder=./checkpoints/nq/best_model_nq
+[2026-03-16 01:53:56]   embeddings=./embeddings/dacl-dr-nq, indexes=./embeddings/dacl-dr-nq/indexes
+[2026-03-16 01:53:56]   dataset=nq, output=./results/nq/dacl-dr_nq.json
+[2026-03-16 01:53:56]   Log: ./logs/eval_dacl-dr_nq.log
+[2026-03-16 09:00:32] 评估完成: dacl-dr_nq (07h:06m:36s)
+[2026-03-16 09:00:32] 清理索引文件: ./embeddings/dacl-dr-nq/indexes (187G)
+[2026-03-16 09:00:47] 索引已删除，向量文件保留: ./embeddings/dacl-dr-nq/passage_embeddings.npy
+[2026-03-16 09:00:47] Phase 1 完成: DACL-DR NQ (24h:10m:18s)
+[2026-03-16 09:00:47] >>> 第一个结果已持久化: ./results/nq/dacl-dr_nq.json <<<
+[2026-03-16 09:00:47] >>> 可 scp 到本地分析 <<<
+
+========================================================================
+  Phase 2: DACL-DR TriviaQA (train + encode + evaluate TriviaQA-test)
+  2026-03-16 09:00:47
+========================================================================
+
+[2026-03-16 09:00:47] === 训练 DACL-DR: trivia (Stage 1+2, w=0.4) ===
+[2026-03-16 09:00:47]   Log: ./logs/train_trivia.log
+[2026-03-16 17:33:10] Stage 1+2 训练完成: trivia (08h:32m:23s)
+[2026-03-16 17:33:10] === Mining hard negatives: trivia ===
+[2026-03-16 17:33:10]   Log: ./logs/mine_hardneg_trivia.log
+[2026-03-16 23:58:34] Mining 完成: trivia (06h:25m:24s)
+[2026-03-16 23:58:34] === 训练 DACL-DR: trivia (Stage 3, resume from Stage 2 best) ===
+[2026-03-16 23:58:34]   Log: ./logs/train_trivia_stage3.log
+[2026-03-17 02:25:16] Stage 3 训练完成: trivia (02h:26m:42s)
+[2026-03-17 02:25:16] === 编码 passages: dacl-dr ===
+[2026-03-17 02:25:16]   model_type=dacl-dr, ctx_encoder=./checkpoints/trivia/best_model_trivia
+[2026-03-17 02:25:16]   output=./embeddings/dacl-dr-trivia
+[2026-03-17 02:25:16]   Log: ./logs/encode_dacl-dr-trivia.log
+[2026-03-17 09:19:07] 编码完成: dacl-dr (06h:53m:51s)
+[2026-03-17 09:19:07] === 构建所有索引: dacl-dr ===
+[2026-03-17 09:19:07]   Log: ./logs/build_index_dacl-dr-trivia.log
+[2026-03-17 11:32:10] 索引构建完成: dacl-dr (02h:13m:03s)
+[2026-03-17 11:32:10] === 评估: dacl-dr_trivia ===
+[2026-03-17 11:32:10]   model_type=dacl-dr, query_encoder=./checkpoints/trivia/best_model_trivia
+[2026-03-17 11:32:10]   embeddings=./embeddings/dacl-dr-trivia, indexes=./embeddings/dacl-dr-trivia/indexes
+[2026-03-17 11:32:10]   dataset=trivia, output=./results/trivia/dacl-dr_trivia.json
+[2026-03-17 11:32:10]   Log: ./logs/eval_dacl-dr_trivia.log

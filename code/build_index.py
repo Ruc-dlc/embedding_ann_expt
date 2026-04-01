@@ -1,7 +1,7 @@
 """
 FAISS 索引构建脚本
 
-从编码好的 passage embeddings 构建 3 种 FAISS 索引：
+从编码好的 passage embeddings , 即基于外部语料库psgs_w100.tsv编码好的向量文件，一共包含21M个段落，构建 3 种 FAISS 索引用于后续的精度&效率评估：
   - Flat (暴力精确搜索)
   - HNSW (M=32, efConstruction=200)
   - IVF (nlist=4096)
@@ -10,8 +10,6 @@ FAISS 索引构建脚本
   python build_index.py --embeddings_dir ./embeddings/dacl-dr --index_type all
   python build_index.py --embeddings_dir ./embeddings/dpr --index_type hnsw
 
-参考：
-  - experiments.md 第六节
 """
 
 import argparse
@@ -156,3 +154,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

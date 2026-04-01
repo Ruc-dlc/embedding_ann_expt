@@ -4,12 +4,17 @@
 对每个模型×每种索引，评估：
   - Top-K Accuracy (K=10,20,50,100): has_answer token 级匹配
   - Recall@K (K=20,100): 对比 Flat 精确搜索
-  - QPS / Latency (ms/query)
+  - QPS / Latency (ms/query)  —— 仅 HNSW/IVF，不包含Flat暴搜索引，为保障准确性采用单线程逐 query 测量并且所有测试查询的平均值
   - 距离计算次数 (HNSW: faiss.cvar.hnsw_stats.ndis)
+
+评估策略：
+  - Flat: GPU batch search（fp16，不测延迟），仅获取 accuracy 和 ground truth
+  - HNSW/IVF: 单线程逐 query 搜索，同时获取 accuracy + latency + NDC
+  - 使用全部测试集中所有 queries 进行测试
 
 支持 HNSW/IVF 的参数扫描。
 
-用法：
+用法：需要指定编码器、指定索引文件存放路径、数据集、评估模型类型、模型的checkpoint路径、评估结果输出位置及名称，最终以json形式输出评估数据
   python evaluate.py \
     --embeddings_dir ./embeddings/dacl-dr \
     --index_dir ./embeddings/dacl-dr/indexes \
@@ -18,8 +23,6 @@
     --model_path ./checkpoints/nq/best_model_nq \
     --output_path ./results/dacl-dr_nq.json
 
-参考：
-  - experiments.md 第七节、第十二节 Phase 4
 """
 
 import argparse
@@ -286,27 +289,113 @@ def compute_recall_at_k(result_ids_ann, result_ids_flat, k_values):
     return results
 
 
-def search_with_timing(index, query_embs, k, single_thread=True):
-    """搜索并测量 latency（逐条 query 计时）。
+def batch_search_flat(index, query_embs, k):
+    """Flat 精确搜索：优先 GPU fp16 batch，否则 CPU 多线程 batch。
+
+    Flat 搜索仅用于获取精确结果（accuracy + ground truth），不测量延迟。
 
     Args:
-        index: FAISS index
+        index: FAISS Flat index (CPU)
         query_embs: [Q, D] float32
         k: top-k
-        single_thread: 使用单线程以准确测量 latency
+
+    Returns:
+        (scores [Q,k], indices [Q,k])
+    """
+    use_gpu = torch.cuda.is_available()
+
+    if use_gpu:
+        try:
+            logger.info("Flat: attempting GPU batch search (fp16)...")
+            res = faiss.StandardGpuResources()
+            co = faiss.GpuClonerOptions()
+            co.useFloat16 = True
+            gpu_index = faiss.index_cpu_to_gpu(res, 0, index, co)
+            t0 = time.time()
+            scores, indices = gpu_index.search(query_embs, k)
+            t1 = time.time()
+            logger.info("Flat GPU batch search: %d queries in %.1fs", query_embs.shape[0], t1 - t0)
+            del gpu_index
+            return scores, indices
+        except Exception as e:
+            logger.warning("GPU Flat search failed (%s), falling back to CPU batch.", e)
+
+
+    logger.info("Flat: CPU multi-thread batch search...")
+    prev_threads = faiss.omp_get_max_threads()
+    faiss.omp_set_num_threads(0)
+    t0 = time.time()
+    scores, indices = index.search(query_embs, k)
+    t1 = time.time()
+    faiss.omp_set_num_threads(prev_threads)
+    logger.info("Flat CPU batch search: %d queries in %.1fs", query_embs.shape[0], t1 - t0)
+    return scores, indices
+
+
+def search_hnsw_with_stats(index, query_embs, k, ef_search):
+    """HNSW 单线程逐 query 搜索，同时获取 latency 和距离计算次数。
+
+    Args:
+        index: FAISS HNSW index
+        query_embs: [Q, D] float32
+        k: top-k
+        ef_search: HNSW efSearch 参数
+
+    Returns:
+        (scores [Q,k], indices [Q,k], avg_latency_ms, qps, avg_ndis)
+    """
+    faiss.omp_set_num_threads(1)
+    index.hnsw.efSearch = ef_search
+
+    n = query_embs.shape[0]
+    latencies = []
+    all_scores = []
+    all_indices = []
+    total_ndis = 0
+
+    for i in range(n):
+        q = query_embs[i:i+1]
+        faiss.cvar.hnsw_stats.reset()
+        t0 = time.time()
+        D, I = index.search(q, k)
+        t1 = time.time()
+        latencies.append((t1 - t0) * 1000)  # ms
+        total_ndis += faiss.cvar.hnsw_stats.ndis
+        all_scores.append(D)
+        all_indices.append(I)
+
+    faiss.omp_set_num_threads(0)
+
+    scores = np.concatenate(all_scores, axis=0)
+    indices = np.concatenate(all_indices, axis=0)
+    avg_latency = np.mean(latencies)
+    qps = 1000.0 / avg_latency if avg_latency > 0 else 0
+    avg_ndis = total_ndis / n
+
+    return scores, indices, avg_latency, qps, avg_ndis
+
+
+def search_ivf_with_timing(index, query_embs, k, nprobe):
+    """IVF 单线程逐 query 搜索，测量 latency。
+
+    Args:
+        index: FAISS IVF index
+        query_embs: [Q, D] float32
+        k: top-k
+        nprobe: IVF nprobe 参数
 
     Returns:
         (scores [Q,k], indices [Q,k], avg_latency_ms, qps)
     """
-    if single_thread:
-        faiss.omp_set_num_threads(1)
+    faiss.omp_set_num_threads(1)
+    index.nprobe = nprobe
 
-    n_queries = query_embs.shape[0]
+    n = query_embs.shape[0]
     latencies = []
     all_scores = []
     all_indices = []
 
-    for i in range(n_queries):
+    for i in range(n):
         q = query_embs[i:i+1]
         t0 = time.time()
         D, I = index.search(q, k)
@@ -315,35 +404,14 @@ def search_with_timing(index, query_embs, k, single_thread=True):
         all_scores.append(D)
         all_indices.append(I)
 
-    avg_latency = np.mean(latencies)
-    qps = 1000.0 / avg_latency if avg_latency > 0 else 0
+    faiss.omp_set_num_threads(0)  # restore auto
 
     scores = np.concatenate(all_scores, axis=0)
     indices = np.concatenate(all_indices, axis=0)
-
-    if single_thread:
-        faiss.omp_set_num_threads(0)  # 0 = auto
+    avg_latency = np.mean(latencies)
+    qps = 1000.0 / avg_latency if avg_latency > 0 else 0
 
     return scores, indices, avg_latency, qps
-
-
-def get_hnsw_distance_count(index, query_embs, k, ef_search):
-    """获取 HNSW 的平均距离计算次数。
-
-    仅对前 min(100, Q) 个 query 测量以节省时间。
-    """
-    faiss.omp_set_num_threads(1)
-    index.hnsw.efSearch = ef_search
-
-    n = min(100, query_embs.shape[0])
-    total_ndis = 0
-    for i in range(n):
-        faiss.cvar.hnsw_stats.reset()
-        index.search(query_embs[i:i+1], k)
-        total_ndis += faiss.cvar.hnsw_stats.ndis
-
-    faiss.omp_set_num_threads(0)
-    return total_ndis / n
 
 
 def main():
@@ -383,18 +451,17 @@ def main():
         "indexes": {},
     }
 
-    # ====== Flat (精确搜索，作为 upper bound 和 Recall 基准) ======
+    # ====== Flat (精确搜索，作为指标数值上界和 Recall 基准) ======
+    # Flat 使用 GPU fp16 batch search，仅获取 accuracy，不测量延迟
     flat_indices = None  # 初始化，用于后续 ANN recall 计算
 
     flat_path = os.path.join(args.index_dir, "flat.index")
     if os.path.exists(flat_path):
         logger.info("=" * 50)
-        logger.info("Evaluating Flat index...")
+        logger.info("Evaluating Flat index (batch search, no latency)...")
         flat_index = faiss.read_index(flat_path)
 
-        flat_scores, flat_indices, flat_latency, flat_qps = search_with_timing(
-            flat_index, query_embs, max_k, single_thread=True,
-        )
+        flat_scores, flat_indices = batch_search_flat(flat_index, query_embs, max_k)
 
         flat_pids = [[passage_ids[idx] for idx in row if idx >= 0] for row in flat_indices]
 
@@ -403,14 +470,15 @@ def main():
 
         results["indexes"]["flat"] = {
             "top_k_accuracy": {str(k): v for k, v in top_k_acc.items()},
-            "latency_ms": flat_latency,
-            "qps": flat_qps,
+            "latency_ms": 0,
+            "qps": 0,
         }
         del flat_index
     else:
         logger.warning("Flat index not found at %s; Recall@K will not be computed.", flat_path)
 
     # ====== HNSW 参数扫描 ======
+    # 单线程逐 query 搜索，一遍同时获取 accuracy + latency + NDC
     hnsw_files = sorted([f for f in os.listdir(args.index_dir) if f.startswith("hnsw") and f.endswith(".index")])
     if hnsw_files:
         hnsw_path = os.path.join(args.index_dir, hnsw_files[0])
@@ -420,8 +488,10 @@ def main():
 
         hnsw_results = {}
         for ef in hnsw_ef_values:
-            hnsw_index.hnsw.efSearch = ef
-            scores, indices, latency, qps = search_with_timing(hnsw_index, query_embs, max_k)
+            logger.info("  HNSW efSearch=%d: single-thread per-query search (%d queries)...", ef, query_embs.shape[0])
+            scores, indices, latency, qps, avg_ndis = search_hnsw_with_stats(
+                hnsw_index, query_embs, max_k, ef,
+            )
 
             pids = [[passage_ids[idx] for idx in row if idx >= 0] for row in indices]
             top_k_acc = compute_top_k_accuracy(pids, answers_list, corpus, k_values)
@@ -429,8 +499,6 @@ def main():
             recall = {}
             if flat_indices is not None:
                 recall = compute_recall_at_k(indices, flat_indices, [20, 100])
-
-            avg_ndis = get_hnsw_distance_count(hnsw_index, query_embs, max_k, ef)
 
             entry = {
                 "top_k_accuracy": {str(k): v for k, v in top_k_acc.items()},
@@ -449,6 +517,7 @@ def main():
         del hnsw_index
 
     # ====== IVF 参数扫描 ======
+    # 单线程逐 query 搜索，获取 accuracy + latency
     idx_files = sorted([f for f in os.listdir(args.index_dir) if f.startswith("ivf_nlist") and f.endswith(".index")])
     if idx_files:
         idx_path = os.path.join(args.index_dir, idx_files[0])
@@ -458,8 +527,10 @@ def main():
 
         ivf_results = {}
         for nprobe in ivf_nprobe_values:
-            ivf_index.nprobe = nprobe
-            scores, indices, latency, qps = search_with_timing(ivf_index, query_embs, max_k)
+            logger.info("  IVF nprobe=%d: single-thread per-query search (%d queries)...", nprobe, query_embs.shape[0])
+            scores, indices, latency, qps = search_ivf_with_timing(
+                ivf_index, query_embs, max_k, nprobe,
+            )
 
             pids = [[passage_ids[idx] for idx in row if idx >= 0] for row in indices]
             top_k_acc = compute_top_k_accuracy(pids, answers_list, corpus, k_values)
@@ -499,3 +570,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

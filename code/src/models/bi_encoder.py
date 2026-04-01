@@ -2,11 +2,9 @@
 双塔编码器
 
 本模块实现双塔（Dual Encoder）架构，用于Query和Document的独立编码。
-双塔结构允许预计算Document向量，实现高效的大规模检索。
+双塔结构允许离线形式预计算Document向量，实现高效的大规模检索。
 
 支持共享或独立的底层Transformer，可配置池化策略。
-
-论文章节：第4章 4.1节 - 双塔编码器架构
 """
 
 import os

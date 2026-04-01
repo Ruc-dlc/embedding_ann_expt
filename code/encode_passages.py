@@ -2,12 +2,15 @@
 语料库编码脚本
 
 对全量 psgs_w100.tsv (~21M passages) 编码，支持多种 encoder：
-  - dacl-dr: 我们训练的 BiEncoder (doc_encoder)
-  - dpr: facebook/dpr-ctx_encoder-single-nq-base
+  - dacl-dr: 我们自己训练好的双塔checkpoint BiEncoder (doc_encoder)
+  - dpr: facebook/dpr-ctx_encoder-single-nq-base 注意是官方在nq上fine-tuning过的模型checkpoint
   - ance: castorini/ance-dpr-context-multi
   - contriever: facebook/contriever 或 facebook/contriever-msmarco
 
 所有模型编码后统一 L2 归一化，存储为 float16 以节省空间。
+
+优化策略：
+  使用 DataLoader + num_workers 实现 CPU tokenization 与 GPU inference 流水线并行，加快编码速度，单个模型大约需要4.5小时推理编码完成
 
 用法：
   # DACL-DR
@@ -26,18 +29,19 @@
   python encode_passages.py --model_type contriever \
     --model_path ./contriever-backbone --output_dir ./embeddings/contriever
 
-参考：
-  - experiments.md 第五节、第十二节 Phase 3
 """
+
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 import argparse
 import json
 import logging
-import os
 import time
 
 import numpy as np
 import torch
+from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModel, DPRContextEncoder
 
@@ -64,6 +68,8 @@ def get_args():
     parser.add_argument("--fp16", action="store_true", default=True)
     parser.add_argument("--save_float16", action="store_true", default=True,
                         help="以 float16 存储向量（节省约 50% 空间）")
+    parser.add_argument("--num_workers", type=int, default=4,
+                        help="DataLoader worker 数量，用于并行 tokenize（默认 4）")
     return parser.parse_args()
 
 
@@ -77,7 +83,7 @@ def load_corpus(corpus_path):
     with open(corpus_path, "r", encoding="utf-8") as f:
         for line_idx, line in enumerate(f):
             if line_idx == 0:
-                continue  # 跳过表头
+                continue
             parts = line.rstrip("\n").split("\t")
             if len(parts) < 3:
                 continue
@@ -161,6 +167,44 @@ def load_encoder(model_type, model_path, device):
         raise ValueError("Unknown model_type: %s" % model_type)
 
 
+class PassageDataset(Dataset):
+    def __init__(self, titles, texts, tokenizer, max_length):
+        self.titles = titles
+        self.texts = texts
+        self.tokenizer = tokenizer
+        self.max_length = max_length
+
+    def __len__(self):
+        return len(self.texts)
+
+    def __getitem__(self, idx):
+        encoding = self.tokenizer(
+            self.titles[idx],
+            text_pair=self.texts[idx],
+            max_length=self.max_length,
+            truncation=True,
+        )
+        # 返回 Python list（高效 pickle，避免 tensor 序列化开销）
+        return encoding["input_ids"], encoding["attention_mask"]
+
+
+def collate_passages(batch):
+    """将单条 tokenize 结果 pad 到 batch 内最长长度并转为 tensor。"""
+    input_ids_list, attn_mask_list = zip(*batch)
+    max_len = max(len(ids) for ids in input_ids_list)
+    bsz = len(batch)
+
+    input_ids = torch.zeros(bsz, max_len, dtype=torch.long)
+    attention_mask = torch.zeros(bsz, max_len, dtype=torch.long)
+
+    for i, (ids, mask) in enumerate(zip(input_ids_list, attn_mask_list)):
+        length = len(ids)
+        input_ids[i, :length] = torch.tensor(ids, dtype=torch.long)
+        attention_mask[i, :length] = torch.tensor(mask, dtype=torch.long)
+
+    return input_ids, attention_mask
+
+
 def main():
     args = get_args()
     os.makedirs(args.output_dir, exist_ok=True)
@@ -176,28 +220,31 @@ def main():
 
     # 编码
     n = len(texts)
+
+    # 构建 DataLoader（多 worker 异步 tokenize，与 GPU inference 流水线并行）
+    dataset = PassageDataset(titles, texts, tokenizer, args.max_passage_length)
+    loader_kwargs = dict(
+        batch_size=args.batch_size,
+        shuffle=False,
+        num_workers=args.num_workers,
+        collate_fn=collate_passages,
+        pin_memory=torch.cuda.is_available(),
+    )
+    if args.num_workers > 0:
+        loader_kwargs["prefetch_factor"] = 2
+        loader_kwargs["persistent_workers"] = True
+    dataloader = DataLoader(dataset, **loader_kwargs)
+
     all_embs = []
     t_start = time.time()
 
-    logger.info("Encoding %d passages (batch_size=%d)...", n, args.batch_size)
+    logger.info("Encoding %d passages (batch_size=%d, num_workers=%d)...",
+                n, args.batch_size, args.num_workers)
 
     with torch.no_grad():
-        for start in tqdm(range(0, n, args.batch_size), desc="Encoding"):
-            end = min(start + args.batch_size, n)
-            batch_titles = titles[start:end]
-            batch_texts = texts[start:end]
-
-            # Tokenize: [CLS] title [SEP] text [SEP]
-            encodings = tokenizer(
-                batch_titles,
-                text_pair=batch_texts,
-                max_length=args.max_passage_length,
-                truncation=True,
-                padding=True,
-                return_tensors="pt",
-            )
-            input_ids = encodings["input_ids"].to(device)
-            attention_mask = encodings["attention_mask"].to(device)
+        for input_ids, attention_mask in tqdm(dataloader, desc="Encoding"):
+            input_ids = input_ids.to(device, non_blocking=True)
+            attention_mask = attention_mask.to(device, non_blocking=True)
 
             if args.fp16:
                 with torch.cuda.amp.autocast():
@@ -205,7 +252,7 @@ def main():
             else:
                 emb = encode_fn(input_ids, attention_mask)
 
-            # L2 归一化：DACL-DR 模型内部已归一化，baseline 需外部统一归一化
+            # L2 归一化：DACL-DR 模型内部已归一化，baseline 需外部统一归一化，避免后续评估时，向量携带模长信息，造成评估不准确
             if args.model_type != "dacl-dr":
                 emb = torch.nn.functional.normalize(emb, p=2, dim=-1)
 
@@ -234,3 +281,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

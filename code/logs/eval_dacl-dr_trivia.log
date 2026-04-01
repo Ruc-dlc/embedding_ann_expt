@@ -1,0 +1,17 @@
+2026-03-17 11:32:12 - INFO - __main__ - Device: cuda
+2026-03-17 11:32:14 - INFO - __main__ - Loaded 21015324 passage IDs
+Traceback (most recent call last):
+  File "/home/fusy/dailongchao/code/evaluate.py", line 506, in <module>
+    main()
+  File "/home/fusy/dailongchao/code/evaluate.py", line 371, in main
+    questions, answers_list = load_test_data(args.dataset, args.data_dir)
+  File "/home/fusy/dailongchao/code/evaluate.py", line 99, in load_test_data
+    answers = ast.literal_eval(parts[1])
+  File "/home/fusy/miniconda3/envs/dacl-dr/lib/python3.10/ast.py", line 64, in literal_eval
+    node_or_string = parse(node_or_string.lstrip(" \t"), mode='eval')
+  File "/home/fusy/miniconda3/envs/dacl-dr/lib/python3.10/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "<unknown>", line 1
+    "['""He had previously always said that each had been """"The best Olympics ever""""""']"
+                                                                                       ^
+SyntaxError: unterminated triple-quoted string literal (detected at line 1)

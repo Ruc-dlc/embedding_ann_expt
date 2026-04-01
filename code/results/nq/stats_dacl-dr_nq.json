@@ -1,0 +1,18 @@
+{
+  "model_type": "dacl-dr",
+  "dataset": "nq",
+  "num_samples": 6515,
+  "positive_cosine_mean": 0.8716035485267639,
+  "positive_cosine_var": 0.009547079913318157,
+  "negative_cosine_mean": 0.2792350649833679,
+  "negative_cosine_var": 0.011620530858635902,
+  "alignment": 0.25679299235343933,
+  "uniformity": -2.7787184715270996,
+  "positive_cosine_distribution": {
+    "min": 0.2406107783317566,
+    "max": 0.9844511151313782,
+    "p25": 0.8381562829017639,
+    "p50": 0.904259204864502,
+    "p75": 0.9381299018859863
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "model_type": "dpr",
+  "dataset": "trivia",
+  "num_samples": 6760,
+  "positive_cosine_mean": 0.6360988616943359,
+  "positive_cosine_var": 0.004180476069450378,
+  "negative_cosine_mean": 0.42037007212638855,
+  "negative_cosine_var": 0.002825949341058731,
+  "alignment": 0.7278022766113281,
+  "uniformity": -1.8909244537353516,
+  "positive_cosine_distribution": {
+    "min": 0.3227525055408478,
+    "max": 0.7910298109054565,
+    "p25": 0.5964657664299011,
+    "p50": 0.645431399345398,
+    "p75": 0.6839468032121658
+  }
+}

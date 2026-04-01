@@ -1,0 +1,63 @@
+2026-03-15 08:50:35 - INFO - __main__ - Device: cuda
+2026-03-15 08:50:40 - INFO - __main__ - Model loaded from ./checkpoints/nq/best_model_stage2
+2026-03-15 08:50:40 - INFO - __main__ - Counting passages in ./data_set/psgs_w100.tsv ...
+2026-03-15 08:51:32 - INFO - __main__ - Total passages: 21015324
+2026-03-15 08:51:32 - INFO - __main__ - Counting passages in ./data_set/psgs_w100.tsv ...
+2026-03-15 08:52:22 - INFO - __main__ - Total passages: 21015324
+2026-03-15 08:52:22 - INFO - __main__ - Encoding 21015324 passages (batch_size=512) → mmap file...
+2026-03-15 08:52:23 - INFO - __main__ - Created mmap file: ./data_set/NQ/.passage_embs_nq.mmap (shape=[21015324, 768], ~64.6 GB on disk)
+2026-03-15 09:09:54 - INFO - __main__ -   Encoded 1024000 / 21015324 passages...
+2026-03-15 09:27:01 - INFO - __main__ -   Encoded 2048000 / 21015324 passages...
+2026-03-15 09:44:35 - INFO - __main__ -   Encoded 3072000 / 21015324 passages...
+2026-03-15 10:02:15 - INFO - __main__ -   Encoded 4096000 / 21015324 passages...
+2026-03-15 10:19:52 - INFO - __main__ -   Encoded 5120000 / 21015324 passages...
+2026-03-15 10:37:36 - INFO - __main__ -   Encoded 6144000 / 21015324 passages...
+2026-03-15 10:55:24 - INFO - __main__ -   Encoded 7168000 / 21015324 passages...
+2026-03-15 11:13:14 - INFO - __main__ -   Encoded 8192000 / 21015324 passages...
+2026-03-15 11:30:59 - INFO - __main__ -   Encoded 9216000 / 21015324 passages...
+2026-03-15 11:48:50 - INFO - __main__ -   Encoded 10240000 / 21015324 passages...
+2026-03-15 12:06:41 - INFO - __main__ -   Encoded 11264000 / 21015324 passages...
+2026-03-15 12:24:32 - INFO - __main__ -   Encoded 12288000 / 21015324 passages...
+2026-03-15 12:42:23 - INFO - __main__ -   Encoded 13312000 / 21015324 passages...
+2026-03-15 13:00:14 - INFO - __main__ -   Encoded 14336000 / 21015324 passages...
+2026-03-15 13:18:10 - INFO - __main__ -   Encoded 15360000 / 21015324 passages...
+2026-03-15 13:36:06 - INFO - __main__ -   Encoded 16384000 / 21015324 passages...
+2026-03-15 13:54:01 - INFO - __main__ -   Encoded 17408000 / 21015324 passages...
+2026-03-15 14:12:01 - INFO - __main__ -   Encoded 18432000 / 21015324 passages...
+2026-03-15 14:30:03 - INFO - __main__ -   Encoded 19456000 / 21015324 passages...
+2026-03-15 14:48:09 - INFO - __main__ -   Encoded 20480000 / 21015324 passages...
+2026-03-15 14:57:33 - INFO - __main__ - Passage encoding complete: 21910.8 seconds (959 passages/sec)
+2026-03-15 14:57:33 - INFO - __main__ - Encoded 21015324 passages, dim=768
+2026-03-15 14:57:37 - INFO - __main__ - Model released, GPU memory freed
+2026-03-15 14:57:37 - INFO - __main__ - Passage embeddings mmap opened: shape=(21015324, 768)
+2026-03-15 14:57:37 - INFO - __main__ - Building FAISS Flat index (dim=768, n=21015324)...
+2026-03-15 14:57:40 - INFO - __main__ -   Added 1000000 / 21015324 vectors to index
+2026-03-15 14:58:08 - INFO - __main__ -   Added 6000000 / 21015324 vectors to index
+2026-03-15 14:58:42 - INFO - __main__ -   Added 11000000 / 21015324 vectors to index
+2026-03-15 14:58:54 - INFO - __main__ -   Added 16000000 / 21015324 vectors to index
+2026-03-15 14:59:39 - INFO - __main__ -   Added 21000000 / 21015324 vectors to index
+2026-03-15 14:59:39 - INFO - __main__ - Index built: 21015324 vectors
+2026-03-15 14:59:41 - INFO - __main__ - Loading training data from ./data_set/NQ/nq-train.json ...
+2026-03-15 15:00:19 - INFO - __main__ - Loaded 58880 training samples
+2026-03-15 15:00:19 - INFO - __main__ - Valid queries for mining: 58880
+2026-03-15 15:00:19 - INFO - __main__ - Reloading model for query encoding...
+2026-03-15 15:00:23 - INFO - __main__ - Encoding 58880 queries...
+2026-03-15 15:00:30 - INFO - __main__ - Query embeddings shape: (58880, 768)
+2026-03-15 15:00:31 - INFO - __main__ - Searching top-200 for each query...
+2026-03-15 15:10:52 - INFO - __main__ - Search complete
+2026-03-15 15:10:58 - INFO - __main__ - FAISS index released, ~60 GB RAM freed
+2026-03-15 15:10:58 - INFO - __main__ - Loading passage IDs from ./data_set/psgs_w100.tsv ...
+2026-03-15 15:11:14 - INFO - __main__ -   Loaded 4999999 passage IDs...
+2026-03-15 15:11:30 - INFO - __main__ -   Loaded 9999999 passage IDs...
+2026-03-15 15:11:48 - INFO - __main__ -   Loaded 14999999 passage IDs...
+2026-03-15 15:12:07 - INFO - __main__ -   Loaded 19999999 passage IDs...
+2026-03-15 15:12:10 - INFO - __main__ - Loaded 21015324 passage IDs
+2026-03-15 15:12:14 - INFO - __main__ - Unique passages needed for results: 2842548
+2026-03-15 15:12:14 - INFO - __main__ - Looking up 2842548 passages from TSV...
+2026-03-15 15:13:14 - INFO - __main__ - Looked up 2842548 passages
+2026-03-15 15:13:14 - INFO - __main__ - Building mined hard negatives (keep_top_n=50)...
+Mining:   0%|          | 0/58880 [00:00<?, ?it/s]Mining:   2%|▏         | 917/58880 [00:00<00:06, 9159.68it/s]Mining:   3%|▎         | 1859/58880 [00:00<00:06, 9307.93it/s]Mining:   5%|▍         | 2803/58880 [00:00<00:05, 9365.98it/s]Mining:   6%|▋         | 3740/58880 [00:00<00:05, 9358.74it/s]Mining:   8%|▊         | 4689/58880 [00:00<00:05, 9404.13it/s]Mining:  10%|▉         | 5643/58880 [00:00<00:05, 9447.78it/s]Mining:  11%|█         | 6590/58880 [00:00<00:05, 9453.08it/s]Mining:  13%|█▎        | 7543/58880 [00:00<00:05, 9475.16it/s]Mining:  14%|█▍        | 8491/58880 [00:00<00:05, 9428.42it/s]Mining:  16%|█▌        | 9434/58880 [00:01<00:05, 9387.66it/s]Mining:  18%|█▊        | 10373/58880 [00:01<00:05, 9378.58it/s]Mining:  19%|█▉        | 11350/58880 [00:01<00:05, 9495.13it/s]Mining:  21%|██        | 12316/58880 [00:01<00:04, 9542.40it/s]Mining:  23%|██▎       | 13290/58880 [00:01<00:04, 9600.51it/s]Mining:  24%|██▍       | 14265/58880 [00:01<00:04, 9644.58it/s]Mining:  26%|██▌       | 15247/58880 [00:01<00:04, 9696.18it/s]Mining:  28%|██▊       | 16217/58880 [00:01<00:04, 9680.73it/s]Mining:  29%|██▉       | 17186/58880 [00:01<00:04, 9657.04it/s]Mining:  31%|███       | 18154/58880 [00:01<00:04, 9663.51it/s]Mining:  32%|███▏      | 19132/58880 [00:02<00:04, 9695.90it/s]Mining:  34%|███▍      | 20121/58880 [00:02<00:03, 9753.77it/s]Mining:  36%|███▌      | 21098/58880 [00:02<00:03, 9757.31it/s]Mining:  37%|███▋      | 22076/58880 [00:02<00:03, 9763.36it/s]Mining:  39%|███▉      | 23053/58880 [00:02<00:03, 9752.86it/s]Mining:  41%|████      | 24029/58880 [00:02<00:03, 9707.86it/s]Mining:  42%|████▏     | 25012/58880 [00:02<00:03, 9743.23it/s]Mining:  44%|████▍     | 26000/58880 [00:02<00:03, 9783.42it/s]Mining:  46%|████▌     | 26982/58880 [00:02<00:03, 9793.05it/s]Mining:  48%|████▊     | 27979/58880 [00:02<00:03, 9844.59it/s]Mining:  49%|████▉     | 28983/58880 [00:03<00:03, 9900.15it/s]Mining:  51%|█████     | 29974/58880 [00:03<00:02, 9897.63it/s]Mining:  53%|█████▎    | 30964/58880 [00:03<00:02, 9849.60it/s]Mining:  54%|█████▍    | 31950/58880 [00:03<00:02, 9816.08it/s]Mining:  56%|█████▌    | 32932/58880 [00:03<00:02, 9742.54it/s]Mining:  58%|█████▊    | 33907/58880 [00:03<00:02, 9717.78it/s]Mining:  59%|█████▉    | 34879/58880 [00:03<00:02, 9715.65it/s]Mining:  61%|██████    | 35851/58880 [00:03<00:02, 9698.55it/s]Mining:  63%|██████▎   | 36836/58880 [00:03<00:02, 9741.47it/s]Mining:  64%|██████▍   | 37834/58880 [00:03<00:02, 9810.31it/s]Mining:  66%|██████▌   | 38816/58880 [00:04<00:02, 9787.03it/s]Mining:  68%|██████▊   | 39800/58880 [00:04<00:01, 9800.17it/s]Mining:  69%|██████▉   | 40790/58880 [00:04<00:01, 9829.09it/s]Mining:  71%|███████   | 41773/58880 [00:04<00:01, 9816.83it/s]Mining:  73%|███████▎  | 42755/58880 [00:04<00:01, 9774.48it/s]Mining:  74%|███████▍  | 43733/58880 [00:04<00:01, 9760.97it/s]Mining:  76%|███████▌  | 44710/58880 [00:04<00:01, 9752.29it/s]Mining:  78%|███████▊  | 45686/58880 [00:04<00:01, 9711.23it/s]Mining:  79%|███████▉  | 46665/58880 [00:04<00:01, 9733.11it/s]Mining:  81%|████████  | 47654/58880 [00:04<00:01, 9777.70it/s]Mining:  83%|████████▎ | 48640/58880 [00:05<00:01, 9800.04it/s]Mining:  84%|████████▍ | 49621/58880 [00:05<00:00, 9659.29it/s]Mining:  86%|████████▌ | 50588/58880 [00:05<00:00, 9644.76it/s]Mining:  88%|████████▊ | 51567/58880 [00:05<00:00, 9687.75it/s]Mining:  89%|████████▉ | 52537/58880 [00:05<00:00, 9662.35it/s]Mining:  91%|█████████ | 53504/58880 [00:05<00:00, 9633.79it/s]Mining:  93%|█████████▎| 54468/58880 [00:05<00:00, 9613.77it/s]Mining:  94%|█████████▍| 55430/58880 [00:07<00:01, 1819.03it/s]Mining:  95%|█████████▌| 56211/58880 [00:07<00:01, 2265.47it/s]Mining:  97%|█████████▋| 56990/58880 [00:07<00:00, 2796.97it/s]Mining:  98%|█████████▊| 57753/58880 [00:07<00:00, 3380.64it/s]Mining:  99%|█████████▉| 58498/58880 [00:07<00:00, 3945.82it/s]Mining: 100%|██████████| 58880/58880 [00:07<00:00, 7716.16it/s]
+2026-03-15 15:13:22 - INFO - __main__ - Mined 58880 samples
+2026-03-15 15:14:10 - INFO - __main__ - Saved mined data to ./data_set/NQ/nq-train-mined.json
+2026-03-15 15:14:21 - INFO - __main__ - Cleaned up mmap file: ./data_set/NQ/.passage_embs_nq.mmap
+2026-03-15 15:14:21 - INFO - __main__ - Hard negatives stats: min=50, max=50, mean=50.0, median=50.0

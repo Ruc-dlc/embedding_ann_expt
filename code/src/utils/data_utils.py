@@ -1,11 +1,6 @@
 """
 数据预处理工具函数
 
-对齐 DPR 开源代码的预处理标准，确保训练和评估结果可复现。
-参考：
-  - DPR/dpr/utils/data_utils.py  → normalize_question
-  - DPR/dpr/data/biencoder_data.py → normalize_passage
-  - DPR/dpr/data/qa_validation.py  → has_answer
 """
 
 import unicodedata

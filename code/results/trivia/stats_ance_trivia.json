@@ -1,0 +1,18 @@
+{
+  "model_type": "ance",
+  "dataset": "trivia",
+  "num_samples": 6760,
+  "positive_cosine_mean": 0.5641214847564697,
+  "positive_cosine_var": 0.005520086269825697,
+  "negative_cosine_mean": 0.23318447172641754,
+  "negative_cosine_var": 0.003461668035015464,
+  "alignment": 0.8717569708824158,
+  "uniformity": -2.647087335586548,
+  "positive_cosine_distribution": {
+    "min": 0.22248025238513947,
+    "max": 0.7287094593048096,
+    "p25": 0.5203090906143188,
+    "p50": 0.5747994482517242,
+    "p75": 0.6179641336202621
+  }
+}

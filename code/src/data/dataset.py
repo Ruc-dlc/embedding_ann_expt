@@ -3,13 +3,9 @@ DPR 格式训练数据集与 Collator
 
 支持三阶段训练所需的数据加载：
   - Stage 1 (in_batch): 每个样本只取 query + positive，负例由 batch 内其他 query 的 positive 构成
-  - Stage 2/3 (hard_neg): 每个样本取 query + positive + 7 个 hard negatives
+  - Stage 2 (hard_neg): 每个样本取 query + positive + 7 个 hard negatives
 
-数据格式遵循 DPR 标准 JSON（question, positive_ctxs, hard_negative_ctxs 等）。
-
-参考：
-  - DPR/dpr/data/biencoder_data.py
-  - experiments.md 第四节、第九节
+数据格式遵循 DPR 标准 JSON（question, positive_ctxs, hard_negative_ctxs 等）
 """
 
 import json
@@ -323,3 +319,5 @@ class BiEncoderCollator:
             "ctx_attention_mask": ctx_batch["attention_mask"],
             "positive_indices": torch.tensor(positive_indices, dtype=torch.long),
         }
+
+

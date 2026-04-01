@@ -13,7 +13,7 @@ channels:
 dependencies:
   - python=3.10
 
-  # PyTorch GPU版（CUDA 12.1，兼容CUDA 12.x驱动）
+  # PyTorch GPU版
   - pytorch=2.1
   - torchvision
   - torchaudio

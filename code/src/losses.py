@@ -8,11 +8,8 @@ L_total = L_InfoNCE + w * L_dis
 
 两种计算模式：
   - in_batch: 相似度矩阵 B×B（Stage 1）
-  - hard_neg:  相似度矩阵 B×8B（Stage 2/3）
+  - hard_neg:  相似度矩阵 B×8B（Stage 2）
 
-参考：
-  - DPR/dpr/models/biencoder.py  BiEncoderNllLoss
-  - experiments.md 第三节
 """
 
 import torch
